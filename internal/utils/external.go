@@ -42,7 +42,7 @@ func CapturePage(input string) (string, error) {
 	permits.Acquire(context.Background(), 1)
 	defer permits.Release(1)
 
-	resp, err := http.Get(input)
+	resp, err := client.Get(input)
 	if err != nil {
 		return "", err
 	}
