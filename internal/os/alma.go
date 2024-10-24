@@ -12,7 +12,7 @@ const AlmaMirror = "https://repo.almalinux.org/almalinux/"
 
 type Alma struct{}
 
-func (*Alma) Data() OSData {
+func (Alma) Data() OSData {
 	return OSData{
 		Name:        "alma",
 		PrettyName:  "AlmaLinux",
@@ -21,7 +21,7 @@ func (*Alma) Data() OSData {
 	}
 }
 
-func (*Alma) CreateConfigs() ([]Config, error) {
+func (Alma) CreateConfigs() ([]Config, error) {
 	releases, err := getReleases()
 	if err != nil {
 		return nil, err
@@ -34,7 +34,9 @@ func (*Alma) CreateConfigs() ([]Config, error) {
 	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
 		for _, arch := range architectures {
-			mirror := fmt.Sprintf("%s%s/isos/%s", AlmaMirror, release, arch)
+			arch := arch
+			release := release
+			mirror := fmt.Sprintf("%s%s/isos/%s/", AlmaMirror, release, arch)
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -43,7 +45,7 @@ func (*Alma) CreateConfigs() ([]Config, error) {
 					errs <- err
 					return
 				}
-				checksums, err := buildChecksum(Whitespace{}, mirror+"CHECKSUM")
+				checksums, err := buildChecksum(Sha256Regex{}, mirror+"CHECKSUM")
 				if err != nil {
 					errs <- err
 				}
@@ -72,9 +74,13 @@ func (*Alma) CreateConfigs() ([]Config, error) {
 		close(ch)
 		close(errs)
 	}()
-	for err := range errs {
-		log.Println(err)
-	}
+
+	go func() {
+		for err := range errs {
+			log.Println(err)
+		}
+	}()
+
 	configs := make([]Config, 0)
 	for config := range ch {
 		configs = append(configs, config)

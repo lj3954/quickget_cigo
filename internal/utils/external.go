@@ -20,6 +20,7 @@ type OSData struct {
 	PrettyName  string
 	Homepage    string
 	Description string
+	Releases    []Config
 }
 
 type Distro interface {
@@ -90,9 +91,11 @@ func (Whitespace) BuildWithData(data string) map[string]string {
 	m := make(map[string]string, 0)
 	for _, line := range strings.Fields(data) {
 		slice := strings.SplitN(line, " ", 2)
-		hash := strings.TrimSpace(slice[0])
-		file := strings.TrimSpace(slice[1])
-		m[file] = hash
+		if len(slice) == 2 {
+			hash := strings.TrimSpace(slice[0])
+			file := strings.TrimSpace(slice[1])
+			m[file] = hash
+		}
 	}
 	return m
 }
