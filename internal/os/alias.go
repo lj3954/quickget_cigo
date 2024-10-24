@@ -2,15 +2,26 @@ package os
 
 import (
 	"github.com/quickemu-project/quickget_configs/internal/utils"
-	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
-type OSData utils.OSData
-type Config utils.Config
-type Arch quickgetdata.Arch
+type OSData = utils.OSData
+type Config = utils.Config
+type Arch = qgdata.Arch
+type Source = qgdata.Source
 
-const x86_64 = quickgetdata.X86_64
-const aarch64 = quickgetdata.Aarch64
-const riscv64 = quickgetdata.Riscv64
+const x86_64 = qgdata.X86_64
+const aarch64 = qgdata.Aarch64
+const riscv64 = qgdata.Riscv64
+
+var webSource = qgdata.NewWebSource
+var urlChecksumSource = qgdata.URLChecksumSource
+var urlSource = qgdata.URLSource
 
 var capturePage = utils.CapturePage
+var buildChecksum = utils.BuildChecksum
+
+type Whitespace = utils.Whitespace
+type Md5Regex = utils.Md5Regex
+type Sha256Regex = utils.Sha256Regex
+type CustomRegex = utils.CustomRegex

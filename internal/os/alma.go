@@ -2,7 +2,9 @@ package os
 
 import (
 	"fmt"
+	"log"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -25,6 +27,7 @@ func (*Alma) CreateConfigs() ([]Config, error) {
 		return nil, err
 	}
 	ch := make(chan Config)
+	errs := make(chan error)
 	var wg sync.WaitGroup
 	isoRegex := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
@@ -35,9 +38,48 @@ func (*Alma) CreateConfigs() ([]Config, error) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-			}
+				page, err := capturePage(mirror)
+				if err != nil {
+					errs <- err
+					return
+				}
+				checksums, err := buildChecksum(Whitespace{}, mirror+"CHECKSUM")
+				if err != nil {
+					errs <- err
+				}
+				for _, match := range isoRegex.FindAllStringSubmatch(page, -1) {
+					if strings.HasSuffix(match[0], ".manifest") {
+						continue
+					}
+					iso, edition := match[1], match[2]
+					url := mirror + iso
+					checksum := checksums[iso]
+					ch <- Config{
+						Release: release,
+						Edition: edition,
+						Arch:    arch,
+						ISO: []Source{
+							urlChecksumSource(url, checksum),
+						},
+					}
+				}
+			}()
 		}
 	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+		close(errs)
+	}()
+	for err := range errs {
+		log.Println(err)
+	}
+	configs := make([]Config, 0)
+	for config := range ch {
+		configs = append(configs, config)
+	}
+	return configs, nil
 }
 
 func getReleases() ([]string, error) {
