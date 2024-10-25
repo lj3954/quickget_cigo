@@ -19,6 +19,7 @@ func Launch() {
 		os.ArchLinux{},
 		os.ArcoLinux{},
 		os.ArtixLinux{},
+		os.AthenaOS{},
 	)
 	distros = fixList(distros)
 

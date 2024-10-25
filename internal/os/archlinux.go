@@ -30,7 +30,7 @@ func (ArchLinux) CreateConfigs() ([]Config, error) {
 	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
 		return nil, err
 	}
-	if len(apiData.Releases) == 0 {
+	if apiData.Releases == nil {
 		return nil, errors.New("No ArchLinux releases found")
 	}
 

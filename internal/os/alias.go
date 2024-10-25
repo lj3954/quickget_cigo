@@ -7,6 +7,8 @@ import (
 
 type OSData = utils.OSData
 type Config = utils.Config
+type GithubAPI = utils.GithubAPI
+type GithubAsset = utils.GithubAsset
 type Arch = qgdata.Arch
 type Source = qgdata.Source
 
