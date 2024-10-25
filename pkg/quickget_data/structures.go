@@ -55,8 +55,8 @@ const (
 type Config struct {
 	Release    string   `json:"release"`
 	Edition    string   `json:"edition,omitempty"`
-	GuestOS    GuestOS  `json:"guest_os"`
-	Arch       Arch     `json:"arch"`
+	GuestOS    GuestOS  `json:"guest_os,omitempty"`
+	Arch       Arch     `json:"arch,omitempty"`
 	ISO        []Source `json:"iso,omitempty"`
 	IMG        []Source `json:"img,omitempty"`
 	FixedISO   []Source `json:"fixed_iso,omitempty"`

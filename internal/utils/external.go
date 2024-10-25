@@ -2,12 +2,15 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 	"golang.org/x/sync/semaphore"
@@ -66,6 +69,22 @@ var (
 	}
 )
 
+func SingleWhitespaceChecksum(url string) (string, error) {
+	data, err := CapturePage(url)
+	if err != nil {
+		return "", fmt.Errorf("Failed to find single checksum: %w", err)
+	}
+	return BuildSingleWhitespaceChecksum(data)
+}
+
+func BuildSingleWhitespaceChecksum(data string) (string, error) {
+	index := strings.Index(data, " ")
+	if index == -1 {
+		return "", errors.New("no whitespace was present in the checksum data")
+	}
+	return data[0:index], nil
+}
+
 type ChecksumSeparation interface {
 	BuildWithData(string) map[string]string
 }
@@ -89,7 +108,7 @@ type CustomRegex struct {
 
 func (Whitespace) BuildWithData(data string) map[string]string {
 	m := make(map[string]string, 0)
-	for _, line := range strings.Fields(data) {
+	for _, line := range strings.Split(data, "\n") {
 		slice := strings.SplitN(line, " ", 2)
 		if len(slice) == 2 {
 			hash := strings.TrimSpace(slice[0])
@@ -128,4 +147,28 @@ func (re CustomRegex) BuildWithData(data string) map[string]string {
 		m[file] = hash
 	}
 	return m
+}
+
+func GetChannels() (chan Config, chan error, sync.WaitGroup) {
+	return make(chan Config), make(chan error), sync.WaitGroup{}
+}
+
+func WaitForConfigs(ch chan Config, errs chan error, wg *sync.WaitGroup) []Config {
+	go func() {
+		wg.Wait()
+		close(ch)
+		close(errs)
+	}()
+
+	go func() {
+		for err := range errs {
+			log.Println(err)
+		}
+	}()
+
+	configs := make([]Config, 0)
+	for config := range ch {
+		configs = append(configs, config)
+	}
+	return configs
 }

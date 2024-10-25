@@ -2,10 +2,8 @@ package os
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
-	"sync"
 )
 
 const AlmaMirror = "https://repo.almalinux.org/almalinux/"
@@ -22,24 +20,21 @@ func (Alma) Data() OSData {
 }
 
 func (Alma) CreateConfigs() ([]Config, error) {
-	releases, err := getReleases()
+	releases, err := getAlmaReleases()
 	if err != nil {
 		return nil, err
 	}
-	ch := make(chan Config)
-	errs := make(chan error)
-	var wg sync.WaitGroup
-	isoRegex := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
+	ch, errs, wg := getChannels()
+	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
 	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
 		for _, arch := range architectures {
-			arch := arch
-			release := release
 			mirror := fmt.Sprintf("%s%s/isos/%s/", AlmaMirror, release, arch)
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
+
 				page, err := capturePage(mirror)
 				if err != nil {
 					errs <- err
@@ -49,7 +44,7 @@ func (Alma) CreateConfigs() ([]Config, error) {
 				if err != nil {
 					errs <- err
 				}
-				for _, match := range isoRegex.FindAllStringSubmatch(page, -1) {
+				for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
 					if strings.HasSuffix(match[0], ".manifest") {
 						continue
 					}
@@ -69,26 +64,10 @@ func (Alma) CreateConfigs() ([]Config, error) {
 		}
 	}
 
-	go func() {
-		wg.Wait()
-		close(ch)
-		close(errs)
-	}()
-
-	go func() {
-		for err := range errs {
-			log.Println(err)
-		}
-	}()
-
-	configs := make([]Config, 0)
-	for config := range ch {
-		configs = append(configs, config)
-	}
-	return configs, nil
+	return waitForConfigs(ch, errs, &wg), nil
 }
 
-func getReleases() ([]string, error) {
+func getAlmaReleases() ([]string, error) {
 	releaseHTML, err := capturePage(AlmaMirror)
 	if err != nil {
 		return nil, err

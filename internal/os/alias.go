@@ -20,6 +20,10 @@ var urlSource = qgdata.URLSource
 
 var capturePage = utils.CapturePage
 var buildChecksum = utils.BuildChecksum
+var singleWhitespaceChecksum = utils.SingleWhitespaceChecksum
+var buildSingleWhitespaceChecksum = utils.BuildSingleWhitespaceChecksum
+var getChannels = utils.GetChannels
+var waitForConfigs = utils.WaitForConfigs
 
 type Whitespace = utils.Whitespace
 type Md5Regex = utils.Md5Regex
