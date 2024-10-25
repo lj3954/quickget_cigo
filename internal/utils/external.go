@@ -80,7 +80,7 @@ func SingleWhitespaceChecksum(url string) (string, error) {
 func BuildSingleWhitespaceChecksum(data string) (string, error) {
 	index := strings.Index(data, " ")
 	if index == -1 {
-		return "", errors.New("no whitespace was present in the checksum data")
+		return "", errors.New("No whitespace was present in the checksum data")
 	}
 	return data[0:index], nil
 }
