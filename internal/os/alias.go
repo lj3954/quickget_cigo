@@ -16,6 +16,8 @@ const x86_64 = qgdata.X86_64
 const aarch64 = qgdata.Aarch64
 const riscv64 = qgdata.Riscv64
 
+const Gz = qgdata.Gz
+
 var webSource = qgdata.NewWebSource
 var urlChecksumSource = qgdata.URLChecksumSource
 var urlSource = qgdata.URLSource

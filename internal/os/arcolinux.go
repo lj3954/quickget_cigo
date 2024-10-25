@@ -82,7 +82,7 @@ func getArcoLinuxReleases() ([]string, error) {
 	matches := releaseRe.FindAllStringSubmatch(page, -1)
 
 	releases := make([]string, len(matches))
-	for i := len(matches) - 1; i >= len(matches)-3; i-- {
+	for i := len(matches) - 1; i >= len(matches)-3 && i >= 0; i-- {
 		releases[i] = matches[i][1]
 	}
 	return releases, nil
