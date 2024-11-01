@@ -22,6 +22,7 @@ func Launch() {
 		os.AthenaOS{},
 		os.Batocera{},
 		os.Bazzite{},
+		os.BunsenLabs{},
 	)
 	distros = fixList(distros)
 
@@ -34,13 +35,17 @@ func Launch() {
 
 func fixList(distros []utils.OSData) []utils.OSData {
 	for i, distro := range distros {
-		for j, release := range distro.Releases {
-			// Replace default values with empty strings, to omit them from final JSON
-			if release.GuestOS == quickgetdata.Linux {
-				distros[i].Releases[j].GuestOS = ""
+		for j := range distro.Releases {
+			config := &distros[i].Releases[j]
+			// Handle default values
+			if config.GuestOS == quickgetdata.Linux {
+				config.GuestOS = ""
 			}
-			if release.Arch == quickgetdata.X86_64 {
-				distros[i].Releases[j].Arch = ""
+			if config.Arch == quickgetdata.X86_64 {
+				config.Arch = ""
+			}
+			if config.Release == "" {
+				config.Release = "latest"
 			}
 		}
 	}
