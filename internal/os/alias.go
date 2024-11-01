@@ -31,6 +31,7 @@ var getChannels = utils.GetChannels
 var waitForConfigs = utils.WaitForConfigs
 
 type Whitespace = utils.Whitespace
-type Md5Regex = utils.Md5Regex
-type Sha256Regex = utils.Sha256Regex
 type CustomRegex = utils.CustomRegex
+
+var Md5Regex = utils.Md5Regex
+var Sha256Regex = utils.Sha256Regex

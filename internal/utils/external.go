@@ -97,12 +97,21 @@ func BuildChecksum(cs ChecksumSeparation, url string) (map[string]string, error)
 }
 
 type Whitespace struct{}
-type Md5Regex struct{}
-type Sha256Regex struct{}
 type CustomRegex struct {
 	Regex      *regexp.Regexp
 	KeyIndex   int
 	ValueIndex int
+}
+
+var Md5Regex = CustomRegex{
+	Regex:      regexp.MustCompile(`MD5 \(([^)]+)\) = ([0-9a-f]+)`),
+	KeyIndex:   1,
+	ValueIndex: 2,
+}
+var Sha256Regex = CustomRegex{
+	Regex:      regexp.MustCompile(`SHA256 \(([^)]+)\) = ([0-9a-f]+)`),
+	KeyIndex:   1,
+	ValueIndex: 2,
 }
 
 func (Whitespace) BuildWithData(data string) map[string]string {
@@ -116,26 +125,6 @@ func (Whitespace) BuildWithData(data string) map[string]string {
 		}
 	}
 	return m
-}
-
-var md5Regex = regexp.MustCompile(`MD5 \(([^)]+)\) = ([0-9a-f]+)`)
-
-func (Md5Regex) BuildWithData(data string) map[string]string {
-	return CustomRegex{
-		Regex:      md5Regex,
-		KeyIndex:   1,
-		ValueIndex: 2,
-	}.BuildWithData(data)
-}
-
-var sha256Regex = regexp.MustCompile(`SHA256 \(([^)]+)\) = ([0-9a-f]+)`)
-
-func (Sha256Regex) BuildWithData(data string) map[string]string {
-	return CustomRegex{
-		Regex:      sha256Regex,
-		KeyIndex:   1,
-		ValueIndex: 2,
-	}.BuildWithData(data)
 }
 
 func (re CustomRegex) BuildWithData(data string) map[string]string {

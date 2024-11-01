@@ -40,7 +40,7 @@ func (Alma) CreateConfigs(errs chan Failure) ([]Config, error) {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
-				checksums, err := buildChecksum(Sha256Regex{}, mirror+"CHECKSUM")
+				checksums, err := buildChecksum(Sha256Regex, mirror+"CHECKSUM")
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err, Checksum: true}
 				}
