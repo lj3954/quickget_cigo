@@ -19,7 +19,7 @@ func (BigLinux) Data() OSData {
 	}
 }
 
-func (BigLinux) CreateConfigs() ([]Config, error) {
+func (BigLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(BigLinuxMirror)
 	if err != nil {
 		return nil, err
@@ -29,20 +29,21 @@ func (BigLinux) CreateConfigs() ([]Config, error) {
 	slices.SortFunc(matches, func(a, b []string) int {
 		return strings.Compare(b[2], a[2])
 	})
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 
 	for _, match := range matches {
 		url := BigLinuxMirror + match[1]
 		wg.Add(1)
 		go func() {
+			release, edition := match[2], match[3]
 			defer wg.Done()
 			checksum, err := singleWhitespaceChecksum(url + ".md5")
 			if err != nil {
-				errs <- err
+				errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
 			}
 			ch <- Config{
-				Release: match[2],
-				Edition: match[3],
+				Release: release,
+				Edition: edition,
 				ISO: []Source{
 					urlChecksumSource(url, checksum),
 				},
@@ -50,5 +51,5 @@ func (BigLinux) CreateConfigs() ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }

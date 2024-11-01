@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -28,7 +27,7 @@ type OSData struct {
 
 type Distro interface {
 	Data() OSData
-	CreateConfigs() ([]Config, error)
+	CreateConfigs(chan Failure) ([]Config, error)
 }
 
 func CapturePage(input string) (string, error) {
@@ -149,21 +148,14 @@ func (re CustomRegex) BuildWithData(data string) map[string]string {
 	return m
 }
 
-func GetChannels() (chan Config, chan error, sync.WaitGroup) {
-	return make(chan Config), make(chan error), sync.WaitGroup{}
+func GetChannels() (chan Config, sync.WaitGroup) {
+	return make(chan Config), sync.WaitGroup{}
 }
 
-func WaitForConfigs(ch chan Config, errs chan error, wg *sync.WaitGroup) []Config {
+func WaitForConfigs(ch chan Config, wg *sync.WaitGroup) []Config {
 	go func() {
 		wg.Wait()
 		close(ch)
-		close(errs)
-	}()
-
-	go func() {
-		for err := range errs {
-			log.Println(err)
-		}
 	}()
 
 	configs := make([]Config, 0)
@@ -183,4 +175,12 @@ type GithubAPI struct {
 type GithubAsset struct {
 	Name string `json:"name"`
 	URL  string `json:"browser_download_url"`
+}
+
+type Failure struct {
+	Release  string
+	Edition  string
+	Arch     quickgetdata.Arch
+	Error    error
+	Checksum bool
 }

@@ -18,7 +18,7 @@ func (ArtixLinux) Data() OSData {
 	}
 }
 
-func (ArtixLinux) CreateConfigs() ([]Config, error) {
+func (ArtixLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(ArtixMirror)
 	if err != nil {
 		return nil, err

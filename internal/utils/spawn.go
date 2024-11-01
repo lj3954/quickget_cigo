@@ -11,16 +11,22 @@ func SpawnDistros(distros ...Distro) []OSData {
 	var wg sync.WaitGroup
 	for _, distro := range distros {
 		os := distro.Data()
+		failures := make(chan Failure)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			configs, err := distro.CreateConfigs()
+			configs, err := distro.CreateConfigs(failures)
 			if err != nil {
 				errs <- err
 				return
 			}
 			os.Releases = configs
 			ch <- os
+		}()
+		go func() {
+			for failure := range failures {
+				log.Println(failure)
+			}
 		}()
 	}
 

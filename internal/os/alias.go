@@ -11,6 +11,7 @@ type GithubAPI = utils.GithubAPI
 type GithubAsset = utils.GithubAsset
 type Arch = qgdata.Arch
 type Source = qgdata.Source
+type Failure = utils.Failure
 
 const x86_64 = qgdata.X86_64
 const aarch64 = qgdata.Aarch64

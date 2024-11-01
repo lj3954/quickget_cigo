@@ -15,13 +15,13 @@ func (Bodhi) Data() OSData {
 	}
 }
 
-func (Bodhi) CreateConfigs() ([]Config, error) {
+func (Bodhi) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getBodhiReleases()
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`"name":"(bodhi-[0-9]+.[0-9]+.[0-9]+-64(-[^-.]+)?.iso)"`)
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 
 	for _, release := range releases {
 		mirror := BodhiMirror + release + "/"
@@ -30,7 +30,7 @@ func (Bodhi) CreateConfigs() ([]Config, error) {
 			defer wg.Done()
 			page, err := capturePage(mirror)
 			if err != nil {
-				errs <- err
+				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
@@ -46,7 +46,7 @@ func (Bodhi) CreateConfigs() ([]Config, error) {
 					defer wg.Done()
 					checksum, err := singleWhitespaceChecksum(checksumUrl)
 					if err != nil {
-						errs <- err
+						errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
 					}
 					ch <- Config{
 						Release: release,
@@ -60,7 +60,7 @@ func (Bodhi) CreateConfigs() ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getBodhiReleases() ([]string, error) {

@@ -2,7 +2,6 @@ package os
 
 import (
 	"encoding/json"
-	"errors"
 )
 
 const (
@@ -21,7 +20,7 @@ func (ArchLinux) Data() OSData {
 	}
 }
 
-func (ArchLinux) CreateConfigs() ([]Config, error) {
+func (ArchLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(ArchLinuxAPI)
 	if err != nil {
 		return nil, err
@@ -30,24 +29,22 @@ func (ArchLinux) CreateConfigs() ([]Config, error) {
 	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
 		return nil, err
 	}
-	if apiData.Releases == nil {
-		return nil, errors.New("No ArchLinux releases found")
-	}
 
-	configs := make([]Config, 0, 3)
-	for i := 0; i < 3 && i < len(apiData.Releases); i++ {
+	numConfigs := max(3, len(apiData.Releases))
+	configs := make([]Config, numConfigs)
+	for i := 0; i < numConfigs; i++ {
 		data := apiData.Releases[i]
 		release := data.Version
 		if release == apiData.LatestVersion {
 			release = "latest"
 		}
 		url := ArchLinuxMirror + data.IsoURL
-		configs = append(configs, Config{
+		configs[i] = Config{
 			Release: release,
 			ISO: []Source{
 				urlChecksumSource(url, data.Sha256Sum),
 			},
-		})
+		}
 	}
 
 	return configs, nil

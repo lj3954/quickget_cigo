@@ -22,6 +22,9 @@ func Launch() {
 		os.AthenaOS{},
 		os.Batocera{},
 		os.Bazzite{},
+		os.BigLinux{},
+		os.BlendOS{},
+		os.Bodhi{},
 		os.BunsenLabs{},
 	)
 	distros = fixList(distros)

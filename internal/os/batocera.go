@@ -20,13 +20,13 @@ func (Batocera) Data() OSData {
 	}
 }
 
-func (Batocera) CreateConfigs() ([]Config, error) {
+func (Batocera) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getBatoceraReleases()
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`<a href="(batocera-x86_64.*?.img.gz)`)
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 
 	for i := len(releases) - 1; i >= len(releases)-3 && i >= 0; i-- {
 		release := strconv.Itoa(releases[i])
@@ -36,7 +36,7 @@ func (Batocera) CreateConfigs() ([]Config, error) {
 			defer wg.Done()
 			page, err := capturePage(url)
 			if err != nil {
-				errs <- err
+				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			match := isoRe.FindStringSubmatch(page)
@@ -54,7 +54,7 @@ func (Batocera) CreateConfigs() ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getBatoceraReleases() ([]int, error) {

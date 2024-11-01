@@ -19,12 +19,12 @@ func (Alma) Data() OSData {
 	}
 }
 
-func (Alma) CreateConfigs() ([]Config, error) {
+func (Alma) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getAlmaReleases()
 	if err != nil {
 		return nil, err
 	}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
 	architectures := [2]Arch{x86_64, aarch64}
@@ -37,12 +37,12 @@ func (Alma) CreateConfigs() ([]Config, error) {
 
 				page, err := capturePage(mirror)
 				if err != nil {
-					errs <- err
+					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
 				checksums, err := buildChecksum(Sha256Regex{}, mirror+"CHECKSUM")
 				if err != nil {
-					errs <- err
+					errs <- Failure{Release: release, Arch: arch, Error: err, Checksum: true}
 				}
 				for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
 					if strings.HasSuffix(match[0], ".manifest") {
@@ -64,7 +64,7 @@ func (Alma) CreateConfigs() ([]Config, error) {
 		}
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getAlmaReleases() ([]string, error) {

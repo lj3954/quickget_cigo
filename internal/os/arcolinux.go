@@ -15,7 +15,7 @@ func (ArcoLinux) Data() OSData {
 	}
 }
 
-func (ArcoLinux) CreateConfigs() ([]Config, error) {
+func (ArcoLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getArcoLinuxReleases()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 		KeyIndex:   2,
 		ValueIndex: 1,
 	}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 
 	for _, release := range releases {
 		wg.Add(1)
@@ -36,7 +36,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 			mirror := ArcoLinuxMirror + release + "/"
 			page, err := capturePage(mirror)
 			if err != nil {
-				errs <- err
+				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			checksums := csRegex.BuildWithData(page)
@@ -44,6 +44,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 			matches := isoRe.FindAllStringSubmatch(page, -1)
 			for _, match := range matches {
 				url := mirror + match[1]
+				edition := match[2]
 				checksumUrlExt, checksumUrlExists := checksums[match[2]]
 				wg.Add(1)
 				go func() {
@@ -52,7 +53,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 					if checksumUrlExists {
 						cs, err := singleWhitespaceChecksum(mirror + checksumUrlExt)
 						if err != nil {
-							errs <- err
+							errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
 						} else {
 							checksum = cs
 						}
@@ -60,7 +61,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 
 					ch <- Config{
 						Release: release,
-						Edition: match[2],
+						Edition: edition,
 						ISO: []Source{
 							urlChecksumSource(url, checksum),
 						},
@@ -70,7 +71,7 @@ func (ArcoLinux) CreateConfigs() ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getArcoLinuxReleases() ([]string, error) {

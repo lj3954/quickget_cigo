@@ -20,7 +20,7 @@ func (BunsenLabs) Data() OSData {
 	}
 }
 
-func (BunsenLabs) CreateConfigs() ([]Config, error) {
+func (BunsenLabs) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(BunsenLabsMirror)
 	if err != nil {
 		return nil, err

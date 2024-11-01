@@ -18,7 +18,7 @@ func (AthenaOS) Data() OSData {
 	}
 }
 
-func (AthenaOS) CreateConfigs() ([]Config, error) {
+func (AthenaOS) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(AthenaApi)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (AthenaOS) CreateConfigs() ([]Config, error) {
 	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
 		return nil, err
 	}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 
 	for i := 0; i < 2 && i < len(apiData); i++ {
 		data := apiData[i]
@@ -72,7 +72,7 @@ func (AthenaOS) CreateConfigs() ([]Config, error) {
 				defer wg.Done()
 				checksum, err := singleWhitespaceChecksum(checksumUrl)
 				if err != nil {
-					errs <- err
+					errs <- Failure{Release: release, Error: err, Checksum: true}
 				}
 				ch <- Config{
 					Release: release,
@@ -83,5 +83,5 @@ func (AthenaOS) CreateConfigs() ([]Config, error) {
 			}()
 		}
 	}
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }

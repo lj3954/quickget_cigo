@@ -21,7 +21,7 @@ func (Bazzite) Data() OSData {
 	}
 }
 
-func (Bazzite) CreateConfigs() ([]Config, error) {
+func (Bazzite) CreateConfigs(errs chan Failure) ([]Config, error) {
 	page, err := capturePage(BazziteWorkflow)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,8 @@ func (Bazzite) CreateConfigs() ([]Config, error) {
 	workflowRe := regexp.MustCompile(`- (bazzite-?(.*))`)
 
 	excludedEditions := []string{"nvidia", "ally", "asus"}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
+	release := "latest"
 
 	for _, match := range workflowRe.FindAllStringSubmatch(page, -1) {
 		edition := match[2]
@@ -48,10 +49,10 @@ func (Bazzite) CreateConfigs() ([]Config, error) {
 			defer wg.Done()
 			checksum, err := singleWhitespaceChecksum(url + "-CHECKSUM")
 			if err != nil {
-				errs <- err
+				errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
 			}
 			ch <- Config{
-				Release: "latest",
+				Release: release,
 				Edition: edition,
 				ISO: []Source{
 					urlChecksumSource(url, checksum),
@@ -60,7 +61,7 @@ func (Bazzite) CreateConfigs() ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func isExcludedEdition(edition string, excludedEditions []string) bool {

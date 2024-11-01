@@ -21,12 +21,12 @@ func (AntiX) Data() OSData {
 	}
 }
 
-func (AntiX) CreateConfigs() ([]Config, error) {
+func (AntiX) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getAntiXReleases()
 	if err != nil {
 		return nil, err
 	}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`"name":"(antiX-[0-9.]+(?:-runit)?(?:-[^_]+)?_x64-([^.]+).iso)".*?"download_url":"(.*?)"`)
 
 	for _, release := range releases {
@@ -39,7 +39,7 @@ func (AntiX) CreateConfigs() ([]Config, error) {
 		createAntiXConfigs(ch, errs, &wg, release, runitMirror, runitChecksumUrl, isoRe, "-runit")
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getAntiXReleases() ([]string, error) {
@@ -69,18 +69,18 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	return Whitespace{}.BuildWithData(data[1]), nil
 }
 
-func createAntiXConfigs(ch chan Config, errs chan error, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
+func createAntiXConfigs(ch chan Config, errs chan Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		page, err := capturePage(url)
 		if err != nil {
-			errs <- err
+			errs <- Failure{Release: release, Error: err}
 			return
 		}
 		checksums, err := createAntiXChecksums(checksumUrl)
 		if err != nil {
-			errs <- err
+			errs <- Failure{Release: release, Error: err, Checksum: true}
 		}
 		for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
 			checksum, url := checksums[match[1]], match[3]

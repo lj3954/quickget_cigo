@@ -18,12 +18,12 @@ func (Alpine) Data() OSData {
 	}
 }
 
-func (Alpine) CreateConfigs() ([]Config, error) {
+func (Alpine) CreateConfigs(errs chan Failure) ([]Config, error) {
 	releases, err := getAlpineReleases()
 	if err != nil {
 		return nil, err
 	}
-	ch, errs, wg := getChannels()
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`)
 
 	architectures := [2]Arch{x86_64, aarch64}
@@ -36,7 +36,7 @@ func (Alpine) CreateConfigs() ([]Config, error) {
 				defer wg.Done()
 				page, err := capturePage(releaseUrl)
 				if err != nil {
-					errs <- err
+					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
 
@@ -55,7 +55,7 @@ func (Alpine) CreateConfigs() ([]Config, error) {
 		}
 	}
 
-	return waitForConfigs(ch, errs, &wg), nil
+	return waitForConfigs(ch, &wg), nil
 }
 
 func getAlpineReleases() ([]string, error) {
