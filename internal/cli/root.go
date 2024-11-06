@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"log"
 
+	system "os"
+
+	"github.com/klauspost/compress/gzip"
+	"github.com/klauspost/compress/zstd"
 	"github.com/quickemu-project/quickget_configs/internal/os"
 	"github.com/quickemu-project/quickget_configs/internal/utils"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
 func Launch() {
-	distros := utils.SpawnDistros(
+	distros, status := utils.SpawnDistros(
 		os.Alma{},
 		os.Alpine{},
 		os.AntiX{},
@@ -29,11 +33,25 @@ func Launch() {
 	)
 	distros = fixList(distros)
 
+	if err := status.Finalize(); err != nil {
+		log.Printf("Failed to create status webpage: %s", err)
+	}
+
 	json, err := json.MarshalIndent(distros, "", "  ")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Println(string(json))
+
+	if err := writeData(json, "quickget_data.json", None); err != nil {
+		log.Println(err)
+	}
+	if err := writeData(json, "quickget_data.json.gz", Gzip); err != nil {
+		log.Println(err)
+	}
+	if err := writeData(json, "quickget_data.json.zst", Zstd); err != nil {
+		log.Println(err)
+	}
 }
 
 func fixList(distros []utils.OSData) []utils.OSData {
@@ -47,11 +65,49 @@ func fixList(distros []utils.OSData) []utils.OSData {
 			if config.Arch == quickgetdata.X86_64 {
 				config.Arch = ""
 			}
-			if config.Release == "" {
-				config.Release = "latest"
-			}
 		}
 	}
 
 	return distros
+}
+
+type compressionType int
+
+const (
+	_ = iota
+	None
+	Gzip
+	Zstd
+)
+
+func writeData(data []byte, filename string, compression compressionType) error {
+	file, err := system.Create(filename)
+	if err != nil {
+		return err
+	}
+	switch compression {
+	case None:
+		if _, err := file.Write(data); err != nil {
+			return err
+		}
+	case Gzip:
+		enc, err := gzip.NewWriterLevel(file, gzip.BestCompression)
+		if err != nil {
+			return err
+		}
+		if _, err := enc.Write(data); err != nil {
+			return err
+		}
+		return enc.Close()
+	case Zstd:
+		enc, err := zstd.NewWriter(file, zstd.WithEncoderLevel(zstd.SpeedBestCompression))
+		if err != nil {
+			return err
+		}
+		if _, err := enc.Write(data); err != nil {
+			return err
+		}
+		return enc.Close()
+	}
+	return nil
 }

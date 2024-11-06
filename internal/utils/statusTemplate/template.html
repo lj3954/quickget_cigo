@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Quickget CI Status</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            details > summary {
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 4px;
+            }
+            details > summary:hover {
+                background-color: #f3f4f6;
+            }
+            details[open] > summary {
+                margin-bottom: 8px;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <div class="max-w-6xl mx-auto p-6">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h1 class="text-2xl font-bold mb-4">Quickget CI Status</h1>
+                <div class="text-sm text-gray-600 mb-6">
+                    {{.StartTime.Format "Monday, January 2, 2006"}}<br />
+                    Run Time: {{.EndTime.Sub .StartTime}} ({{.StartTime.Format
+                    "15:04:05"}} - {{.EndTime.Format "15:04:05"}})
+                </div>
+                <div class="text-sm text-gray-600 mb-6"></div>
+
+                {{range .Data}}
+                <details class="border-t pt-4 mb-6">
+                    <summary class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-xl font-semibold inline-block">
+                                {{.PrettyName}} {{if .Err}}
+                                <span class="text-red-600 text-sm ml-2"
+                                    >Failed: {{.Err}}</span
+                                >
+                                {{end}}
+                            </h2>
+                            <a
+                                href="{{.Homepage}}"
+                                class="text-blue-600 hover:underline text-sm ml-4"
+                                >Homepage</a
+                            >
+                        </div>
+                    </summary>
+
+                    <p class="text-gray-600 mt-2">{{.Description}}</p>
+
+                    {{range .Releases}}
+                    <div class="mt-4 pl-4 border-l-2 border-gray-200">
+                        <h3 class="font-medium">
+                            Release: {{.Release}} {{if
+                            .Edition}}({{.Edition}}){{end}} - {{.Arch}}
+                            {{if.Err}}
+                            <span class="text-red-600 text-sm ml-2"
+                                >Error: {{.Err}}</span
+                            >
+                            {{end}}
+                        </h3>
+
+                        {{if .Sources}}
+                        <div class="mt-2 space-y-2">
+                            {{range .Sources}}
+                            <div class="text-sm">
+                                <span class="font-medium"
+                                    >{{.SourceType}}:</span
+                                >
+                                {{if .Source.Web}}
+                                <div class="pl-4">
+                                    <div>URL: {{.Source.Web.URL}}</div>
+                                    {{if .Source.Web.Checksum}}
+                                    <div>
+                                        Checksum: {{.Source.Web.Checksum}}
+                                    </div>
+                                    {{end}} {{if .Source.Web.ArchiveFormat}}
+                                    <div>
+                                        Archive Format:
+                                        {{.Source.Web.ArchiveFormat}}
+                                    </div>
+                                    {{end}} {{if .Source.Web.FileName}}
+                                    <div>
+                                        File Name: {{.Source.Web.FileName}}
+                                    </div>
+                                    {{end}}
+                                </div>
+                                {{else}}
+                                <div class="pl-4">
+                                    <div>Unimplemented source type</div>
+                                </div>
+                                {{end}}
+                            </div>
+                            {{end}}
+                        </div>
+                        {{end}} {{if .DiskImages}}
+                        <div class="mt-2">
+                            <div class="text-sm font-medium">Disk Images:</div>
+                            <div class="pl-4">
+                                {{range .DiskImages}}
+                                <div class="text-sm">
+                                    {{if .Source.Web}}
+                                    <div class="pl-4">
+                                        <div>URL: {{.Source.Web.URL}}</div>
+                                        {{if .Source.Web.Checksum}}
+                                        <div>
+                                            Checksum: {{.Source.Web.Checksum}}
+                                        </div>
+                                        {{end}} {{if .Source.Web.ArchiveFormat}}
+                                        <div>
+                                            Archive Format:
+                                            {{.Source.Web.ArchiveFormat}}
+                                        </div>
+                                        {{end}} {{if .Source.Web.FileName}}
+                                        <div>
+                                            File Name: {{.Source.Web.FileName}}
+                                        </div>
+                                        {{end}}
+                                    </div>
+                                    {{if .Format}}
+                                    <div>Format: {{.Format}}</div>
+                                    {{end}} {{if .Size}}
+                                    <div>
+                                        Size: {{ div .Size 1073741824}} GiB
+                                    </div>
+                                    {{end}} {{else}}
+                                    <div>
+                                        <div>Unimplemented source type</div>
+                                    </div>
+                                    {{end}}
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </details>
+                {{end}}
+            </div>
+        </div>
+    </body>
+</html>
+`

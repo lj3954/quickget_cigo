@@ -1,7 +1,6 @@
 package os
 
 import (
-	"log"
 	"regexp"
 )
 
@@ -18,14 +17,14 @@ func (ArtixLinux) Data() OSData {
 	}
 }
 
-func (ArtixLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	page, err := capturePage(ArtixMirror)
 	if err != nil {
 		return nil, err
 	}
 	checksums, err := buildChecksum(Whitespace{}, ArtixMirror+"sha256sums")
 	if err != nil {
-		log.Println(err)
+		csErrs <- Failure{Error: err}
 	}
 	isoRe := regexp.MustCompile(`href="(artix-(.*?)-([^-]+-[0-9]+)-x86_64.iso)"`)
 
@@ -35,7 +34,7 @@ func (ArtixLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 	for i, match := range matches {
 		iso, edition, release := match[1], match[2], match[3]
 		url := ArtixMirror + iso
-		checksum := checksums[iso]
+		checksum, _ := checksums[iso]
 		configs[i] = Config{
 			Release: release,
 			Edition: edition,

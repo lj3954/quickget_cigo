@@ -19,7 +19,7 @@ func (BigLinux) Data() OSData {
 	}
 }
 
-func (BigLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	page, err := capturePage(BigLinuxMirror)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (BigLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 			defer wg.Done()
 			checksum, err := singleWhitespaceChecksum(url + ".md5")
 			if err != nil {
-				errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
+				csErrs <- Failure{Release: release, Edition: edition, Error: err}
 			}
 			ch <- Config{
 				Release: release,

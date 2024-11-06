@@ -20,7 +20,7 @@ func (Batocera) Data() OSData {
 	}
 }
 
-func (Batocera) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getBatoceraReleases()
 	if err != nil {
 		return nil, err

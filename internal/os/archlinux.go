@@ -20,7 +20,7 @@ func (ArchLinux) Data() OSData {
 	}
 }
 
-func (ArchLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	page, err := capturePage(ArchLinuxAPI)
 	if err != nil {
 		return nil, err

@@ -15,7 +15,7 @@ func (ArcoLinux) Data() OSData {
 	}
 }
 
-func (ArcoLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getArcoLinuxReleases()
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (ArcoLinux) CreateConfigs(errs chan Failure) ([]Config, error) {
 					if checksumUrlExists {
 						cs, err := singleWhitespaceChecksum(mirror + checksumUrlExt)
 						if err != nil {
-							errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
+							csErrs <- Failure{Release: release, Edition: edition, Error: err}
 						} else {
 							checksum = cs
 						}

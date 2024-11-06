@@ -18,7 +18,7 @@ func (AthenaOS) Data() OSData {
 	}
 }
 
-func (AthenaOS) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	page, err := capturePage(AthenaApi)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (AthenaOS) CreateConfigs(errs chan Failure) ([]Config, error) {
 				defer wg.Done()
 				checksum, err := singleWhitespaceChecksum(checksumUrl)
 				if err != nil {
-					errs <- Failure{Release: release, Error: err, Checksum: true}
+					csErrs <- Failure{Release: release, Error: err}
 				}
 				ch <- Config{
 					Release: release,

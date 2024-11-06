@@ -18,7 +18,7 @@ func (Alpine) Data() OSData {
 	}
 }
 
-func (Alpine) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getAlpineReleases()
 	if err != nil {
 		return nil, err

@@ -15,7 +15,7 @@ func (Bodhi) Data() OSData {
 	}
 }
 
-func (Bodhi) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getBodhiReleases()
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (Bodhi) CreateConfigs(errs chan Failure) ([]Config, error) {
 					defer wg.Done()
 					checksum, err := singleWhitespaceChecksum(checksumUrl)
 					if err != nil {
-						errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
+						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
 					ch <- Config{
 						Release: release,

@@ -21,7 +21,7 @@ func (Bazzite) Data() OSData {
 	}
 }
 
-func (Bazzite) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	page, err := capturePage(BazziteWorkflow)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (Bazzite) CreateConfigs(errs chan Failure) ([]Config, error) {
 			defer wg.Done()
 			checksum, err := singleWhitespaceChecksum(url + "-CHECKSUM")
 			if err != nil {
-				errs <- Failure{Release: release, Edition: edition, Error: err, Checksum: true}
+				csErrs <- Failure{Release: release, Edition: edition, Error: err}
 			}
 			ch <- Config{
 				Release: release,

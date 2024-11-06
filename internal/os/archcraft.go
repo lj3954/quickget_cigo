@@ -18,7 +18,7 @@ func (Archcraft) Data() OSData {
 	}
 }
 
-func (Archcraft) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getArchcraftReleases()
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (Archcraft) CreateConfigs(errs chan Failure) ([]Config, error) {
 			if len(urls) == 3 {
 				checksum, err := singleWhitespaceChecksum(urls[2])
 				if err != nil {
-					errs <- Failure{Release: release, Error: err, Checksum: true}
+					csErrs <- Failure{Release: release, Error: err}
 				}
 				ch <- Config{
 					Release: release,

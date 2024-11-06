@@ -19,7 +19,7 @@ func (Alma) Data() OSData {
 	}
 }
 
-func (Alma) CreateConfigs(errs chan Failure) ([]Config, error) {
+func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases, err := getAlmaReleases()
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (Alma) CreateConfigs(errs chan Failure) ([]Config, error) {
 				}
 				checksums, err := buildChecksum(Sha256Regex, mirror+"CHECKSUM")
 				if err != nil {
-					errs <- Failure{Release: release, Arch: arch, Error: err, Checksum: true}
+					csErrs <- Failure{Release: release, Arch: arch, Error: err}
 				}
 				for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
 					if strings.HasSuffix(match[0], ".manifest") {

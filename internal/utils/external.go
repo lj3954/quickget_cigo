@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"sync"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 	"golang.org/x/sync/semaphore"
 )
@@ -18,16 +18,16 @@ import (
 type Config quickgetdata.Config
 
 type OSData struct {
-	Name        string
-	PrettyName  string
-	Homepage    string
-	Description string
-	Releases    []Config
+	Name        string   `json:"name"`
+	PrettyName  string   `json:"pretty_name"`
+	Homepage    string   `json:"homepage"`
+	Description string   `json:"description"`
+	Releases    []Config `json:"releases"`
 }
 
 type Distro interface {
 	Data() OSData
-	CreateConfigs(chan Failure) ([]Config, error)
+	CreateConfigs(chan Failure, chan Failure) ([]Config, error)
 }
 
 func CapturePage(input string) (string, error) {
@@ -61,7 +61,7 @@ func CapturePage(input string) (string, error) {
 }
 
 var (
-	client     = &http.Client{}
+	client     = retryablehttp.NewClient()
 	permits    = semaphore.NewWeighted(150)
 	urlPermits = map[string]*semaphore.Weighted{
 		"sourceforge.net": semaphore.NewWeighted(5),
@@ -81,7 +81,7 @@ func BuildSingleWhitespaceChecksum(data string) (string, error) {
 	if index == -1 {
 		return "", errors.New("No whitespace was present in the checksum data")
 	}
-	return data[0:index], nil
+	return data[:index], nil
 }
 
 type ChecksumSeparation interface {
@@ -167,9 +167,8 @@ type GithubAsset struct {
 }
 
 type Failure struct {
-	Release  string
-	Edition  string
-	Arch     quickgetdata.Arch
-	Error    error
-	Checksum bool
+	Release string
+	Edition string
+	Arch    quickgetdata.Arch
+	Error   error
 }
