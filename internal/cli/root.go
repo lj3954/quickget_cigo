@@ -37,21 +37,26 @@ func Launch() {
 		log.Printf("Failed to create status webpage: %s", err)
 	}
 
-	json, err := json.MarshalIndent(distros, "", "  ")
+	rawJson, err := json.Marshal(distros)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(string(json))
 
-	if err := writeData(json, "quickget_data.json", None); err != nil {
+	if err := writeData(rawJson, "quickget_data.json", None); err != nil {
 		log.Println(err)
 	}
-	if err := writeData(json, "quickget_data.json.gz", Gzip); err != nil {
+	if err := writeData(rawJson, "quickget_data.json.gz", Gzip); err != nil {
 		log.Println(err)
 	}
-	if err := writeData(json, "quickget_data.json.zst", Zstd); err != nil {
+	if err := writeData(rawJson, "quickget_data.json.zst", Zstd); err != nil {
 		log.Println(err)
 	}
+
+	prettyJson, err := json.MarshalIndent(distros, "", "  ")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(prettyJson))
 }
 
 func fixList(distros []utils.OSData) []utils.OSData {
