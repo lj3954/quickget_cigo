@@ -1,0 +1,31 @@
+name: Cache
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build
+        run: go build -v -o quickget_cigo ./cmd/main.go
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: quickget_cigo
+          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/root.go') }}
+
+      - name: Start config generation
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: generate_configuration

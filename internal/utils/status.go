@@ -111,6 +111,8 @@ func addSources(data *[]sourceData, sourceType string, sources []qgdata.Source) 
 	}
 }
 
+const statusPageDir = "statuspage"
+
 func (s *Status) Finalize() error {
 	s.Lock()
 	s.EndTime = time.Now()
@@ -131,7 +133,10 @@ func (s *Status) Finalize() error {
 	if err != nil {
 		return err
 	}
-	file, err := os.Create("index.html")
+	if err := os.Mkdir(statusPageDir, 0755); err != nil {
+		return err
+	}
+	file, err := os.Create(statusPageDir + "/index.html")
 	if err != nil {
 		return err
 	}

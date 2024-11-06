@@ -1,0 +1,45 @@
+name: Generate configurations
+
+on:
+  schedule:
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [generate_configuration]
+
+jobs:
+  create_configs:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: quickget_cigo
+          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/root.go') }}
+
+      - name: Generate data
+        run: ./quickget_cigo
+
+      - name: Release artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "quickget_data.json, quickget_data.json.zst, quickget_data.json.gz"
+          artifactContentType: "application/octet-stream"
+          body: "Quickget configuration files"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "Quickget configurations"
+          tag: "daily"
+
+      - name: Upload Status Page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "statuspage"
+
+      - name: Deploy Status Page
+        uses: actions/deploy-pages@v4
