@@ -36,6 +36,7 @@ func Launch() {
 		os.CBPP{},
 		os.Debian{},
 		os.Devuan{},
+		os.DragonFlyBSD{},
 	)
 	distros = fixList(distros)
 
