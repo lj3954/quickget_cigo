@@ -1,8 +1,8 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 
 	system "os"
@@ -39,26 +39,31 @@ func Launch() {
 		log.Printf("Failed to create status webpage: %s", err)
 	}
 
-	rawJson, err := json.Marshal(distros)
-	if err != nil {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+
+	if err := enc.Encode(distros); err != nil {
 		log.Fatalln(err)
 	}
+	rawJson := buf.Bytes()
 
 	if err := writeData(rawJson, "quickget_data.json", None); err != nil {
-		log.Println(err)
+		log.Printf("Could not write uncompressed JSON: %s", err)
 	}
 	if err := writeData(rawJson, "quickget_data.json.gz", Gzip); err != nil {
-		log.Println(err)
+		log.Printf("Could not write gzip-compressed JSON: %s", err)
 	}
 	if err := writeData(rawJson, "quickget_data.json.zst", Zstd); err != nil {
-		log.Println(err)
+		log.Printf("Could not write zstd-compressed JSON: %s", err)
 	}
 
-	prettyJson, err := json.MarshalIndent(distros, "", "  ")
-	if err != nil {
+	enc = json.NewEncoder(system.Stdout)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(distros); err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(string(prettyJson))
 }
 
 func fixList(distros []utils.OSData) []utils.OSData {
