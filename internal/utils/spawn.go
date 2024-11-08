@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/hashicorp/go-version"
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
-	semver "golang.org/x/mod/semver"
 )
 
 type completion struct {
@@ -86,11 +86,14 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 func fixConfigs(configs *[]Config) {
 	// We want to sort releases in descending order; editions are typically strings and should be sorted lexicographically
 	slices.SortFunc(*configs, func(a, b Config) int {
-		if semver.IsValid(a.Release) && semver.IsValid(b.Release) {
-			if cmp := semver.Compare(b.Release, a.Release); cmp != 0 {
-				return cmp
+		if aSemver, err := version.NewVersion(a.Release); err == nil {
+			if bSemver, err := version.NewVersion(b.Release); err == nil {
+				if cmp := bSemver.Compare(aSemver); cmp != 0 {
+					return cmp
+				}
 			}
 		}
+
 		if cmp := strings.Compare(b.Release, a.Release); cmp != 0 {
 			return cmp
 		}
