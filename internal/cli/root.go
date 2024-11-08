@@ -33,6 +33,7 @@ func Launch() {
 		os.CachyOS{},
 		os.CentOSStream{},
 		os.ChimeraLinux{},
+		os.CBPP{},
 	)
 	distros = fixList(distros)
 
