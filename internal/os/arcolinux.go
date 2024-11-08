@@ -2,7 +2,7 @@ package os
 
 import "regexp"
 
-const ArcoLinuxMirror = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
+const arcolinuxMirror = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
 
 type ArcoLinux struct{}
 
@@ -33,7 +33,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			mirror := ArcoLinuxMirror + release + "/"
+			mirror := arcolinuxMirror + release + "/"
 			page, err := capturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -75,16 +75,17 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getArcoLinuxReleases() ([]string, error) {
-	page, err := capturePage(ArcoLinuxMirror)
+	page, err := capturePage(arcolinuxMirror)
 	if err != nil {
 		return nil, err
 	}
 	releaseRe := regexp.MustCompile(`>(v[0-9.]+)/</a`)
 	matches := releaseRe.FindAllStringSubmatch(page, -1)
 
-	releases := make([]string, len(matches))
-	for i := len(matches) - 1; i >= len(matches)-3 && i >= 0; i-- {
-		releases[i] = matches[i][1]
+	numReleases := max(len(matches), 3)
+	releases := make([]string, numReleases)
+	for i := range numReleases {
+		releases[i] = matches[len(matches)-i-1][1]
 	}
 	return releases, nil
 }

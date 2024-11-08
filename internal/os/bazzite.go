@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	BazziteWorkflow = "https://raw.githubusercontent.com/ublue-os/bazzite/main/.github/workflows/build_iso.yml"
-	BazziteMirror   = "https://download.bazzite.gg/"
+	bazziteWorkflow = "https://raw.githubusercontent.com/ublue-os/bazzite/main/.github/workflows/build_iso.yml"
+	bazziteMirror   = "https://download.bazzite.gg/"
 )
 
 type Bazzite struct{}
@@ -22,7 +22,7 @@ func (Bazzite) Data() OSData {
 }
 
 func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(BazziteWorkflow)
+	page, err := capturePage(bazziteWorkflow)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		} else if len(edition) <= 4 {
 			edition += "-plasma"
 		}
-		url := BazziteMirror + match[1] + "-stable.iso"
+		url := bazziteMirror + match[1] + "-stable.iso"
 		if isExcludedEdition(edition, excludedEditions) {
 			continue
 		}

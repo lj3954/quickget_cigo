@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-const BunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
+const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
 
 type BunsenLabs struct{}
 
@@ -21,7 +21,7 @@ func (BunsenLabs) Data() OSData {
 }
 
 func (BunsenLabs) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(BunsenLabsMirror)
+	page, err := capturePage(bunsenLabsMirror)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (BunsenLabs) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	configs := make([]Config, len(matches))
 	for i, match := range releaseRe.FindAllStringSubmatch(page, -1) {
 		checksum := checksums[match[1]]
-		url := BunsenLabsMirror + match[1]
+		url := bunsenLabsMirror + match[1]
 		configs[i] = Config{
 			Release: match[2],
 			ISO: []Source{
@@ -51,7 +51,7 @@ func getBunsenLabsChecksums(page string) map[string]string {
 	var wg sync.WaitGroup
 
 	for _, match := range checksumRe.FindAllStringSubmatch(page, -1) {
-		url := BunsenLabsMirror + match[1]
+		url := bunsenLabsMirror + match[1]
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

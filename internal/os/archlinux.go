@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	ArchLinuxAPI    = "https://archlinux.org/releng/releases/json/"
-	ArchLinuxMirror = "https://mirror.rackspace.com/archlinux"
+	archlinuxAPI    = "https://archlinux.org/releng/releases/json/"
+	archlinuxMirror = "https://mirror.rackspace.com/archlinux"
 )
 
 type ArchLinux struct{}
@@ -21,7 +21,7 @@ func (ArchLinux) Data() OSData {
 }
 
 func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(ArchLinuxAPI)
+	page, err := capturePage(archlinuxAPI)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		if release == apiData.LatestVersion {
 			release = "latest"
 		}
-		url := ArchLinuxMirror + data.IsoURL
+		url := archlinuxMirror + data.IsoURL
 		configs[i] = Config{
 			Release: release,
 			ISO: []Source{

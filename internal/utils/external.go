@@ -172,3 +172,19 @@ type Failure struct {
 	Arch    quickgetdata.Arch
 	Error   error
 }
+
+func GetBasicReleases(url, pattern string, num int) ([]string, error) {
+	page, err := CapturePage(url)
+	if err != nil {
+		return nil, err
+	}
+	releaseRe := regexp.MustCompile(pattern)
+	matches := releaseRe.FindAllStringSubmatch(page, num)
+
+	releases := make([]string, len(matches))
+	for i, match := range matches {
+		releases[i] = match[1]
+	}
+
+	return releases, nil
+}

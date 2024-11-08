@@ -5,7 +5,10 @@ import (
 	"regexp"
 )
 
-const AlpineMirror = "https://dl-cdn.alpinelinux.org/alpine/"
+const (
+	alpineMirror    = "https://dl-cdn.alpinelinux.org/alpine/"
+	alpineReleaseRe = `<a href="(v[0-9]+\.[0-9]+)/"`
+)
 
 type Alpine struct{}
 
@@ -19,7 +22,7 @@ func (Alpine) Data() OSData {
 }
 
 func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getAlpineReleases()
+	releases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +32,7 @@ func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
 		for _, arch := range architectures {
-			mirror := fmt.Sprintf("%s%s/releases/%s/", AlpineMirror, release, arch)
+			mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
 			releaseUrl := mirror + "latest-releases.yaml"
 			wg.Add(1)
 			go func() {
@@ -56,20 +59,4 @@ func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, &wg), nil
-}
-
-func getAlpineReleases() ([]string, error) {
-	page, err := capturePage(AlpineMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`<a href="(v[0-9]+\.[0-9]+)/"`)
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
-
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-
-	return releases, nil
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const BigLinuxMirror = "https://iso.biglinux.com.br/"
+const biglinuxMirror = "https://iso.biglinux.com.br/"
 
 type BigLinux struct{}
 
@@ -20,7 +20,7 @@ func (BigLinux) Data() OSData {
 }
 
 func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(BigLinuxMirror)
+	page, err := capturePage(biglinuxMirror)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
 	for _, match := range matches {
-		url := BigLinuxMirror + match[1]
+		url := biglinuxMirror + match[1]
 		wg.Add(1)
 		go func() {
 			release, edition := match[2], match[3]

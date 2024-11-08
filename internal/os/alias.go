@@ -29,6 +29,7 @@ var singleWhitespaceChecksum = utils.SingleWhitespaceChecksum
 var buildSingleWhitespaceChecksum = utils.BuildSingleWhitespaceChecksum
 var getChannels = utils.GetChannels
 var waitForConfigs = utils.WaitForConfigs
+var getBasicReleases = utils.GetBasicReleases
 
 type Whitespace = utils.Whitespace
 type CustomRegex = utils.CustomRegex

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const AthenaApi = "https://api.github.com/repos/Athena-OS/athena/releases"
+const athenaAPI = "https://api.github.com/repos/Athena-OS/athena/releases"
 
 type AthenaOS struct{}
 
@@ -19,7 +19,7 @@ func (AthenaOS) Data() OSData {
 }
 
 func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(AthenaApi)
+	page, err := capturePage(athenaAPI)
 	if err != nil {
 		return nil, err
 	}

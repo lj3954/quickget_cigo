@@ -5,7 +5,10 @@ import (
 	"regexp"
 )
 
-const ArchcraftMirror = "https://sourceforge.net/projects/archcraft/files/"
+const (
+	archcraftMirror    = "https://sourceforge.net/projects/archcraft/files/"
+	archcraftReleaseRe = `"name":"v([^"]+)"`
+)
 
 type Archcraft struct{}
 
@@ -19,14 +22,14 @@ func (Archcraft) Data() OSData {
 }
 
 func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getArchcraftReleases()
+	releases, err := getBasicReleases(archcraftMirror, archcraftReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 	urlRe := regexp.MustCompile(`"name":"archcraft-.*?-x86_64.iso".*?"download_url":"([^"]+)".*?"name":"archcraft-.*?-x86_64.iso.sha256sum".*?"download_url":"([^"]+)"`)
 	ch, wg := getChannels()
 	for _, release := range releases {
-		mirror := fmt.Sprintf("%sv%s/", ArchcraftMirror, release)
+		mirror := fmt.Sprintf("%sv%s/", archcraftMirror, release)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -52,19 +55,4 @@ func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, &wg), nil
-}
-
-func getArchcraftReleases() ([]string, error) {
-	page, err := capturePage(ArchcraftMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`"name":"v([^"]+)"`)
-	matches := releaseRe.FindAllStringSubmatch(page, 3)
-
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-	return releases, nil
 }

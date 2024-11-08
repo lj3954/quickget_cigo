@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-const BatoceraMirror = "https://mirrors.o2switch.fr/batocera/x86_64/stable/"
+const batoceraMirror = "https://mirrors.o2switch.fr/batocera/x86_64/stable/"
 
 type Batocera struct{}
 
@@ -30,7 +30,7 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 	for i := len(releases) - 1; i >= len(releases)-3 && i >= 0; i-- {
 		release := strconv.Itoa(releases[i])
-		url := BatoceraMirror + release + "/"
+		url := batoceraMirror + release + "/"
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -58,7 +58,7 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getBatoceraReleases() ([]int, error) {
-	page, err := capturePage(BatoceraMirror)
+	page, err := capturePage(batoceraMirror)
 	if err != nil {
 		return nil, err
 	}

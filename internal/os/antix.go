@@ -8,7 +8,10 @@ import (
 	"sync"
 )
 
-const AntiXMirror = "https://sourceforge.net/projects/antix-linux/files/Final/"
+const (
+	antiXMirror    = "https://sourceforge.net/projects/antix-linux/files/Final/"
+	antiXReleaseRe = `"name":"antiX-([0-9.]+)"`
+)
 
 type AntiX struct{}
 
@@ -22,7 +25,7 @@ func (AntiX) Data() OSData {
 }
 
 func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getAntiXReleases()
+	releases, err := getBasicReleases(antiXMirror, antiXReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +33,7 @@ func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`"name":"(antiX-[0-9.]+(?:-runit)?(?:-[^_]+)?_x64-([^.]+).iso)".*?"download_url":"(.*?)"`)
 
 	for _, release := range releases {
-		mirror := fmt.Sprintf("%santiX-%s/", AntiXMirror, release)
+		mirror := fmt.Sprintf("%santiX-%s/", antiXMirror, release)
 		checksumUrl := mirror + "README.txt/download"
 		createAntiXConfigs(ch, errs, csErrs, &wg, release, mirror, checksumUrl, isoRe, "-sysv")
 
@@ -40,21 +43,6 @@ func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, &wg), nil
-}
-
-func getAntiXReleases() ([]string, error) {
-	page, err := capturePage(AntiXMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`"name":"antiX-([0-9.]+)"`)
-	matches := releaseRe.FindAllStringSubmatch(page, 3)
-
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-	return releases, nil
 }
 
 func createAntiXChecksums(url string) (map[string]string, error) {

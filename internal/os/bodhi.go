@@ -2,7 +2,10 @@ package os
 
 import "regexp"
 
-const BodhiMirror = "https://sourceforge.net/projects/bodhilinux/files/"
+const (
+	bodhiMirror    = "https://sourceforge.net/projects/bodhilinux/files/"
+	bodhiReleaseRe = `"name":"([0-9]+.[0-9]+.[0-9]+)"`
+)
 
 type Bodhi struct{}
 
@@ -16,7 +19,7 @@ func (Bodhi) Data() OSData {
 }
 
 func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBodhiReleases()
+	releases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +27,7 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
 	for _, release := range releases {
-		mirror := BodhiMirror + release + "/"
+		mirror := bodhiMirror + release + "/"
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -61,19 +64,4 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, &wg), nil
-}
-
-func getBodhiReleases() ([]string, error) {
-	page, err := capturePage(BodhiMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`"name":"([0-9]+.[0-9]+.[0-9]+)"`)
-	matches := releaseRe.FindAllStringSubmatch(page, 3)
-
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-	return releases, nil
 }

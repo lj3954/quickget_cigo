@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
-const AlmaMirror = "https://repo.almalinux.org/almalinux/"
+const (
+	almaMirror    = "https://repo.almalinux.org/almalinux/"
+	almaReleaseRe = `<a href="([0-9]+)/"`
+)
 
 type Alma struct{}
 
@@ -20,7 +23,7 @@ func (Alma) Data() OSData {
 }
 
 func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getAlmaReleases()
+	releases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +33,7 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
 		for _, arch := range architectures {
-			mirror := fmt.Sprintf("%s%s/isos/%s/", AlmaMirror, release, arch)
+			mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
@@ -68,7 +71,7 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getAlmaReleases() ([]string, error) {
-	releaseHTML, err := capturePage(AlmaMirror)
+	releaseHTML, err := capturePage(almaMirror)
 	if err != nil {
 		return nil, err
 	}

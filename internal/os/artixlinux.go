@@ -4,7 +4,7 @@ import (
 	"regexp"
 )
 
-const ArtixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
+const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
 
 type ArtixLinux struct{}
 
@@ -18,11 +18,11 @@ func (ArtixLinux) Data() OSData {
 }
 
 func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(ArtixMirror)
+	page, err := capturePage(artixMirror)
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := buildChecksum(Whitespace{}, ArtixMirror+"sha256sums")
+	checksums, err := buildChecksum(Whitespace{}, artixMirror+"sha256sums")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}
@@ -33,7 +33,7 @@ func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 	for i, match := range matches {
 		iso, edition, release := match[1], match[2], match[3]
-		url := ArtixMirror + iso
+		url := artixMirror + iso
 		checksum, _ := checksums[iso]
 		configs[i] = Config{
 			Release: release,
