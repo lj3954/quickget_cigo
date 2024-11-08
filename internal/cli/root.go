@@ -31,6 +31,7 @@ func Launch() {
 		os.Bodhi{},
 		os.BunsenLabs{},
 		os.CachyOS{},
+		os.CentOSStream{},
 	)
 	distros = fixList(distros)
 
