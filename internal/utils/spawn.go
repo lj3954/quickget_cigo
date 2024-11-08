@@ -101,8 +101,10 @@ func fixConfigs(configs *[]Config) {
 		if config.GuestOS == "" {
 			config.GuestOS = qgdata.Linux
 		}
-		if config.Arch == "" {
+		if config.Arch == "" || config.Arch == "amd64" {
 			config.Arch = qgdata.X86_64
+		} else if config.Arch == "arm64" {
+			config.Arch = qgdata.Aarch64
 		}
 		if config.Release == "" {
 			config.Release = "latest"

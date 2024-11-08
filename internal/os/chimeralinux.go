@@ -1,0 +1,44 @@
+package os
+
+import "regexp"
+
+const chimeraMirror = "https://repo.chimera-linux.org/live/latest/"
+
+type ChimeraLinux struct{}
+
+func (ChimeraLinux) Data() OSData {
+	return OSData{
+		Name:        "chimeralinux",
+		PrettyName:  "Chimera Linux",
+		Homepage:    "https://chimera-linux.org/",
+		Description: "Modern, general-purpose non-GNU Linux distribution.",
+	}
+}
+
+func (ChimeraLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+	page, err := capturePage(chimeraMirror)
+	if err != nil {
+		return nil, err
+	}
+	isoRe := regexp.MustCompile(`href="(chimera-linux-(x86_64|aarch64|riscv64)-LIVE-[0-9]{8}-([^-]+).iso)"`)
+
+	checksums, err := buildChecksum(Whitespace{}, chimeraMirror+"sha256sums.txt")
+	if err != nil {
+		csErrs <- Failure{Release: "latest", Error: err}
+	}
+
+	configs := make([]Config, 0)
+	for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
+		checksum := checksums[match[1]]
+		url := chimeraMirror + match[1]
+		configs = append(configs, Config{
+			Release: "latest",
+			Edition: match[3],
+			Arch:    Arch(match[2]),
+			ISO: []Source{
+				urlChecksumSource(url, checksum),
+			},
+		})
+	}
+	return configs, nil
+}

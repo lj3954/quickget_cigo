@@ -32,6 +32,7 @@ func Launch() {
 		os.BunsenLabs{},
 		os.CachyOS{},
 		os.CentOSStream{},
+		os.ChimeraLinux{},
 	)
 	distros = fixList(distros)
 
