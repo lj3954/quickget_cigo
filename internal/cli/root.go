@@ -45,6 +45,7 @@ func Launch() {
 		os.FreeBSD{},
 		os.FreeDOS{},
 		os.Garuda{},
+		os.Gentoo{},
 	)
 	distros = fixList(distros)
 
