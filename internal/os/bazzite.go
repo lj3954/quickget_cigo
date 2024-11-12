@@ -2,6 +2,7 @@ package os
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -65,10 +66,7 @@ func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func isExcludedEdition(edition string, excludedEditions []string) bool {
-	for _, excluded := range excludedEditions {
-		if strings.Contains(edition, excluded) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(excludedEditions, func(e string) bool {
+		return strings.Contains(edition, e)
+	})
 }

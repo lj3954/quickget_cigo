@@ -10,6 +10,7 @@ type Config = utils.Config
 type GithubAPI = utils.GithubAPI
 type GithubAsset = utils.GithubAsset
 type Arch = qgdata.Arch
+type ArchiveFormat = qgdata.ArchiveFormat
 type Source = qgdata.Source
 type Disk = qgdata.Disk
 type Failure = utils.Failure

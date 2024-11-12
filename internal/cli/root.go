@@ -41,6 +41,7 @@ func Launch() {
 		os.Elementary{},
 		os.EndeavourOS{},
 		os.EndlessOS{},
+		os.Fedora{},
 	)
 	distros = fixList(distros)
 
