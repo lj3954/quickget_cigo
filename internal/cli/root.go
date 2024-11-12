@@ -39,6 +39,7 @@ func Launch() {
 		os.DragonFlyBSD{},
 		os.EasyOS{},
 		os.EndeavourOS{},
+		os.EndlessOS{},
 	)
 	distros = fixList(distros)
 
