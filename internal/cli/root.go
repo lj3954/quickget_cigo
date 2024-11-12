@@ -38,6 +38,7 @@ func Launch() {
 		os.Devuan{},
 		os.DragonFlyBSD{},
 		os.EasyOS{},
+		os.Elementary{},
 		os.EndeavourOS{},
 		os.EndlessOS{},
 	)
