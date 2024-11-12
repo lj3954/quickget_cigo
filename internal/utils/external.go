@@ -115,7 +115,7 @@ var Sha256Regex = CustomRegex{
 }
 
 func (Whitespace) BuildWithData(data string) map[string]string {
-	m := make(map[string]string, 0)
+	m := make(map[string]string)
 	for _, line := range strings.Split(data, "\n") {
 		slice := strings.SplitN(line, " ", 2)
 		if len(slice) == 2 {
@@ -128,7 +128,7 @@ func (Whitespace) BuildWithData(data string) map[string]string {
 }
 
 func (re CustomRegex) BuildWithData(data string) map[string]string {
-	m := make(map[string]string, 0)
+	m := make(map[string]string)
 	for _, match := range re.Regex.FindAllStringSubmatch(data, -1) {
 		file := match[re.KeyIndex]
 		hash := match[re.ValueIndex]
