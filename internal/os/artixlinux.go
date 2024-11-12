@@ -2,6 +2,8 @@ package os
 
 import (
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
@@ -22,7 +24,7 @@ func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := buildChecksum(Whitespace{}, artixMirror+"sha256sums")
+	checksums, err := cs.Build(cs.Whitespace{}, artixMirror+"sha256sums")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -76,5 +77,5 @@ func getFreeDOSChecksums(url, page string, checksumRe *regexp.Regexp) (map[strin
 	if csUrlMatch == "" {
 		return nil, errors.New("Could not find Checksum URL")
 	}
-	return buildChecksum(Whitespace{}, url+csUrlMatch)
+	return cs.Build(cs.Whitespace{}, url+csUrlMatch)
 }

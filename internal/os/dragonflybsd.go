@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -27,7 +28,7 @@ func (DragonFlyBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`href="(dfly-x86_64-([0-9.]+)_REL.iso.bz2)"`)
-	checksums, err := buildChecksum(Md5Regex, dragonflybsdMirror+"md5.txt")
+	checksums, err := cs.Build(cs.Md5Regex, dragonflybsdMirror+"md5.txt")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-version"
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -42,7 +43,7 @@ func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksum, err := singleWhitespaceChecksum(mirror + "md5sum.txt")
+			checksum, err := cs.SingleWhitespace(mirror + "md5sum.txt")
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const biglinuxMirror = "https://iso.biglinux.com.br/"
@@ -37,7 +39,7 @@ func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		go func() {
 			release, edition := match[2], match[3]
 			defer wg.Done()
-			checksum, err := singleWhitespaceChecksum(url + ".md5")
+			checksum, err := cs.SingleWhitespace(url + ".md5")
 			if err != nil {
 				csErrs <- Failure{Release: release, Edition: edition, Error: err}
 			}

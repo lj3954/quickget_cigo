@@ -3,6 +3,8 @@ package os
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -40,7 +42,7 @@ func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}
 			urls := urlRe.FindStringSubmatch(page)
 			if len(urls) == 3 {
-				checksum, err := singleWhitespaceChecksum(urls[2])
+				checksum, err := cs.SingleWhitespace(urls[2])
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
 				}

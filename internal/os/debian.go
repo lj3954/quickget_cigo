@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-version"
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -110,7 +111,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 			errs <- Failure{Release: release, Error: err}
 			return
 		}
-		checksums, err := buildChecksum(Whitespace{}, liveMirror+"SHA256SUMS")
+		checksums, err := cs.Build(cs.Whitespace{}, liveMirror+"SHA256SUMS")
 		if err != nil {
 			csErrs <- Failure{Release: release, Error: err}
 		}
@@ -139,7 +140,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksums, err := buildChecksum(Whitespace{}, netInstMirror+"SHA256SUMS")
+			checksums, err := cs.Build(cs.Whitespace{}, netInstMirror+"SHA256SUMS")
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

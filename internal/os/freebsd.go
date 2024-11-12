@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -49,7 +50,7 @@ func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.
 		go func() {
 			defer wg.Done()
 			checksumUrl := fmt.Sprintf("%sISO-IMAGES/%s/CHECKSUM.SHA256-FreeBSD-%s-RELEASE-%s", url, release, release, denom)
-			checksums, err := buildChecksum(Sha256Regex, checksumUrl)
+			checksums, err := cs.Build(cs.Sha256Regex, checksumUrl)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			}
@@ -79,7 +80,7 @@ func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.
 			mirror := fmt.Sprintf("https://download.freebsd.org/ftp/releases/VM-IMAGES/%s-RELEASE/%s/Latest/", release, mirrorArch)
 			iso := fmt.Sprintf("FreeBSD-%s-RELEASE-%s.qcow2.xz", release, denom)
 			checksumUrl := mirror + "CHECKSUM.SHA256"
-			checksums, err := buildChecksum(Sha256Regex, checksumUrl)
+			checksums, err := cs.Build(cs.Sha256Regex, checksumUrl)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			}

@@ -1,6 +1,10 @@
 package os
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+)
 
 const chimeraMirror = "https://repo.chimera-linux.org/live/latest/"
 
@@ -22,7 +26,7 @@ func (ChimeraLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 	isoRe := regexp.MustCompile(`href="(chimera-linux-(x86_64|aarch64|riscv64)-LIVE-[0-9]{8}-([^-]+).iso)"`)
 
-	checksums, err := buildChecksum(Whitespace{}, chimeraMirror+"sha256sums.txt")
+	checksums, err := cs.Build(cs.Whitespace{}, chimeraMirror+"sha256sums.txt")
 	if err != nil {
 		csErrs <- Failure{Release: "latest", Error: err}
 	}

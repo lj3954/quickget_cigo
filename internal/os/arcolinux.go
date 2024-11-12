@@ -1,6 +1,10 @@
 package os
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+)
 
 const arcolinuxMirror = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
 
@@ -22,7 +26,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	isoRe := regexp.MustCompile(`>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`)
-	csRegex := CustomRegex{
+	csRegex := cs.CustomRegex{
 		Regex:      regexp.MustCompile(`>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`),
 		KeyIndex:   2,
 		ValueIndex: 1,
@@ -51,7 +55,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 					defer wg.Done()
 					var checksum string
 					if checksumUrlExists {
-						cs, err := singleWhitespaceChecksum(mirror + checksumUrlExt)
+						cs, err := cs.SingleWhitespace(mirror + checksumUrlExt)
 						if err != nil {
 							csErrs <- Failure{Release: release, Edition: edition, Error: err}
 						} else {

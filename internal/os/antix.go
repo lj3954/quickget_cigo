@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -54,7 +56,7 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	if len(data) != 2 {
 		return nil, errors.New("Could not find antiX 'sha256' separator")
 	}
-	return Whitespace{}.BuildWithData(data[1]), nil
+	return cs.Whitespace{}.BuildWithData(data[1]), nil
 }
 
 func createAntiXConfigs(ch chan Config, errs, csErrs chan Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {

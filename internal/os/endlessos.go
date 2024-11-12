@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -62,7 +64,7 @@ func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 					url := fmt.Sprintf("%s%s/eos-amd64-amd64/%s/%s", endlessDlMirror, release, edition, iso)
 
 					checksumUrl := url + ".sha256"
-					checksum, err := singleWhitespaceChecksum(checksumUrl)
+					checksum, err := cs.SingleWhitespace(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}

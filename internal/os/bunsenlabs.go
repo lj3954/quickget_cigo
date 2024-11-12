@@ -5,6 +5,8 @@ import (
 	"maps"
 	"regexp"
 	"sync"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
@@ -55,7 +57,7 @@ func getBunsenLabsChecksums(page string) map[string]string {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			checksums, err := buildChecksum(Whitespace{}, url)
+			checksums, err := cs.Build(cs.Whitespace{}, url)
 			if err != nil {
 				errs <- err
 			} else {

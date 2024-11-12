@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -48,7 +50,7 @@ func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			checksum, err := singleWhitespaceChecksum(url + "-CHECKSUM")
+			checksum, err := cs.SingleWhitespace(url + "-CHECKSUM")
 			if err != nil {
 				csErrs <- Failure{Release: release, Edition: edition, Error: err}
 			}

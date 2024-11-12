@@ -3,6 +3,8 @@ package os
 import (
 	"errors"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -48,7 +50,7 @@ func (Garuda) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			url := mirror + isoMatch[1]
 
 			checksumUrl := url + ".sha256"
-			checksum, err := singleWhitespaceChecksum(checksumUrl)
+			checksum, err := cs.SingleWhitespace(checksumUrl)
 			if err != nil {
 				csErrs <- Failure{Release: release, Edition: edition, Error: err}
 			}

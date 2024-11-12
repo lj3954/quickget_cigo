@@ -1,6 +1,10 @@
 package os
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+)
 
 const cachyOSMirror = "https://mirror.cachyos.org/ISO/"
 
@@ -48,7 +52,7 @@ func (CachyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 						wg.Add(1)
 						go func() {
 							defer wg.Done()
-							checksum, err := singleWhitespaceChecksum(url + ".sha256")
+							checksum, err := cs.SingleWhitespace(url + ".sha256")
 							if err != nil {
 								csErrs <- Failure{Release: release, Edition: edition, Error: err}
 							}

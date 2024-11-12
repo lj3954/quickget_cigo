@@ -26,15 +26,6 @@ var urlChecksumSource = qgdata.URLChecksumSource
 var urlSource = qgdata.URLSource
 
 var capturePage = utils.CapturePage
-var buildChecksum = utils.BuildChecksum
-var singleWhitespaceChecksum = utils.SingleWhitespaceChecksum
-var buildSingleWhitespaceChecksum = utils.BuildSingleWhitespaceChecksum
 var getChannels = utils.GetChannels
 var waitForConfigs = utils.WaitForConfigs
 var getBasicReleases = utils.GetBasicReleases
-
-type Whitespace = utils.Whitespace
-type CustomRegex = utils.CustomRegex
-
-var Md5Regex = utils.Md5Regex
-var Sha256Regex = utils.Sha256Regex

@@ -3,6 +3,8 @@ package os
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -43,7 +45,7 @@ func (CentOSStream) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
-				checksums, err := buildChecksum(Sha256Regex, mirror+"SHA256SUM")
+				checksums, err := cs.Build(cs.Sha256Regex, mirror+"SHA256SUM")
 				if err != nil {
 					csErrs <- Failure{Release: release, Arch: arch, Error: err}
 				}

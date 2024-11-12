@@ -3,6 +3,8 @@ package os
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const athenaAPI = "https://api.github.com/repos/Athena-OS/athena/releases"
@@ -70,7 +72,7 @@ func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				checksum, err := singleWhitespaceChecksum(checksumUrl)
+				checksum, err := cs.SingleWhitespace(checksumUrl)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
 				}

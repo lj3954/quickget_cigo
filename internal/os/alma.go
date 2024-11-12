@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
 const (
@@ -43,7 +45,7 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
-				checksums, err := buildChecksum(Sha256Regex, mirror+"CHECKSUM")
+				checksums, err := cs.Build(cs.Sha256Regex, mirror+"CHECKSUM")
 				if err != nil {
 					csErrs <- Failure{Release: release, Arch: arch, Error: err}
 				}

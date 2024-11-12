@@ -1,6 +1,10 @@
 package os
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+)
 
 const (
 	devuanMirror    = "https://files.devuan.org/"
@@ -42,7 +46,7 @@ func (Devuan) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			csUrlMatch := csUrlRe.FindStringSubmatch(page)
 			if csUrlMatch != nil {
 				checksumUrl := mirror + csUrlMatch[1]
-				cs, err := buildChecksum(Whitespace{}, checksumUrl)
+				cs, err := cs.Build(cs.Whitespace{}, checksumUrl)
 				if err != nil {
 					csErrs <- Failure{Error: err}
 				} else {

@@ -1,6 +1,10 @@
 package os
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+)
 
 const (
 	bodhiMirror    = "https://sourceforge.net/projects/bodhilinux/files/"
@@ -47,7 +51,7 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					checksum, err := singleWhitespaceChecksum(checksumUrl)
+					checksum, err := cs.SingleWhitespace(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
