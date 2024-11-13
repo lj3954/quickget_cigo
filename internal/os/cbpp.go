@@ -1,7 +1,6 @@
 package os
 
 import (
-	"encoding/json"
 	"strings"
 )
 
@@ -19,12 +18,8 @@ func (CBPP) Data() OSData {
 }
 
 func (CBPP) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(cbppApi)
-	if err != nil {
-		return nil, err
-	}
 	var apiData []GithubAPI
-	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
+	if err := capturePageToJson(cbppApi, &apiData); err != nil {
 		return nil, err
 	}
 	configs := make([]Config, 0)

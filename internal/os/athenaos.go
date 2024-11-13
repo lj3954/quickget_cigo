@@ -1,7 +1,6 @@
 package os
 
 import (
-	"encoding/json"
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
@@ -21,12 +20,8 @@ func (AthenaOS) Data() OSData {
 }
 
 func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(athenaAPI)
-	if err != nil {
-		return nil, err
-	}
 	var apiData []GithubAPI
-	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
+	if err := capturePageToJson(athenaAPI, &apiData); err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()

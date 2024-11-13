@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -28,14 +29,14 @@ type Distro interface {
 	CreateConfigs(chan Failure, chan Failure) ([]Config, error)
 }
 
-func CapturePage(input string) (string, error) {
+func capturePageToBytes(input string) ([]byte, error) {
 	url, err := url.Parse(input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if sem, exists := urlPermits[url.Hostname()]; exists {
 		if err := sem.Acquire(context.Background(), 1); err != nil {
-			return "", err
+			return nil, err
 		}
 		defer sem.Release(1)
 	}
@@ -44,14 +45,22 @@ func CapturePage(input string) (string, error) {
 
 	resp, err := client.Get(input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("Failed to capture page %s: %s", input, resp.Status)
+		return nil, fmt.Errorf("Failed to capture page %s: %s", input, resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func CapturePage(input string) (string, error) {
+	body, err := capturePageToBytes(input)
 	if err != nil {
 		return "", err
 	}
@@ -81,6 +90,14 @@ func WaitForConfigs(ch chan Config, wg *sync.WaitGroup) []Config {
 		configs = append(configs, config)
 	}
 	return configs
+}
+
+func CapturePageToJson[T any](url string, data T) error {
+	page, err := capturePageToBytes(url)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(page, data)
 }
 
 type GithubAPI struct {

@@ -1,7 +1,6 @@
 package os
 
 import (
-	"encoding/json"
 	"slices"
 	"strings"
 
@@ -52,12 +51,8 @@ func (Fedora) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getFedoraReleases() ([]fedoraRelease, error) {
-	page, err := capturePage(fedoraJsonUrl)
-	if err != nil {
-		return nil, err
-	}
 	var releaseData []fedoraRelease
-	if err := json.Unmarshal([]byte(page), &releaseData); err != nil {
+	if err := capturePageToJson(fedoraJsonUrl, &releaseData); err != nil {
 		return nil, err
 	}
 

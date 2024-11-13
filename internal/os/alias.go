@@ -26,6 +26,7 @@ var urlChecksumSource = qgdata.URLChecksumSource
 var urlSource = qgdata.URLSource
 
 var capturePage = utils.CapturePage
+var capturePageToJson = utils.CapturePageToJson[any]
 var getChannels = utils.GetChannels
 var waitForConfigs = utils.WaitForConfigs
 var getBasicReleases = utils.GetBasicReleases

@@ -1,9 +1,5 @@
 package os
 
-import (
-	"encoding/json"
-)
-
 const (
 	archlinuxAPI    = "https://archlinux.org/releng/releases/json/"
 	archlinuxMirror = "https://mirror.rackspace.com/archlinux"
@@ -21,12 +17,8 @@ func (ArchLinux) Data() OSData {
 }
 
 func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(archlinuxAPI)
-	if err != nil {
-		return nil, err
-	}
 	var apiData archAPI
-	if err := json.Unmarshal([]byte(page), &apiData); err != nil {
+	if err := capturePageToJson(archlinuxAPI, &apiData); err != nil {
 		return nil, err
 	}
 
