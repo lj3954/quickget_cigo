@@ -56,7 +56,7 @@ func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			url := mirror + imgMatch[1]
 			var archiveFormat quickgetdata.ArchiveFormat
 			if imgMatch[2] != "" {
-				archiveFormat = Gz
+				archiveFormat = quickgetdata.Gz
 			}
 			ch <- Config{
 				Release: release,

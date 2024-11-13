@@ -31,9 +31,8 @@ func (CentOSStream) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 	isoRe := regexp.MustCompile(`href="(CentOS-Stream-[0-9]+-[0-9]{8}.0-[^-]+-([^-]+)\.iso)"`)
 	ch, wg := getChannels()
-	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
-		for _, arch := range architectures {
+		for _, arch := range x86_64_aarch64 {
 			mirrorAdd := fmt.Sprintf("%s-stream/BaseOS/%s/iso/", release, arch)
 			mirror := centOSMirror + mirrorAdd
 

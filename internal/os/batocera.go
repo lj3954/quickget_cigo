@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+
+	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
 const batoceraMirror = "https://mirrors.o2switch.fr/batocera/x86_64/stable/"
@@ -48,7 +50,7 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			ch <- Config{
 				Release: release,
 				IMG: []Source{
-					webSource(img, "", Gz, ""),
+					webSource(img, "", quickgetdata.Gz, ""),
 				},
 			}
 		}()

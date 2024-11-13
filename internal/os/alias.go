@@ -5,28 +5,40 @@ import (
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
-type OSData = utils.OSData
-type Config = utils.Config
-type GithubAPI = utils.GithubAPI
-type GithubAsset = utils.GithubAsset
-type Arch = qgdata.Arch
-type ArchiveFormat = qgdata.ArchiveFormat
-type Source = qgdata.Source
-type Disk = qgdata.Disk
-type Failure = utils.Failure
+type (
+	OSData        = utils.OSData
+	Config        = utils.Config
+	GithubAPI     = utils.GithubAPI
+	GithubAsset   = utils.GithubAsset
+	Arch          = qgdata.Arch
+	ArchiveFormat = qgdata.ArchiveFormat
+	Source        = qgdata.Source
+	Disk          = qgdata.Disk
+	Failure       = utils.Failure
+)
 
-const x86_64 = qgdata.X86_64
-const aarch64 = qgdata.Aarch64
-const riscv64 = qgdata.Riscv64
+const (
+	x86_64  = qgdata.X86_64
+	aarch64 = qgdata.Aarch64
+	riscv64 = qgdata.Riscv64
+)
 
-const Gz = qgdata.Gz
+var (
+	webSource         = qgdata.NewWebSource
+	urlChecksumSource = qgdata.URLChecksumSource
+	urlSource         = qgdata.URLSource
+)
 
-var webSource = qgdata.NewWebSource
-var urlChecksumSource = qgdata.URLChecksumSource
-var urlSource = qgdata.URLSource
+var (
+	capturePage       = utils.CapturePage
+	capturePageToJson = utils.CapturePageToJson[any]
+	getChannels       = utils.GetChannels
+	waitForConfigs    = utils.WaitForConfigs
+	getBasicReleases  = utils.GetBasicReleases
+)
 
-var capturePage = utils.CapturePage
-var capturePageToJson = utils.CapturePageToJson[any]
-var getChannels = utils.GetChannels
-var waitForConfigs = utils.WaitForConfigs
-var getBasicReleases = utils.GetBasicReleases
+var (
+	x86_64_only         = [...]Arch{x86_64}
+	x86_64_aarch64      = [...]Arch{x86_64, aarch64}
+	three_architectures = [...]Arch{x86_64, aarch64, riscv64}
+)

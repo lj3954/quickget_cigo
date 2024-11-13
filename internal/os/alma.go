@@ -32,9 +32,8 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
-	architectures := [2]Arch{x86_64, aarch64}
 	for _, release := range releases {
-		for _, arch := range architectures {
+		for _, arch := range x86_64_aarch64 {
 			mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
 			wg.Add(1)
 			go func() {
