@@ -38,6 +38,7 @@ func Launch() {
 		os.Devuan{},
 		os.DragonFlyBSD{},
 		os.EasyOS{},
+		os.Edubuntu{},
 		os.Elementary{},
 		os.EndeavourOS{},
 		os.EndlessOS{},
@@ -48,6 +49,17 @@ func Launch() {
 		os.Gentoo{},
 		os.GhostBSD{},
 		os.GnomeOS{},
+		os.Kubuntu{},
+		os.Lubuntu{},
+		os.Ubuntu{},
+		os.UbuntuBudgie{},
+		os.UbuntuCinnamon{},
+		os.UbuntuKylin{},
+		os.UbuntuMATE{},
+		os.UbuntuServer{},
+		os.UbuntuStudio{},
+		os.UbuntuUnity{},
+		os.Xubuntu{},
 	)
 	distros = fixList(distros)
 
