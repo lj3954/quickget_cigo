@@ -50,6 +50,7 @@ func Launch() {
 		os.GhostBSD{},
 		os.GnomeOS{},
 		os.Guix{},
+		os.Haiku{},
 		os.Kubuntu{},
 		os.Lubuntu{},
 		os.NixOS{},
