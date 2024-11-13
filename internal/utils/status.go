@@ -133,7 +133,9 @@ func (s *Status) Finalize() error {
 	if err != nil {
 		return err
 	}
-	if err := os.Mkdir(statusPageDir, 0755); err != nil {
+	if err := os.RemoveAll(statusPageDir); err != nil {
+		return err
+	} else if err := os.Mkdir(statusPageDir, 0755); err != nil {
 		return err
 	}
 	file, err := os.Create(statusPageDir + "/index.html")
