@@ -29,7 +29,7 @@ func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`)
 
-	for _, release := range releases {
+	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
 			releaseUrl := mirror + "latest-releases.yaml"

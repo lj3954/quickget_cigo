@@ -33,9 +33,9 @@ func (FreeDOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`href="(FD\d+-?(.*?CD)\.(iso|zip))"`)
 	checksumRe := regexp.MustCompile(`FD\d+.sha|verify.txt`)
 
-	wg.Add(len(releases))
-	for _, release := range releases {
+	for release := range releases {
 		mirror := freedosMirror + release + "/official/"
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)

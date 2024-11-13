@@ -31,9 +31,9 @@ func (Devuan) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`href="(devuan_[a-zA-Z]+_([0-9.]+)_amd64_desktop-live.iso)"`)
 	csUrlRe := regexp.MustCompile(`href="(SHA[^.]+.txt)"`)
 
-	wg.Add(len(releases))
-	for _, urlSuffix := range releases {
+	for urlSuffix := range releases {
 		mirror := devuanMirror + urlSuffix + "desktop-live/"
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)

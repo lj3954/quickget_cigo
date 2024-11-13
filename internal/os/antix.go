@@ -34,7 +34,7 @@ func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`"name":"(antiX-[0-9.]+(?:-runit)?(?:-[^_]+)?_x64-([^.]+).iso)".*?"download_url":"(.*?)"`)
 
-	for _, release := range releases {
+	for release := range releases {
 		mirror := fmt.Sprintf("%santiX-%s/", antiXMirror, release)
 		checksumUrl := mirror + "README.txt/download"
 		createAntiXConfigs(ch, errs, csErrs, &wg, release, mirror, checksumUrl, isoRe, "-sysv")

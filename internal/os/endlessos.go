@@ -34,9 +34,9 @@ func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	editionRe := regexp.MustCompile(`href="([^./]+)`)
 	isoRe := regexp.MustCompile(`href="(eos-eos[\d.]+-amd64-amd64.[-\d]+.[^.]+.iso)"`)
 
-	wg.Add(len(releases))
-	for _, release := range releases {
+	for release := range releases {
 		mirror := endlessDataMirror + release + "/eos-amd64-amd64/"
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			editions, err := getEndlessEditions(mirror, editionRe)

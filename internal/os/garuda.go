@@ -32,9 +32,9 @@ func (Garuda) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
 	release := "latest"
-	wg.Add(len(editions))
-	for _, edition := range editions {
+	for edition := range editions {
 		mirror := garudaMirror + edition + "/"
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)

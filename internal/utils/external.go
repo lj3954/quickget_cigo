@@ -3,8 +3,10 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
+	"iter"
 	"net/url"
 	"regexp"
 	"sync"
@@ -92,12 +94,20 @@ func WaitForConfigs(ch chan Config, wg *sync.WaitGroup) []Config {
 	return configs
 }
 
-func CapturePageToJson[T any](url string, data T) error {
+func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) error) error {
 	page, err := capturePageToBytes(url)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(page, data)
+	return unmarshal(page, data)
+}
+
+func CapturePageToJson(url string, data any) error {
+	return capturePageToUnmarshal(url, data, json.Unmarshal)
+}
+
+func CapturePageToXml(url string, data any) error {
+	return capturePageToUnmarshal(url, data, xml.Unmarshal)
 }
 
 type GithubAPI struct {
@@ -119,18 +129,57 @@ type Failure struct {
 	Error   error
 }
 
-func GetBasicReleases(url, pattern string, num int) ([]string, error) {
+type Pattern interface {
+	string | *regexp.Regexp
+}
+
+func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], error) {
 	page, err := CapturePage(url)
 	if err != nil {
 		return nil, err
 	}
-	releaseRe := regexp.MustCompile(pattern)
-	matches := releaseRe.FindAllStringSubmatch(page, num)
+	releaseRe, err := toRegexp(pattern)
+	if err != nil {
+		return nil, err
+	}
+	return func(yield func(string) bool) {
+		matches := releaseRe.FindAllStringSubmatch(page, -1)
+		for i := 0; i < len(matches) && i < num; i++ {
+			release := matches[len(matches)-i-1][1]
+			if !yield(release) {
+				return
+			}
+		}
+	}, nil
+}
 
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
+func GetBasicReleases(url string, pattern any, num int) (iter.Seq[string], error) {
+	page, err := CapturePage(url)
+	if err != nil {
+		return nil, err
+	}
+	releaseRe, err := toRegexp(pattern)
+	if err != nil {
+		return nil, err
 	}
 
-	return releases, nil
+	return func(yield func(string) bool) {
+		matches := releaseRe.FindAllStringSubmatch(page, num)
+		for _, match := range matches {
+			if !yield(match[1]) {
+				return
+			}
+		}
+	}, nil
+}
+
+func toRegexp(pattern any) (*regexp.Regexp, error) {
+	switch p := pattern.(type) {
+	case string:
+		return regexp.Compile(p)
+	case *regexp.Regexp:
+		return p, nil
+	default:
+		return nil, fmt.Errorf("invalid pattern type %T", p)
+	}
 }

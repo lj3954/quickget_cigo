@@ -22,15 +22,14 @@ func (GnomeOS) Data() OSData {
 }
 
 func (GnomeOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(gnomeosMirror, gnomeosReleaseRe, -1)
+	releases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`href="(gnome_os.*?.iso)"`)
 
-	for i := 0; i < len(releases) && i < 6; i++ {
-		release := releases[len(releases)-i-1]
+	for release := range releases {
 		mirror := gnomeosMirror + release + "/"
 
 		wg.Add(1)

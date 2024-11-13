@@ -30,7 +30,7 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`"name":"(bodhi-[0-9]+.[0-9]+.[0-9]+-64(-[^-.]+)?.iso)"`)
 	ch, wg := getChannels()
 
-	for _, release := range releases {
+	for release := range releases {
 		mirror := bodhiMirror + release + "/"
 		wg.Add(1)
 		go func() {

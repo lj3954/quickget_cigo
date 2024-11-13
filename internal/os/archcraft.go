@@ -30,7 +30,7 @@ func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 	urlRe := regexp.MustCompile(`"name":"archcraft-.*?-x86_64.iso".*?"download_url":"([^"]+)".*?"name":"archcraft-.*?-x86_64.iso.sha256sum".*?"download_url":"([^"]+)"`)
 	ch, wg := getChannels()
-	for _, release := range releases {
+	for release := range releases {
 		mirror := fmt.Sprintf("%sv%s/", archcraftMirror, release)
 		wg.Add(1)
 		go func() {

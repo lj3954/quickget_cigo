@@ -45,7 +45,7 @@ func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.
 	}
 
 	freebsdEditions := [2]string{"disc1", "dvd1"}
-	for _, release := range releases {
+	for release := range releases {
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
