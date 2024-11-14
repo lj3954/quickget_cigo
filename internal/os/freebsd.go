@@ -2,6 +2,7 @@ package os
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
@@ -12,7 +13,6 @@ const (
 	freebsdX86Mirror     = "https://download.freebsd.org/ftp/releases/amd64/amd64/"
 	freebsdAarch64Mirror = "https://download.freebsd.org/ftp/releases/arm64/aarch64/"
 	freebsdRiscv64Mirror = "https://download.freebsd.org/ftp/releases/riscv/riscv64/"
-	freebsdReleaseRe     = `href="([0-9\.]+)-RELEASE`
 )
 
 type FreeBSD struct{}
@@ -28,17 +28,18 @@ func (FreeBSD) Data() OSData {
 
 func (FreeBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
+	releaseRe := regexp.MustCompile(`href="([0-9\.]+)-RELEASE`)
 	wg.Add(3)
-	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, &wg, errs, csErrs)
-	go buildFreeBSDConfigs(freebsdX86Mirror, "arm64-aarch64", aarch64, ch, &wg, errs, csErrs)
-	go buildFreeBSDConfigs(freebsdRiscv64Mirror, "riscv-riscv64", riscv64, ch, &wg, errs, csErrs)
+	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, &wg, errs, csErrs, releaseRe)
+	go buildFreeBSDConfigs(freebsdX86Mirror, "arm64-aarch64", aarch64, ch, &wg, errs, csErrs, releaseRe)
+	go buildFreeBSDConfigs(freebsdRiscv64Mirror, "riscv-riscv64", riscv64, ch, &wg, errs, csErrs, releaseRe)
 
 	return waitForConfigs(ch, &wg), nil
 }
 
-func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) {
+func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure, releaseRe *regexp.Regexp) {
 	defer wg.Done()
-	releases, err := getBasicReleases(url, freebsdReleaseRe, -1)
+	releases, err := getBasicReleases(url, releaseRe, -1)
 	if err != nil {
 		errs <- Failure{Error: err}
 		return
