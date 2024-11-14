@@ -9,6 +9,7 @@ import (
 	"iter"
 	"net/url"
 	"regexp"
+	"slices"
 	"sync"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -144,9 +145,12 @@ func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], err
 	}
 	return func(yield func(string) bool) {
 		matches := releaseRe.FindAllStringSubmatch(page, -1)
-		for i := 0; i < len(matches) && i < num; i++ {
-			release := matches[len(matches)-i-1][1]
-			if !yield(release) {
+		if num >= 0 {
+			numReturns := min(len(matches), num)
+			matches = matches[len(matches)-numReturns:]
+		}
+		for _, match := range slices.Backward(matches) {
+			if !yield(match[1]) {
 				return
 			}
 		}
