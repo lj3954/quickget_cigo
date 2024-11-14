@@ -6,7 +6,10 @@ import (
 	"github.com/quickemu-project/quickget_configs/internal/cs"
 )
 
-const arcolinuxMirror = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
+const (
+	arcolinuxMirror    = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
+	arcolinuxReleaseRe = `>(v[0-9.]+)/</a`
+)
 
 type ArcoLinux struct{}
 
@@ -20,7 +23,7 @@ func (ArcoLinux) Data() OSData {
 }
 
 func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getArcoLinuxReleases()
+	releases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +36,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 	ch, wg := getChannels()
 
-	for _, release := range releases {
+	for release := range releases {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -76,20 +79,4 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, &wg), nil
-}
-
-func getArcoLinuxReleases() ([]string, error) {
-	page, err := capturePage(arcolinuxMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`>(v[0-9.]+)/</a`)
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
-
-	numReleases := max(len(matches), 3)
-	releases := make([]string, numReleases)
-	for i := range numReleases {
-		releases[i] = matches[len(matches)-i-1][1]
-	}
-	return releases, nil
 }

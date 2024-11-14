@@ -32,11 +32,11 @@ func (CachyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			releases, err := getCachyOSReleases(mirror, releaseRe)
+			releases, err := getBasicReleases(mirror, releaseRe, -1)
 			if err != nil {
 				errs <- Failure{Error: err}
 			}
-			for _, release := range releases {
+			for release := range releases {
 				mirror := mirror + release + "/"
 				wg.Add(1)
 				go func() {
@@ -85,17 +85,4 @@ func getCachyOSEditionMirrors() ([]string, error) {
 		mirrors[i] = cachyOSMirror + match[1] + "/"
 	}
 	return mirrors, nil
-}
-
-func getCachyOSReleases(mirror string, releaseRe *regexp.Regexp) ([]string, error) {
-	page, err := capturePage(mirror)
-	if err != nil {
-		return nil, err
-	}
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-	return releases, nil
 }

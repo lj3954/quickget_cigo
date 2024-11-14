@@ -1,7 +1,6 @@
 package os
 
 import (
-	"log"
 	"regexp"
 	"slices"
 	"strconv"
@@ -9,7 +8,10 @@ import (
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
-const batoceraMirror = "https://mirrors.o2switch.fr/batocera/x86_64/stable/"
+const (
+	batoceraMirror    = "https://mirrors.o2switch.fr/batocera/x86_64/stable/"
+	batoceraReleaseRe = `<a href="([0-9]{2})/"`
+)
 
 type Batocera struct{}
 
@@ -23,15 +25,15 @@ func (Batocera) Data() OSData {
 }
 
 func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBatoceraReleases()
+	releases, err := getBatoceraReleases(3)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`<a href="(batocera-x86_64.*?.img.gz)`)
 	ch, wg := getChannels()
 
-	for i := len(releases) - 1; i >= len(releases)-3 && i >= 0; i-- {
-		release := strconv.Itoa(releases[i])
+	for _, release := range slices.Backward(releases) {
+		release := strconv.Itoa(release)
 		url := batoceraMirror + release + "/"
 		wg.Add(1)
 		go func() {
@@ -59,22 +61,19 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, &wg), nil
 }
 
-func getBatoceraReleases() ([]int, error) {
-	page, err := capturePage(batoceraMirror)
+func getBatoceraReleases(maxReleases int) ([]int, error) {
+	releaseStrings, err := getBasicReleases(batoceraMirror, batoceraReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	releaseRe := regexp.MustCompile(`<a href="([0-9]{2})/"`)
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
 
-	releases := make([]int, 0, len(matches))
-	for _, match := range matches {
-		release, err := strconv.Atoi(match[1])
-		if err != nil {
-			log.Println(err)
+	releases := make([]int, 0)
+	for releaseString := range releaseStrings {
+		if release, err := strconv.Atoi(releaseString); err == nil {
+			releases = append(releases, release)
 		}
-		releases = append(releases, release)
 	}
 	slices.Sort(releases)
-	return releases, nil
+	numReleases := min(len(releases), maxReleases)
+	return releases[:numReleases], nil
 }

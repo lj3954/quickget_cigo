@@ -70,18 +70,3 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 	return waitForConfigs(ch, &wg), nil
 }
-
-func getAlmaReleases() ([]string, error) {
-	releaseHTML, err := capturePage(almaMirror)
-	if err != nil {
-		return nil, err
-	}
-	releaseRe := regexp.MustCompile(`<a href="([0-9]+)/"`)
-	matches := releaseRe.FindAllStringSubmatch(releaseHTML, -1)
-
-	releases := make([]string, len(matches))
-	for i, match := range matches {
-		releases[i] = match[1]
-	}
-	return releases, nil
-}

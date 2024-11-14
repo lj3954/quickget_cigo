@@ -130,10 +130,6 @@ type Failure struct {
 	Error   error
 }
 
-type Pattern interface {
-	string | *regexp.Regexp
-}
-
 func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], error) {
 	page, err := CapturePage(url)
 	if err != nil {
