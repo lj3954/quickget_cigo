@@ -42,14 +42,15 @@ const (
 type ArchiveFormat string
 
 const (
-	Tar    ArchiveFormat = "tar"
-	TarBz2 ArchiveFormat = "tar.bz2"
-	TarGz  ArchiveFormat = "tar.gz"
-	TarXz  ArchiveFormat = "tar.xz"
-	Xz     ArchiveFormat = "xz"
-	Gz     ArchiveFormat = "gz"
-	Bz2    ArchiveFormat = "bz2"
-	Zip    ArchiveFormat = "zip"
+	Tar      ArchiveFormat = "tar"
+	TarBz2   ArchiveFormat = "tar.bz2"
+	TarGz    ArchiveFormat = "tar.gz"
+	TarXz    ArchiveFormat = "tar.xz"
+	Xz       ArchiveFormat = "xz"
+	Gz       ArchiveFormat = "gz"
+	Bz2      ArchiveFormat = "bz2"
+	Zip      ArchiveFormat = "zip"
+	SevenZip ArchiveFormat = "7z"
 )
 
 type Config struct {

@@ -53,6 +53,7 @@ func Launch() {
 		os.Haiku{},
 		os.Kali{},
 		os.KDENeon{},
+		os.KolibriOS{},
 		os.Kubuntu{},
 		os.Lubuntu{},
 		os.NixOS{},
