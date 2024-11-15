@@ -143,6 +143,8 @@ func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], err
 		matches := releaseRe.FindAllStringSubmatch(page, -1)
 		if num >= 0 {
 			numReturns := min(len(matches), num)
+			// Allow GC to free unused matches
+			clear(matches[:len(matches)-numReturns])
 			matches = matches[len(matches)-numReturns:]
 		}
 		for _, match := range slices.Backward(matches) {
