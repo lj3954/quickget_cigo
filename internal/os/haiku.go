@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
 const (
@@ -43,6 +44,7 @@ func (Haiku) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			checksum := checksums[iso]
 			ch <- Config{
 				Release: release,
+				GuestOS: quickgetdata.Haiku,
 				ISO: []Source{
 					urlChecksumSource(url, checksum),
 				},

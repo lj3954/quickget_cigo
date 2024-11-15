@@ -36,7 +36,7 @@ func (DragonFlyBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	matches := isoRe.FindAllStringSubmatch(page, -1)
 
 	// Remove duplicate values, ignoring patch releases
-	slices.CompactFunc(matches, func(a, b []string) bool {
+	matches = slices.CompactFunc(matches, func(a, b []string) bool {
 		a = strings.SplitN(a[2], ".", 3)
 		b = strings.SplitN(b[2], ".", 3)
 		return a[0] == b[0] && a[1] == b[1]
