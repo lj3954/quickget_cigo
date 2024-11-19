@@ -19,13 +19,13 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 	ch := make(chan OSData)
 	errs := make(chan error)
 	var wg sync.WaitGroup
+	wg.Add(len(distros))
 	status := createStatus(len(distros))
 	for _, distro := range distros {
 		os := distro.Data()
 		failures := make(chan Failure)
 		csErrs := make(chan Failure)
 		resultCh := make(chan completion)
-		wg.Add(1)
 		go func() {
 			configs, err := distro.CreateConfigs(failures, csErrs)
 			close(failures)
@@ -113,4 +113,7 @@ func fixConfigs(configs *[]Config) {
 			config.Release = "latest"
 		}
 	}
+	*configs = slices.DeleteFunc(*configs, func(c Config) bool {
+		return c.Arch != qgdata.X86_64 && c.Arch != qgdata.Aarch64 && c.Arch != qgdata.Riscv64
+	})
 }
