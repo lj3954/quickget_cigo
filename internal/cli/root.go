@@ -58,6 +58,7 @@ func Launch() {
 		os.Kubuntu{},
 		os.LinuxLite{},
 		os.LinuxMint{},
+		os.LMDE{},
 		os.Lubuntu{},
 		os.NixOS{},
 		os.Ubuntu{},
