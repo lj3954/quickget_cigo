@@ -60,6 +60,7 @@ func Launch() {
 		os.LinuxMint{},
 		os.LMDE{},
 		os.Lubuntu{},
+		os.Mageia{},
 		os.NixOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
