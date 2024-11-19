@@ -61,6 +61,7 @@ func Launch() {
 		os.LMDE{},
 		os.Lubuntu{},
 		os.Mageia{},
+		os.Manjaro{},
 		os.NixOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
