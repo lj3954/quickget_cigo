@@ -57,6 +57,7 @@ func Launch() {
 		os.KolibriOS{},
 		os.Kubuntu{},
 		os.LinuxLite{},
+		os.LinuxMint{},
 		os.Lubuntu{},
 		os.NixOS{},
 		os.Ubuntu{},
