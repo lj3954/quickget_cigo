@@ -34,6 +34,7 @@ var (
 	capturePageToJson  = utils.CapturePageToJson
 	capturePageToXml   = utils.CapturePageToXml
 	getChannels        = utils.GetChannels
+	getChannelsWith    = utils.GetChannelsWith
 	waitForConfigs     = utils.WaitForConfigs
 	getBasicReleases   = utils.GetBasicReleases
 	getReverseReleases = utils.GetReverseReleases

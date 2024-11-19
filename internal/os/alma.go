@@ -25,17 +25,16 @@ func (Alma) Data() OSData {
 }
 
 func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
 	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
-			wg.Add(1)
 			go func() {
 				defer wg.Done()
 
@@ -68,5 +67,5 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

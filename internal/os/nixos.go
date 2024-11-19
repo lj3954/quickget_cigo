@@ -73,7 +73,7 @@ func (NixOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}
 		}()
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getNixXML(url string) (*nixReleases, error) {

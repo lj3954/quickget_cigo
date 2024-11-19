@@ -25,18 +25,17 @@ func (CentOSStream) Data() OSData {
 }
 
 func (CentOSStream) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`href="(CentOS-Stream-[0-9]+-[0-9]{8}.0-[^-]+-([^-]+)\.iso)"`)
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirrorAdd := fmt.Sprintf("%s-stream/BaseOS/%s/iso/", release, arch)
 			mirror := centOSMirror + mirrorAdd
 
-			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				page, err := capturePage(mirror)
@@ -64,5 +63,5 @@ func (CentOSStream) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}()
 		}
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

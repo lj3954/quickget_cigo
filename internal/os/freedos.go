@@ -25,17 +25,16 @@ func (FreeDOS) Data() OSData {
 }
 
 func (FreeDOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(freedosMirror, freedosReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(freedosMirror, freedosReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 	isoRe := regexp.MustCompile(`href="(FD\d+-?(.*?CD)\.(iso|zip))"`)
 	checksumRe := regexp.MustCompile(`FD\d+.sha|verify.txt`)
 
 	for release := range releases {
 		mirror := freedosMirror + release + "/official/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -69,7 +68,7 @@ func (FreeDOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}
 		}()
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getFreeDOSChecksums(url, page string, checksumRe *regexp.Regexp) (map[string]string, error) {

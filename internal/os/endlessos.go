@@ -26,17 +26,16 @@ func (EndlessOS) Data() OSData {
 }
 
 func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 	editionRe := regexp.MustCompile(`href="([^./]+)`)
 	isoRe := regexp.MustCompile(`href="(eos-eos[\d.]+-amd64-amd64.[-\d]+.[^.]+.iso)"`)
 
 	for release := range releases {
 		mirror := endlessDataMirror + release + "/eos-amd64-amd64/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			editions, err := getEndlessEditions(mirror, editionRe)
@@ -80,7 +79,7 @@ func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getEndlessEditions(url string, editionRe *regexp.Regexp) ([]string, error) {

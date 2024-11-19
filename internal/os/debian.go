@@ -38,10 +38,10 @@ func (Debian) Data() OSData {
 func (Debian) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
-	latestRelease := getLatestDebianConfigs(ch, &wg, errs, csErrs)
-	getOldDebianConfigs(ch, &wg, errs, csErrs, latestRelease)
+	latestRelease := getLatestDebianConfigs(ch, wg, errs, csErrs)
+	getOldDebianConfigs(ch, wg, errs, csErrs, latestRelease)
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) int {

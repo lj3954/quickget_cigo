@@ -24,17 +24,15 @@ func (GhostBSD) Data() OSData {
 }
 
 func (GhostBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getReverseReleases(ghostbsdMirror, ghostbsdReleaseRe, 4)
+	releases, numReleases, err := getReverseReleases(ghostbsdMirror, ghostbsdReleaseRe, 4)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`href="(GhostBSD-[\d\.]+(-[\w]+)?.iso)"`)
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
 		mirror := ghostbsdMirror + release + "/"
-
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -76,5 +74,5 @@ func (GhostBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

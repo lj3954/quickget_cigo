@@ -78,8 +78,14 @@ var (
 	}
 )
 
-func GetChannels() (chan Config, sync.WaitGroup) {
-	return make(chan Config), sync.WaitGroup{}
+func GetChannels() (chan Config, *sync.WaitGroup) {
+	return make(chan Config), &sync.WaitGroup{}
+}
+
+func GetChannelsWith(num int) (chan Config, *sync.WaitGroup) {
+	ch, wg := GetChannels()
+	wg.Add(num)
+	return ch, wg
 }
 
 func WaitForConfigs(ch chan Config, wg *sync.WaitGroup) []Config {
@@ -130,49 +136,50 @@ type Failure struct {
 	Error   error
 }
 
-func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], error) {
+func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], int, error) {
 	page, err := CapturePage(url)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	releaseRe, err := toRegexp(pattern)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+	matches := releaseRe.FindAllStringSubmatch(page, -1)
+	if num >= 0 {
+		numReturns := min(len(matches), num)
+		firstIndex := len(matches) - numReturns
+		// Allow GC to free unused matches
+		clear(matches[:firstIndex])
+		matches = matches[firstIndex:]
 	}
 	return func(yield func(string) bool) {
-		matches := releaseRe.FindAllStringSubmatch(page, -1)
-		if num >= 0 {
-			numReturns := min(len(matches), num)
-			// Allow GC to free unused matches
-			clear(matches[:len(matches)-numReturns])
-			matches = matches[len(matches)-numReturns:]
-		}
 		for _, match := range slices.Backward(matches) {
 			if !yield(match[1]) {
 				return
 			}
 		}
-	}, nil
+	}, len(matches), nil
 }
 
-func GetBasicReleases(url string, pattern any, num int) (iter.Seq[string], error) {
+func GetBasicReleases(url string, pattern any, num int) (iter.Seq[string], int, error) {
 	page, err := CapturePage(url)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	releaseRe, err := toRegexp(pattern)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
+	matches := releaseRe.FindAllStringSubmatch(page, num)
 	return func(yield func(string) bool) {
-		matches := releaseRe.FindAllStringSubmatch(page, num)
 		for _, match := range matches {
 			if !yield(match[1]) {
 				return
 			}
 		}
-	}, nil
+	}, len(matches), nil
 }
 
 func toRegexp(pattern any) (*regexp.Regexp, error) {

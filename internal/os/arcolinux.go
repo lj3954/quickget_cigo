@@ -23,7 +23,7 @@ func (ArcoLinux) Data() OSData {
 }
 
 func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +34,9 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		KeyIndex:   2,
 		ValueIndex: 1,
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			mirror := arcolinuxMirror + release + "/"
@@ -78,5 +77,5 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

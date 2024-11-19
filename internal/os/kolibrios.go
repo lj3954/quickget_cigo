@@ -25,11 +25,11 @@ func (KolibriOS) Data() OSData {
 }
 
 func (KolibriOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	editions, err := getBasicReleases(kolibriMirror, kolibriEditionRe, -1)
+	editions, numEditions, err := getBasicReleases(kolibriMirror, kolibriEditionRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numEditions)
 
 	release := "latest"
 	for edition := range editions {
@@ -39,7 +39,6 @@ func (KolibriOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			Edition: edition,
 			GuestOS: quickgetdata.KolibriOS,
 		}
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			checksum, iso, err := getKolibriIsoData(mirror + "sha256sums.txt")
@@ -57,7 +56,7 @@ func (KolibriOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getKolibriIsoData(url string) (string, string, error) {

@@ -30,11 +30,10 @@ func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		return nil, err
 	}
 	workflowRe := regexp.MustCompile(`- (bazzite-?(.*))`)
-
 	excludedEditions := []string{"nvidia", "ally", "asus"}
 	ch, wg := getChannels()
-	release := "latest"
 
+	release := "latest"
 	for _, match := range workflowRe.FindAllStringSubmatch(page, -1) {
 		edition := match[2]
 		if edition == "" {
@@ -64,7 +63,7 @@ func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func isExcludedEdition(edition string, excludedEditions []string) bool {

@@ -80,5 +80,5 @@ func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}()
 		}
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

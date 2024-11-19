@@ -52,9 +52,10 @@ func getBunsenLabsChecksums(page string) map[string]string {
 	errs := make(chan error)
 	var wg sync.WaitGroup
 
-	for _, match := range checksumRe.FindAllStringSubmatch(page, -1) {
+	matches := checksumRe.FindAllStringSubmatch(page, -1)
+	wg.Add(len(matches))
+	for _, match := range matches {
 		url := bunsenLabsMirror + match[1]
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			checksums, err := cs.Build(cs.Whitespace{}, url)
@@ -77,7 +78,7 @@ func getBunsenLabsChecksums(page string) map[string]string {
 		}
 	}()
 
-	checksums := map[string]string{}
+	checksums := make(map[string]string)
 	for cs := range ch {
 		maps.Copy(checksums, cs)
 	}

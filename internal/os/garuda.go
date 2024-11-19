@@ -24,17 +24,16 @@ func (Garuda) Data() OSData {
 }
 
 func (Garuda) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	editions, err := getBasicReleases(garudaMirror, garudaEditionRe, -1)
+	editions, numEditions, err := getBasicReleases(garudaMirror, garudaEditionRe, -1)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`href="([^"]+.iso)"`)
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numEditions)
 
 	release := "latest"
 	for edition := range editions {
 		mirror := garudaMirror + edition + "/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -65,5 +64,5 @@ func (Garuda) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

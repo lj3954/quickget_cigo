@@ -24,16 +24,15 @@ func (Haiku) Data() OSData {
 }
 
 func (Haiku) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getReverseReleases(haikuMirror, haikuReleaseRe, 3)
+	releases, numReleases, err := getReverseReleases(haikuMirror, haikuReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
 		mirror := haikuMirror + release + "/"
 		iso := fmt.Sprintf("haiku-%s-x86_64-anyboot.iso", release)
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			url := mirror + iso
@@ -52,5 +51,5 @@ func (Haiku) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 		}()
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

@@ -12,7 +12,10 @@ import (
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
-const easyosMirror = "https://distro.ibiblio.org/easyos/amd64/releases/"
+const (
+	easyosMirror        = "https://distro.ibiblio.org/easyos/amd64/releases/"
+	easyosReleaseNameRe = `href="([a-z]+/)"`
+)
 
 type EasyOS struct{}
 
@@ -27,15 +30,15 @@ func (EasyOS) Data() OSData {
 
 func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannels()
-	releases, err := getEasyOSReleases(&wg, errs)
+	releases, err := getEasyOSReleases(5, wg, errs)
 	if err != nil {
 		return nil, err
 	}
+	wg.Add(len(releases))
 
 	imgRe := regexp.MustCompile(`href="(easy-[0-9.]+-amd64.img(.gz)?)"`)
-	for i := 0; i < len(releases) && i < 5; i++ {
-		release, mirror := releases[i].release, releases[i].mirror
-		wg.Add(1)
+	for _, relMirror := range releases {
+		release, mirror := relMirror.release, relMirror.mirror
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -70,15 +73,15 @@ func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
-func getEasyOSReleases(wg *sync.WaitGroup, errs chan Failure) ([]relMirror, error) {
-	page, err := capturePage(easyosMirror)
+func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan Failure) ([]relMirror, error) {
+	releaseNames, numReleases, err := getBasicReleases(easyosMirror, easyosReleaseNameRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	releaseNameRe := regexp.MustCompile(`href="([a-z]+/)"`)
+	wg.Add(numReleases)
 	subdirectoryRe := regexp.MustCompile(`href="([0-9]{4}/)"`)
 	releaseRe := regexp.MustCompile(`href="([0-9](?:\.[0-9]+)+)/"`)
 
@@ -89,9 +92,8 @@ func getEasyOSReleases(wg *sync.WaitGroup, errs chan Failure) ([]relMirror, erro
 		close(ch)
 	}()
 
-	for _, match := range releaseNameRe.FindAllStringSubmatch(page, -1) {
-		mirror := easyosMirror + match[1]
-		wg.Add(1)
+	for releaseName := range releaseNames {
+		mirror := easyosMirror + releaseName
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -125,7 +127,8 @@ func getEasyOSReleases(wg *sync.WaitGroup, errs chan Failure) ([]relMirror, erro
 		relMirrors = append(relMirrors, relMirror)
 	}
 
-	return sortEasyOSReleases(relMirrors), nil
+	releases := sortEasyOSReleases(relMirrors)
+	return releases[:min(len(releases), maxReleases)], nil
 }
 
 func sortEasyOSReleases(releases []relMirror) []relMirror {

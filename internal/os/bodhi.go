@@ -23,16 +23,15 @@ func (Bodhi) Data() OSData {
 }
 
 func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
+	releases, numReleases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`"name":"(bodhi-[0-9]+.[0-9]+.[0-9]+-64(-[^-.]+)?.iso)"`)
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
 		mirror := bodhiMirror + release + "/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -40,7 +39,9 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
+			matches := isoRe.FindAllStringSubmatch(page, -1)
+			wg.Add(len(matches))
+			for _, match := range matches {
 				edition := "standard"
 				if match[2] != "" {
 					edition = match[2][1:]
@@ -48,7 +49,6 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				url := mirror + match[1] + "/download"
 				checksumUrl := mirror + match[1] + ".sha256/download"
 
-				wg.Add(1)
 				go func() {
 					defer wg.Done()
 					checksum, err := cs.SingleWhitespace(checksumUrl)
@@ -67,5 +67,5 @@ func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

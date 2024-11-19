@@ -22,18 +22,17 @@ func (Alpine) Data() OSData {
 }
 
 func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
 	isoRe := regexp.MustCompile(`(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
 			releaseUrl := mirror + "latest-releases.yaml"
-			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				page, err := capturePage(releaseUrl)
@@ -57,5 +56,5 @@ func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

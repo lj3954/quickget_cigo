@@ -22,9 +22,8 @@ func (Kali) Data() OSData {
 
 func (Kali) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases := [...]string{"current", "kali-weekly"}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(len(releases))
 	isoRe := regexp.MustCompile(`href="(kali-linux-\d{4}-[^-]+-(installer|live)-(amd64|arm64).iso)"`)
-	wg.Add(len(releases))
 	for _, release := range releases {
 		mirror := kaliMirror + release + "/"
 		go func() {
@@ -55,7 +54,7 @@ func (Kali) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getKaliMatches(url string, isoRe *regexp.Regexp) ([][]string, error) {

@@ -22,17 +22,15 @@ func (GnomeOS) Data() OSData {
 }
 
 func (GnomeOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
+	releases, numReleases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 	isoRe := regexp.MustCompile(`href="(gnome_os.*?.iso)"`)
 
 	for release := range releases {
 		mirror := gnomeosMirror + release + "/"
-
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -55,7 +53,7 @@ func (GnomeOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	configs := waitForConfigs(ch, &wg)
+	configs := waitForConfigs(ch, wg)
 	configs = append(configs, Config{
 		Release: "nightly",
 		ISO: []Source{

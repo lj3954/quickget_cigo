@@ -23,17 +23,16 @@ func (Devuan) Data() OSData {
 }
 
 func (Devuan) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBasicReleases(devuanMirror, devuanReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(devuanMirror, devuanReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(numReleases)
 	isoRe := regexp.MustCompile(`href="(devuan_[a-zA-Z]+_([0-9.]+)_amd64_desktop-live.iso)"`)
 	csUrlRe := regexp.MustCompile(`href="(SHA[^.]+.txt)"`)
 
 	for urlSuffix := range releases {
 		mirror := devuanMirror + urlSuffix + "desktop-live/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(mirror)
@@ -68,5 +67,5 @@ func (Devuan) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

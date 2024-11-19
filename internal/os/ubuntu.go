@@ -212,11 +212,10 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan Fa
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(len(releases) * len(architectures))
 	for _, release := range releases {
 		for _, arch := range architectures {
 			url := getUbuntuUrl(release, variant, arch)
-			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				page, err := capturePage(url + "SHA256SUMS")
@@ -254,7 +253,7 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan Fa
 		}
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getUbuntuLine(page, variant string, arch Arch) string {

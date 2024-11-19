@@ -23,8 +23,7 @@ func (Gentoo) Data() OSData {
 func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	architectures := [...]string{"amd64", "arm64"}
 	isoRe := regexp.MustCompile(`\d{8}T\d{6}Z\/(admincd|install|livegui).*?.iso`)
-	ch, wg := getChannels()
-	wg.Add(len(architectures))
+	ch, wg := getChannelsWith(len(architectures))
 
 	release := "latest"
 	for _, arch := range architectures {
@@ -36,7 +35,9 @@ func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Arch: Arch(arch), Error: err}
 				return
 			}
-			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
+			matches := isoRe.FindAllStringSubmatch(page, -1)
+			wg.Add(len(matches))
+			for _, match := range matches {
 				edition := match[1]
 				if edition == "install" {
 					edition = "minimal"
@@ -44,7 +45,6 @@ func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				url := mirror + match[0]
 				checksumUrl := url + ".sha256"
 
-				wg.Add(1)
 				go func() {
 					defer wg.Done()
 					checksumPage, err := capturePage(checksumUrl)
@@ -74,5 +74,5 @@ func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			}
 		}()
 	}
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

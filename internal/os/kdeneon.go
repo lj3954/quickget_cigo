@@ -21,8 +21,7 @@ func (KDENeon) Data() OSData {
 
 func (KDENeon) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	releases := [...]string{"user", "testing", "unstable", "developer"}
-	ch, wg := getChannels()
-	wg.Add(len(releases))
+	ch, wg := getChannelsWith(len(releases))
 	for _, release := range releases {
 		mirror := kdeNeonMirror + release + "/current/"
 		isoRelease := release
@@ -48,5 +47,5 @@ func (KDENeon) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

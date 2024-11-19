@@ -31,11 +31,10 @@ func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	slices.SortFunc(matches, func(a, b []string) int {
 		return strings.Compare(b[2], a[2])
 	})
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(len(matches))
 
 	for _, match := range matches {
 		url := biglinuxMirror + match[1]
-		wg.Add(1)
 		go func() {
 			release, edition := match[2], match[3]
 			defer wg.Done()
@@ -53,5 +52,5 @@ func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }

@@ -30,12 +30,11 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`<a href="(batocera-x86_64.*?.img.gz)`)
-	ch, wg := getChannels()
+	ch, wg := getChannelsWith(len(releases))
 
-	for _, release := range slices.Backward(releases) {
+	for _, release := range releases {
 		release := strconv.Itoa(release)
 		url := batoceraMirror + release + "/"
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			page, err := capturePage(url)
@@ -58,22 +57,22 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		}()
 	}
 
-	return waitForConfigs(ch, &wg), nil
+	return waitForConfigs(ch, wg), nil
 }
 
 func getBatoceraReleases(maxReleases int) ([]int, error) {
-	releaseStrings, err := getBasicReleases(batoceraMirror, batoceraReleaseRe, -1)
+	releaseStrings, numReleases, err := getBasicReleases(batoceraMirror, batoceraReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
 
-	releases := make([]int, 0)
+	releases := make([]int, 0, numReleases)
 	for releaseString := range releaseStrings {
 		if release, err := strconv.Atoi(releaseString); err == nil {
 			releases = append(releases, release)
 		}
 	}
 	slices.Sort(releases)
-	numReleases := min(len(releases), maxReleases)
-	return releases[:numReleases], nil
+	numFinalReleases := min(len(releases), maxReleases)
+	return releases[:len(releases)-numFinalReleases], nil
 }
