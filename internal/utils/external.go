@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
+	"strings"
 	"sync"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -134,6 +135,35 @@ type Failure struct {
 	Edition string
 	Arch    quickgetdata.Arch
 	Error   error
+}
+
+func GetSortedReleasesFunc(url string, pattern any, num int, cmp func(a, b string) int) ([]string, error) {
+	page, err := CapturePage(url)
+	if err != nil {
+		return nil, err
+	}
+	releaseRe, err := toRegexp(pattern)
+	if err != nil {
+		return nil, err
+	}
+	matches := releaseRe.FindAllStringSubmatch(page, -1)
+	releases := make([]string, len(matches))
+	for i, match := range matches {
+		releases[i] = match[1]
+	}
+
+	slices.SortFunc(releases, cmp)
+	if num >= 0 {
+		numReturns := min(len(releases), num)
+		firstIndex := len(releases) - numReturns
+		clear(releases[:firstIndex])
+		releases = releases[firstIndex:]
+	}
+	return releases, nil
+}
+
+func GetSortedReleases(url string, pattern any, num int) ([]string, error) {
+	return GetSortedReleasesFunc(url, pattern, num, strings.Compare)
 }
 
 func GetReverseReleases(url string, pattern any, num int) (iter.Seq[string], int, error) {

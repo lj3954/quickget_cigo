@@ -35,6 +35,7 @@ func Launch() {
 		os.ChimeraLinux{},
 		os.CBPP{},
 		os.Debian{},
+		os.Deepin{},
 		os.Devuan{},
 		os.DragonFlyBSD{},
 		os.EasyOS{},
@@ -55,6 +56,7 @@ func Launch() {
 		os.KDENeon{},
 		os.KolibriOS{},
 		os.Kubuntu{},
+		os.LinuxLite{},
 		os.Lubuntu{},
 		os.NixOS{},
 		os.Ubuntu{},
@@ -66,7 +68,6 @@ func Launch() {
 		os.UbuntuStudio{},
 		os.UbuntuUnity{},
 		os.Xubuntu{},
-		os.Deepin{},
 	)
 	distros = fixList(distros)
 

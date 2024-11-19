@@ -30,14 +30,16 @@ var (
 )
 
 var (
-	capturePage        = utils.CapturePage
-	capturePageToJson  = utils.CapturePageToJson
-	capturePageToXml   = utils.CapturePageToXml
-	getChannels        = utils.GetChannels
-	getChannelsWith    = utils.GetChannelsWith
-	waitForConfigs     = utils.WaitForConfigs
-	getBasicReleases   = utils.GetBasicReleases
-	getReverseReleases = utils.GetReverseReleases
+	capturePage           = utils.CapturePage
+	capturePageToJson     = utils.CapturePageToJson
+	capturePageToXml      = utils.CapturePageToXml
+	getChannels           = utils.GetChannels
+	getChannelsWith       = utils.GetChannelsWith
+	waitForConfigs        = utils.WaitForConfigs
+	getBasicReleases      = utils.GetBasicReleases
+	getReverseReleases    = utils.GetReverseReleases
+	getSortedReleases     = utils.GetSortedReleases
+	getSortedReleasesFunc = utils.GetSortedReleasesFunc
 )
 
 var (
