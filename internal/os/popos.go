@@ -1,9 +1,10 @@
 package os
 
 import (
-	"fmt"
 	"sync"
 )
+
+const popApiUrl = "https://api.pop-os.org/builds/"
 
 type PopOS struct{}
 
@@ -32,7 +33,7 @@ func (PopOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 func addPopOSConfig(release, edition, popEdition string, ch chan Config, wg *sync.WaitGroup, errs chan Failure) {
 	defer wg.Done()
-	url := fmt.Sprintf("https://api.pop-os.org/builds/%s/%s", release, popEdition)
+	url := popApiUrl + release + "/" + popEdition
 	var data popApi
 	if err := capturePageToJson(url, &data); err != nil {
 		errs <- Failure{Release: release, Edition: edition, Error: err}
