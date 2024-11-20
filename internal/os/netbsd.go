@@ -51,7 +51,7 @@ func getNetBSDConfig(checksums map[string]string, mirror, iso, release string, a
 	checksum := checksums[iso]
 
 	return Config{
-		GuestOS: quickgetdata.NetBSD,
+		GuestOS: quickgetdata.GenericBSD,
 		Release: release,
 		Arch:    arch,
 		ISO: []Source{

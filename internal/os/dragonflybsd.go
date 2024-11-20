@@ -49,7 +49,7 @@ func (DragonFlyBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		url := dragonflybsdMirror + iso
 		checksum := checksums[iso]
 		configs[i] = Config{
-			GuestOS: quickgetdata.DragonFlyBSD,
+			GuestOS: quickgetdata.GenericBSD,
 			Release: release,
 			ISO: []Source{
 				urlChecksumSource(url, checksum),

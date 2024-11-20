@@ -18,14 +18,13 @@ const (
 	MacOS         GuestOS = "macos"
 	FreeBSD       GuestOS = "freebsd"
 	GhostBSD      GuestOS = "ghostbsd"
-	DragonFlyBSD  GuestOS = "dragonflybsd"
+	GenericBSD    GuestOS = "bsd"
 	FreeDOS       GuestOS = "freedos"
 	Haiku         GuestOS = "haiku"
 	Solaris       GuestOS = "solaris"
 	KolibriOS     GuestOS = "kolibrios"
 	ReactOS       GuestOS = "reactos"
 	Batocera      GuestOS = "batocera"
-	NetBSD        GuestOS = "netbsd"
 )
 
 type DiskFormat string

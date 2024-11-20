@@ -238,6 +238,9 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan Fa
 					Release: release,
 					Arch:    arch,
 				}
+				if !strings.Contains(release, "daily") && semverCompare(release, "16.04") < 0 {
+					config.GuestOS = quickgetdata.LinuxOld
+				}
 				if arch == riscv64 {
 					config.IMG = []Source{
 						webSource(iso, checksum, quickgetdata.Gz, ""),
