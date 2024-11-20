@@ -45,12 +45,17 @@ type CustomRegex struct {
 }
 
 var Md5Regex = CustomRegex{
-	Regex:      regexp.MustCompile(`MD5 \(([^)]+)\) = ([0-9a-f]+)`),
+	Regex:      regexp.MustCompile(`MD5 \(([^)]+)\) = ([0-9a-f]{32})`),
 	KeyIndex:   1,
 	ValueIndex: 2,
 }
 var Sha256Regex = CustomRegex{
-	Regex:      regexp.MustCompile(`SHA256 \(([^)]+)\) = ([0-9a-f]+)`),
+	Regex:      regexp.MustCompile(`SHA256 \(([^)]+)\) = ([0-9a-f]{64})`),
+	KeyIndex:   1,
+	ValueIndex: 2,
+}
+var Sha512Regex = CustomRegex{
+	Regex:      regexp.MustCompile(`SHA512 \(([^)]+)\) = ([0-9a-f]{128})`),
 	KeyIndex:   1,
 	ValueIndex: 2,
 }

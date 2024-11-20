@@ -25,6 +25,7 @@ const (
 	KolibriOS     GuestOS = "kolibrios"
 	ReactOS       GuestOS = "reactos"
 	Batocera      GuestOS = "batocera"
+	NetBSD        GuestOS = "netbsd"
 )
 
 type DiskFormat string
