@@ -46,6 +46,7 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 			img := url + match[1]
 			ch <- Config{
+				GuestOS: quickgetdata.Batocera,
 				Release: release,
 				IMG: []Source{
 					webSource(img, "", quickgetdata.Gz, ""),
