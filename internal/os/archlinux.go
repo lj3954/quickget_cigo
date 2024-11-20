@@ -22,7 +22,7 @@ func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		return nil, err
 	}
 
-	numConfigs := max(3, len(apiData.Releases))
+	numConfigs := min(3, len(apiData.Releases))
 	configs := make([]Config, numConfigs)
 	for i := 0; i < numConfigs; i++ {
 		data := apiData.Releases[i]
