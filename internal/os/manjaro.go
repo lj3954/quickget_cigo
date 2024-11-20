@@ -40,7 +40,7 @@ func (Manjaro) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 	go func() {
 		defer wg.Done()
-		addManjaroSwayConfigs(ch, errs, csErrs)
+		addManjaroSwayConfig(ch, errs, csErrs)
 	}()
 	return waitForConfigs(ch, wg), nil
 }
@@ -49,10 +49,12 @@ type manjaroSwayData struct {
 	URL string `json:"url"`
 }
 
-func addManjaroSwayConfigs(ch chan Config, errs, csErrs chan Failure) {
+func addManjaroSwayConfig(ch chan Config, errs, csErrs chan Failure) {
+	release := "standard"
+	edition := "sway"
 	var data []manjaroSwayData
 	if err := capturePageToJson(manjaroSwayJsonUrl, &data); err != nil {
-		errs <- Failure{Error: err}
+		errs <- Failure{Release: release, Edition: edition, Error: err}
 	}
 	var url string
 	for _, e := range data {
@@ -61,13 +63,13 @@ func addManjaroSwayConfigs(ch chan Config, errs, csErrs chan Failure) {
 			break
 		}
 	}
-	release := "latest"
 	checksum, err := cs.SingleWhitespace(url + ".sha256")
 	if err != nil {
-		csErrs <- Failure{Release: release, Error: err}
+		csErrs <- Failure{Release: release, Edition: edition, Error: err}
 	}
 	ch <- Config{
-		Release: "standard",
+		Release: release,
+		Edition: edition,
 		ISO: []Source{
 			urlChecksumSource(url, checksum),
 		},
