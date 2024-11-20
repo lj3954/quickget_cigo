@@ -40,6 +40,8 @@ var (
 	getReverseReleases    = utils.GetReverseReleases
 	getSortedReleases     = utils.GetSortedReleases
 	getSortedReleasesFunc = utils.GetSortedReleasesFunc
+	integerCompare        = utils.IntegerCompare
+	semverCompare         = utils.SemverCompare
 )
 
 var (

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"encoding/xml"
@@ -10,10 +11,12 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-version"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 	"golang.org/x/sync/semaphore"
 )
@@ -221,4 +224,30 @@ func toRegexp(pattern any) (*regexp.Regexp, error) {
 	default:
 		return nil, fmt.Errorf("invalid pattern type %T", p)
 	}
+}
+
+func IntegerCompare(a, b string) int {
+	aInt, aErr := strconv.Atoi(a)
+	bInt, bErr := strconv.Atoi(b)
+	if aErr != nil && bErr != nil {
+		return cmp.Compare(aInt, bInt)
+	} else if aErr != nil {
+		return -1
+	} else if bErr != nil {
+		return 1
+	}
+	return strings.Compare(a, b)
+}
+
+func SemverCompare(a, b string) int {
+	aSemver, aErr := version.NewVersion(a)
+	bSemver, bErr := version.NewVersion(b)
+	if aErr != nil && bErr != nil {
+		return aSemver.Compare(bSemver)
+	} else if aErr != nil {
+		return -1
+	} else if bErr != nil {
+		return 1
+	}
+	return IntegerCompare(a, b)
 }

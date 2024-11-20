@@ -2,8 +2,6 @@ package os
 
 import (
 	"regexp"
-	"slices"
-	"strconv"
 
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
@@ -25,7 +23,7 @@ func (Batocera) Data() OSData {
 }
 
 func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	releases, err := getBatoceraReleases(3)
+	releases, err := getSortedReleasesFunc(batoceraMirror, batoceraReleaseRe, 3, integerCompare)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +31,6 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(len(releases))
 
 	for _, release := range releases {
-		release := strconv.Itoa(release)
 		url := batoceraMirror + release + "/"
 		go func() {
 			defer wg.Done()
@@ -58,21 +55,4 @@ func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	}
 
 	return waitForConfigs(ch, wg), nil
-}
-
-func getBatoceraReleases(maxReleases int) ([]int, error) {
-	releaseStrings, numReleases, err := getBasicReleases(batoceraMirror, batoceraReleaseRe, -1)
-	if err != nil {
-		return nil, err
-	}
-
-	releases := make([]int, 0, numReleases)
-	for releaseString := range releaseStrings {
-		if release, err := strconv.Atoi(releaseString); err == nil {
-			releases = append(releases, release)
-		}
-	}
-	slices.Sort(releases)
-	numFinalReleases := min(len(releases), maxReleases)
-	return releases[:len(releases)-numFinalReleases], nil
 }
