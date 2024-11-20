@@ -63,6 +63,7 @@ func Launch() {
 		os.Mageia{},
 		os.Manjaro{},
 		os.MXLinux{},
+		os.Netboot{},
 		os.NixOS{},
 		os.PopOS{},
 		os.Ubuntu{},
