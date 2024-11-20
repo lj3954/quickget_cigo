@@ -65,6 +65,7 @@ func Launch() {
 		os.MXLinux{},
 		os.Netboot{},
 		os.NetBSD{},
+		os.Nitrux{},
 		os.NixOS{},
 		os.PopOS{},
 		os.Ubuntu{},
