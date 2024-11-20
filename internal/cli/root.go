@@ -64,6 +64,7 @@ func Launch() {
 		os.Manjaro{},
 		os.MXLinux{},
 		os.NixOS{},
+		os.PopOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
