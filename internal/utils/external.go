@@ -229,7 +229,7 @@ func toRegexp(pattern any) (*regexp.Regexp, error) {
 func IntegerCompare(a, b string) int {
 	aInt, aErr := strconv.Atoi(a)
 	bInt, bErr := strconv.Atoi(b)
-	if aErr != nil && bErr != nil {
+	if aErr == nil && bErr == nil {
 		return cmp.Compare(aInt, bInt)
 	} else if aErr != nil {
 		return -1
@@ -242,7 +242,7 @@ func IntegerCompare(a, b string) int {
 func SemverCompare(a, b string) int {
 	aSemver, aErr := version.NewVersion(a)
 	bSemver, bErr := version.NewVersion(b)
-	if aErr != nil && bErr != nil {
+	if aErr == nil && bErr == nil {
 		return aSemver.Compare(bSemver)
 	} else if aErr != nil {
 		return -1
