@@ -69,6 +69,7 @@ func Launch() {
 		os.NixOS{},
 		os.NWGShell{},
 		os.OpenBSD{},
+		os.OpenIndiana{},
 		os.PopOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
