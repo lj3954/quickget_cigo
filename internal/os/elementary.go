@@ -3,6 +3,8 @@ package os
 import (
 	"errors"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -22,7 +24,7 @@ func (Elementary) Data() OSData {
 }
 
 func (Elementary) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(elementaryUrl)
+	page, err := web.CapturePage(elementaryUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +37,7 @@ func (Elementary) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	url := "https:" + downloadMatch[1]
 
 	var checksum string
-	if csPage, err := capturePage(elementaryChecksumUrl); err != nil {
+	if csPage, err := web.CapturePage(elementaryChecksumUrl); err != nil {
 		csErrs <- Failure{Error: err}
 	} else {
 		checksumRe := regexp.MustCompile(`"language-bash">([0-9a-f]{64})</code>`)

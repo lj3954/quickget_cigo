@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const nwgshellMirror = "https://sourceforge.net/projects/nwg-iso/files/"
@@ -20,7 +21,7 @@ func (NWGShell) Data() OSData {
 }
 
 func (NWGShell) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(nwgshellMirror)
+	page, err := web.CapturePage(nwgshellMirror)
 	if err != nil {
 		return nil, err
 	}

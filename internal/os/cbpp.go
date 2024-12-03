@@ -2,6 +2,8 @@ package os
 
 import (
 	"strings"
+
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const cbppApi = "https://api.github.com/repos/CBPP/cbpp/releases"
@@ -19,7 +21,7 @@ func (CBPP) Data() OSData {
 
 func (CBPP) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	var apiData []GithubAPI
-	if err := capturePageToJson(cbppApi, &apiData); err != nil {
+	if err := web.CapturePageToJson(cbppApi, &apiData); err != nil {
 		return nil, err
 	}
 	configs := make([]Config, 0)

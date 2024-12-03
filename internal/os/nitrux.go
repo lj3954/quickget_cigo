@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const nitruxMirror = "https://sourceforge.net/projects/nitruxos/files/Release/"
@@ -21,7 +22,7 @@ func (Nitrux) Data() OSData {
 }
 
 func (Nitrux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(nitruxMirror + "ISO/")
+	page, err := web.CapturePage(nitruxMirror + "ISO/")
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const gentooMirror = "https://distfiles.gentoo.org/releases/"
@@ -30,7 +31,7 @@ func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		mirror := gentooMirror + arch + "/autobuilds/"
 		go func() {
 			defer wg.Done()
-			page, err := capturePage(mirror + "latest-iso.txt")
+			page, err := web.CapturePage(mirror + "latest-iso.txt")
 			if err != nil {
 				errs <- Failure{Release: release, Arch: Arch(arch), Error: err}
 				return
@@ -47,7 +48,7 @@ func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 				go func() {
 					defer wg.Done()
-					checksumPage, err := capturePage(checksumUrl)
+					checksumPage, err := web.CapturePage(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Arch: Arch(arch), Error: err}
 					}

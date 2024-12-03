@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const biglinuxMirror = "https://iso.biglinux.com.br/"
@@ -22,7 +23,7 @@ func (BigLinux) Data() OSData {
 }
 
 func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(biglinuxMirror)
+	page, err := web.CapturePage(biglinuxMirror)
 	if err != nil {
 		return nil, err
 	}

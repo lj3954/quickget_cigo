@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const athenaAPI = "https://api.github.com/repos/Athena-OS/athena/releases"
@@ -21,7 +22,7 @@ func (AthenaOS) Data() OSData {
 
 func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	var apiData []GithubAPI
-	if err := capturePageToJson(athenaAPI, &apiData); err != nil {
+	if err := web.CapturePageToJson(athenaAPI, &apiData); err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()

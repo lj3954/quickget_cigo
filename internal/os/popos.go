@@ -2,6 +2,8 @@ package os
 
 import (
 	"sync"
+
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const popApiUrl = "https://api.pop-os.org/builds/"
@@ -35,7 +37,7 @@ func addPopOSConfig(release, edition, popEdition string, ch chan Config, wg *syn
 	defer wg.Done()
 	url := popApiUrl + release + "/" + popEdition
 	var data popApi
-	if err := capturePageToJson(url, &data); err != nil {
+	if err := web.CapturePageToJson(url, &data); err != nil {
 		errs <- Failure{Release: release, Edition: edition, Error: err}
 		return
 	}

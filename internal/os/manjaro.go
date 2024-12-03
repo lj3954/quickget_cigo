@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -30,7 +31,7 @@ func (Manjaro) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	go func() {
 		defer wg.Done()
 		var data manjaroData
-		if err := capturePageToJson(manjaroJsonUrl, &data); err != nil {
+		if err := web.CapturePageToJson(manjaroJsonUrl, &data); err != nil {
 			errs <- Failure{Error: err}
 		}
 		addManjaroConfigs(data.Official, x86_64, ch, wg, csErrs)
@@ -53,7 +54,7 @@ func addManjaroSwayConfig(ch chan Config, errs, csErrs chan Failure) {
 	release := "standard"
 	edition := "sway"
 	var data []manjaroSwayData
-	if err := capturePageToJson(manjaroSwayJsonUrl, &data); err != nil {
+	if err := web.CapturePageToJson(manjaroSwayJsonUrl, &data); err != nil {
 		errs <- Failure{Release: release, Edition: edition, Error: err}
 	}
 	var url string

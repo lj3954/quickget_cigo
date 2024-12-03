@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -45,7 +46,7 @@ func (Debian) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) int {
-	page, err := capturePage(latestDebianMirror)
+	page, err := web.CapturePage(latestDebianMirror)
 	if err != nil {
 		errs <- Failure{Error: err}
 		return 0
@@ -64,7 +65,7 @@ func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs cha
 }
 
 func getOldDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure, latestRelease int) {
-	page, err := capturePage(prevDebianMirror)
+	page, err := web.CapturePage(prevDebianMirror)
 	if err != nil {
 		errs <- Failure{Error: err}
 		return
@@ -106,7 +107,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		page, err := capturePage(liveMirror)
+		page, err := web.CapturePage(liveMirror)
 		if err != nil {
 			errs <- Failure{Release: release, Error: err}
 			return
@@ -135,7 +136,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 		netInstMirror := fmt.Sprintf("%s%s/%s/iso-cd/", mirror, fullRelease, arch)
 		go func() {
 			defer wg.Done()
-			page, err := capturePage(netInstMirror)
+			page, err := web.CapturePage(netInstMirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return

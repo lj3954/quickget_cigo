@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -49,7 +50,7 @@ func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 				mirror := mirror + edition + "/"
 				go func() {
 					defer wg.Done()
-					page, err := capturePage(mirror)
+					page, err := web.CapturePage(mirror)
 					if err != nil {
 						errs <- Failure{Release: release, Edition: edition, Error: err}
 						return
@@ -83,7 +84,7 @@ func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getEndlessEditions(url string, editionRe *regexp.Regexp) ([]string, error) {
-	page, err := capturePage(url)
+	page, err := web.CapturePage(url)
 	if err != nil {
 		return nil, err
 	}

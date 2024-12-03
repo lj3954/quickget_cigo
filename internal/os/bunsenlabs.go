@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
@@ -23,7 +24,7 @@ func (BunsenLabs) Data() OSData {
 }
 
 func (BunsenLabs) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(bunsenLabsMirror)
+	page, err := web.CapturePage(bunsenLabsMirror)
 	if err != nil {
 		return nil, err
 	}

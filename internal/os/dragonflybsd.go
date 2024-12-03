@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -23,7 +24,7 @@ func (DragonFlyBSD) Data() OSData {
 }
 
 func (DragonFlyBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(dragonflybsdMirror)
+	page, err := web.CapturePage(dragonflybsdMirror)
 	if err != nil {
 		return nil, err
 	}

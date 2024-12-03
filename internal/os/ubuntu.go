@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -82,7 +83,7 @@ var getUbuntuReleases = sync.OnceValues(fetchUbuntuReleases)
 
 func fetchUbuntuReleases() ([]string, error) {
 	var entries launchpadContents
-	if err := capturePageToJson(launchpadReleasesUrl, &entries); err != nil {
+	if err := web.CapturePageToJson(launchpadReleasesUrl, &entries); err != nil {
 		return nil, err
 	}
 
@@ -218,7 +219,7 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan Fa
 			url := getUbuntuUrl(release, variant, arch)
 			go func() {
 				defer wg.Done()
-				page, err := capturePage(url + "SHA256SUMS")
+				page, err := web.CapturePage(url + "SHA256SUMS")
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return

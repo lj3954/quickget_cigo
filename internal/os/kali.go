@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const kaliMirror = "https://cdimage.kali.org/"
@@ -58,7 +59,7 @@ func (Kali) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getKaliMatches(url string, isoRe *regexp.Regexp) ([][]string, error) {
-	page, err := capturePage(url)
+	page, err := web.CapturePage(url)
 	if err != nil {
 		return nil, err
 	}

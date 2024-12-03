@@ -1,5 +1,7 @@
 package os
 
+import "github.com/quickemu-project/quickget_configs/internal/web"
+
 const (
 	archlinuxAPI    = "https://archlinux.org/releng/releases/json/"
 	archlinuxMirror = "https://mirror.rackspace.com/archlinux"
@@ -18,7 +20,7 @@ func (ArchLinux) Data() OSData {
 
 func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	var apiData archAPI
-	if err := capturePageToJson(archlinuxAPI, &apiData); err != nil {
+	if err := web.CapturePageToJson(archlinuxAPI, &apiData); err != nil {
 		return nil, err
 	}
 

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -48,7 +49,7 @@ func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func createAntiXChecksums(url string) (map[string]string, error) {
-	page, err := capturePage(url)
+	page, err := web.CapturePage(url)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +62,7 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 
 func createAntiXConfigs(ch chan Config, errs, csErrs chan Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
 	defer wg.Done()
-	page, err := capturePage(url)
+	page, err := web.CapturePage(url)
 	if err != nil {
 		errs <- Failure{Release: release, Error: err}
 		return

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -78,7 +79,7 @@ func (NixOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 func getNixXML(url string) (*nixReleases, error) {
 	var releaseData nixReleases
-	if err := capturePageToXml(url, &releaseData); err != nil {
+	if err := web.CapturePageToXml(url, &releaseData); err != nil {
 		return nil, err
 	}
 	return &releaseData, nil

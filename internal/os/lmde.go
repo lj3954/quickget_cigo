@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const lmdeMirror = "https://mirrors.edge.kernel.org/linuxmint/debian/"
@@ -20,7 +21,7 @@ func (LMDE) Data() OSData {
 }
 
 func (LMDE) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(lmdeMirror)
+	page, err := web.CapturePage(lmdeMirror)
 	if err != nil {
 		return nil, err
 	}

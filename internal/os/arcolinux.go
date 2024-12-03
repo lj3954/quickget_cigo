@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -40,7 +41,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 		go func() {
 			defer wg.Done()
 			mirror := arcolinuxMirror + release + "/"
-			page, err := capturePage(mirror)
+			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return

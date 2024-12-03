@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/quickemu-project/quickget_configs/internal/web"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -52,7 +53,7 @@ func (Fedora) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 
 func getFedoraReleases() ([]fedoraRelease, error) {
 	var releaseData []fedoraRelease
-	if err := capturePageToJson(fedoraJsonUrl, &releaseData); err != nil {
+	if err := web.CapturePageToJson(fedoraJsonUrl, &releaseData); err != nil {
 		return nil, err
 	}
 

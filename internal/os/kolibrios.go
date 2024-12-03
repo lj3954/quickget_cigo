@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/quickemu-project/quickget_configs/internal/web"
 	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
@@ -60,7 +61,7 @@ func (KolibriOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 }
 
 func getKolibriIsoData(url string) (string, string, error) {
-	page, err := capturePage(url)
+	page, err := web.CapturePage(url)
 	if err != nil {
 		return "", "", err
 	}

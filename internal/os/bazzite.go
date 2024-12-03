@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -25,7 +26,7 @@ func (Bazzite) Data() OSData {
 }
 
 func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(bazziteWorkflow)
+	page, err := web.CapturePage(bazziteWorkflow)
 	if err != nil {
 		return nil, err
 	}

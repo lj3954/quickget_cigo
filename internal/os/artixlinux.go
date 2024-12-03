@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
@@ -20,7 +21,7 @@ func (ArtixLinux) Data() OSData {
 }
 
 func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(artixMirror)
+	page, err := web.CapturePage(artixMirror)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,8 @@ package os
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -35,7 +37,7 @@ func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 			releaseUrl := mirror + "latest-releases.yaml"
 			go func() {
 				defer wg.Done()
-				page, err := capturePage(releaseUrl)
+				page, err := web.CapturePage(releaseUrl)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return

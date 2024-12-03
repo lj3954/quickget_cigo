@@ -2,6 +2,8 @@ package os
 
 import (
 	"regexp"
+
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const (
@@ -21,7 +23,7 @@ func (Guix) Data() OSData {
 }
 
 func (Guix) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(guixDataMirror)
+	page, err := web.CapturePage(guixDataMirror)
 	if err != nil {
 		return nil, err
 	}

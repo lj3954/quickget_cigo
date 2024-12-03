@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const endeavourMirror = "https://mirror.alpix.eu/endeavouros/iso/"
@@ -20,7 +21,7 @@ func (EndeavourOS) Data() OSData {
 }
 
 func (EndeavourOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(endeavourMirror)
+	page, err := web.CapturePage(endeavourMirror)
 	if err != nil {
 		return nil, err
 	}

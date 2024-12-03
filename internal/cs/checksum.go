@@ -6,11 +6,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/quickemu-project/quickget_configs/internal/utils"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 func SingleWhitespace(url string) (string, error) {
-	data, err := utils.CapturePage(url)
+	data, err := web.CapturePage(url)
 	if err != nil {
 		return "", fmt.Errorf("Failed to find single checksum: %w", err)
 	}
@@ -30,7 +30,7 @@ type ChecksumSeparation interface {
 }
 
 func Build(cs ChecksumSeparation, url string) (map[string]string, error) {
-	data, err := utils.CapturePage(url)
+	data, err := web.CapturePage(url)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to build checksums: %w", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
 const chimeraMirror = "https://repo.chimera-linux.org/live/latest/"
@@ -20,7 +21,7 @@ func (ChimeraLinux) Data() OSData {
 }
 
 func (ChimeraLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
-	page, err := capturePage(chimeraMirror)
+	page, err := web.CapturePage(chimeraMirror)
 	if err != nil {
 		return nil, err
 	}

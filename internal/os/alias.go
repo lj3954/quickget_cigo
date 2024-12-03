@@ -30,9 +30,6 @@ var (
 )
 
 var (
-	capturePage           = utils.CapturePage
-	capturePageToJson     = utils.CapturePageToJson
-	capturePageToXml      = utils.CapturePageToXml
 	getChannels           = utils.GetChannels
 	getChannelsWith       = utils.GetChannelsWith
 	waitForConfigs        = utils.WaitForConfigs
