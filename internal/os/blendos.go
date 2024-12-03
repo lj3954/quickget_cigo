@@ -11,7 +11,7 @@ func (BlendOS) Data() OSData {
 	}
 }
 
-func (BlendOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (BlendOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return []Config{
 		{
 			ISO: []Source{

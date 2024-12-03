@@ -25,7 +25,7 @@ func (KolibriOS) Data() OSData {
 	}
 }
 
-func (KolibriOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (KolibriOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(kolibriMirror, kolibriEditionRe, -1)
 	if err != nil {
 		return nil, err

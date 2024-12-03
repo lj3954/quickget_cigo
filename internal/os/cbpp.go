@@ -19,7 +19,7 @@ func (CBPP) Data() OSData {
 	}
 }
 
-func (CBPP) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (CBPP) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData []GithubAPI
 	if err := web.CapturePageToJson(cbppApi, &apiData); err != nil {
 		return nil, err

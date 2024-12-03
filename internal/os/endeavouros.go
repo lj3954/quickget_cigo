@@ -20,7 +20,7 @@ func (EndeavourOS) Data() OSData {
 	}
 }
 
-func (EndeavourOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (EndeavourOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(endeavourMirror)
 	if err != nil {
 		return nil, err

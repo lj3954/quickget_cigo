@@ -20,7 +20,7 @@ func (ArtixLinux) Data() OSData {
 	}
 }
 
-func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (ArtixLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(artixMirror)
 	if err != nil {
 		return nil, err

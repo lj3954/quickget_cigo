@@ -23,7 +23,7 @@ func (LinuxMint) Data() OSData {
 	}
 }
 
-func (LinuxMint) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (LinuxMint) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(linuxmintMirror, linuxmintReleaseRe, 5)
 	if err != nil {
 		return nil, err

@@ -27,7 +27,7 @@ type OSData struct {
 
 type Distro interface {
 	Data() OSData
-	CreateConfigs(chan Failure, chan Failure) ([]Config, error)
+	CreateConfigs(chan<- Failure, chan<- Failure) ([]Config, error)
 }
 
 func GetChannels() (chan Config, *sync.WaitGroup) {

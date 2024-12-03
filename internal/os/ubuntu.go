@@ -36,7 +36,7 @@ func (Edubuntu) Data() OSData {
 	}
 }
 
-func (Edubuntu) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Edubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("edubuntu", x86_64_only[:], errs, csErrs)
 }
 
@@ -49,7 +49,7 @@ func (Kubuntu) Data() OSData {
 	}
 }
 
-func (Kubuntu) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Kubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("kubuntu", x86_64_only[:], errs, csErrs)
 }
 
@@ -62,7 +62,7 @@ func (Lubuntu) Data() OSData {
 	}
 }
 
-func (Lubuntu) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Lubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("lubuntu", x86_64_only[:], errs, csErrs)
 }
 
@@ -75,7 +75,7 @@ func (Ubuntu) Data() OSData {
 	}
 }
 
-func (Ubuntu) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Ubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntu", x86_64_aarch64[:], errs, csErrs)
 }
 
@@ -106,7 +106,7 @@ func (UbuntuBudgie) Data() OSData {
 	}
 }
 
-func (UbuntuBudgie) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuBudgie) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntu-budgie", x86_64_only[:], errs, csErrs)
 }
 
@@ -119,7 +119,7 @@ func (UbuntuCinnamon) Data() OSData {
 	}
 }
 
-func (UbuntuCinnamon) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuCinnamon) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntucinnamon", x86_64_only[:], errs, csErrs)
 }
 
@@ -132,7 +132,7 @@ func (UbuntuKylin) Data() OSData {
 	}
 }
 
-func (UbuntuKylin) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuKylin) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntukylin", x86_64_only[:], errs, csErrs)
 }
 
@@ -145,7 +145,7 @@ func (UbuntuMATE) Data() OSData {
 	}
 }
 
-func (UbuntuMATE) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuMATE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntu-mate", x86_64_only[:], errs, csErrs)
 }
 
@@ -158,7 +158,7 @@ func (UbuntuServer) Data() OSData {
 	}
 }
 
-func (UbuntuServer) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuServer) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntu-server", three_architectures[:], errs, csErrs)
 }
 
@@ -171,7 +171,7 @@ func (UbuntuStudio) Data() OSData {
 	}
 }
 
-func (UbuntuStudio) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuStudio) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntustudio", x86_64_only[:], errs, csErrs)
 }
 
@@ -184,7 +184,7 @@ func (UbuntuUnity) Data() OSData {
 	}
 }
 
-func (UbuntuUnity) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (UbuntuUnity) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("ubuntu-unity", x86_64_only[:], errs, csErrs)
 }
 
@@ -197,7 +197,7 @@ func (Xubuntu) Data() OSData {
 	}
 }
 
-func (Xubuntu) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Xubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return getUbuntuConfigs("xubuntu", x86_64_only[:], errs, csErrs)
 }
 
@@ -208,7 +208,7 @@ type launchpadContents struct {
 	} `json:"entries"`
 }
 
-func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan Failure) ([]Config, error) {
+func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getUbuntuReleases()
 	if err != nil {
 		return nil, err

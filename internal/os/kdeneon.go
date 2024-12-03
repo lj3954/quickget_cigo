@@ -19,7 +19,7 @@ func (KDENeon) Data() OSData {
 	}
 }
 
-func (KDENeon) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (KDENeon) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"user", "testing", "unstable", "developer"}
 	ch, wg := getChannelsWith(len(releases))
 	for _, release := range releases {

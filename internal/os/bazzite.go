@@ -25,7 +25,7 @@ func (Bazzite) Data() OSData {
 	}
 }
 
-func (Bazzite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Bazzite) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(bazziteWorkflow)
 	if err != nil {
 		return nil, err

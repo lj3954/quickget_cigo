@@ -27,7 +27,7 @@ func (AntiX) Data() OSData {
 	}
 }
 
-func (AntiX) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (AntiX) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(antiXMirror, antiXReleaseRe, 3)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	return cs.Whitespace{}.BuildWithData(data[1]), nil
 }
 
-func createAntiXConfigs(ch chan Config, errs, csErrs chan Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
+func createAntiXConfigs(ch chan Config, errs, csErrs chan<- Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
 	defer wg.Done()
 	page, err := web.CapturePage(url)
 	if err != nil {

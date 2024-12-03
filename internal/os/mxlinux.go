@@ -23,7 +23,7 @@ func (MXLinux) Data() OSData {
 	}
 }
 
-func (MXLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (MXLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(mxlinuxMirror, mxlinuxReleaseRe, -1)
 	if err != nil {
 		return nil, err

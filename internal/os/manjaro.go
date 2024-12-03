@@ -25,7 +25,7 @@ func (Manjaro) Data() OSData {
 	}
 }
 
-func (Manjaro) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Manjaro) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	wg.Add(2)
 	go func() {
@@ -50,7 +50,7 @@ type manjaroSwayData struct {
 	URL string `json:"url"`
 }
 
-func addManjaroSwayConfig(ch chan Config, errs, csErrs chan Failure) {
+func addManjaroSwayConfig(ch chan Config, errs, csErrs chan<- Failure) {
 	release := "standard"
 	edition := "sway"
 	var data []manjaroSwayData
@@ -77,13 +77,13 @@ func addManjaroSwayConfig(ch chan Config, errs, csErrs chan Failure) {
 	}
 }
 
-func addManjaroConfigs(data map[string]manjaroEntry, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan Failure) {
+func addManjaroConfigs(data map[string]manjaroEntry, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
 	for edition, entry := range data {
 		addManjaroConfig(entry, edition, false, arch, ch, wg, csErrs)
 	}
 }
 
-func addManjaroConfig(entry manjaroEntry, edition string, minimal bool, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan Failure) {
+func addManjaroConfig(entry manjaroEntry, edition string, minimal bool, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
 	if entry.Minimal != nil {
 		addManjaroConfig(*entry.Minimal, edition, true, arch, ch, wg, csErrs)
 	}

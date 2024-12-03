@@ -23,7 +23,7 @@ func (Elementary) Data() OSData {
 	}
 }
 
-func (Elementary) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Elementary) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(elementaryUrl)
 	if err != nil {
 		return nil, err

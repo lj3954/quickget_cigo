@@ -23,7 +23,7 @@ func (ArcoLinux) Data() OSData {
 	}
 }
 
-func (ArcoLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (ArcoLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, -1)
 	if err != nil {
 		return nil, err

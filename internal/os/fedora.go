@@ -21,7 +21,7 @@ func (Fedora) Data() OSData {
 	}
 }
 
-func (Fedora) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Fedora) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releaseData, err := getFedoraReleases()
 	if err != nil {
 		return nil, err

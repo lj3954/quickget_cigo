@@ -23,7 +23,7 @@ func (BunsenLabs) Data() OSData {
 	}
 }
 
-func (BunsenLabs) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (BunsenLabs) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(bunsenLabsMirror)
 	if err != nil {
 		return nil, err

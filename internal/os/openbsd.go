@@ -24,7 +24,7 @@ func (OpenBSD) Data() OSData {
 	}
 }
 
-func (OpenBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (OpenBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(openbsdMirror, openbsdReleaseRe, 4)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (OpenBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func addOpenBSDConfig(mirror, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan Failure) {
+func addOpenBSDConfig(mirror, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
 	defer wg.Done()
 
 	checksums, err := cs.Build(cs.Sha256Regex, mirror+"SHA256")

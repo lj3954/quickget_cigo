@@ -24,7 +24,7 @@ func (Deepin) Data() OSData {
 	}
 }
 
-func (Deepin) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Deepin) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(deepinMirror, deepinReleaseRe, -1)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (Deepin) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func addDeepinConfigs(url, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan Failure) {
+func addDeepinConfigs(url, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
 	defer wg.Done()
 	isoUrl := fmt.Sprintf("%sdeepin-desktop-community-%s-%s.iso", url, release, arch)
 	checksum, err := cs.SingleWhitespace(url + "SHA256SUMS")

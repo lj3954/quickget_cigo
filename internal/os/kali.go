@@ -21,7 +21,7 @@ func (Kali) Data() OSData {
 	}
 }
 
-func (Kali) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Kali) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"current", "kali-weekly"}
 	ch, wg := getChannelsWith(len(releases))
 	isoRe := regexp.MustCompile(`href="(kali-linux-\d{4}-[^-]+-(installer|live)-(amd64|arm64).iso)"`)

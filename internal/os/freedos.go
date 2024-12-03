@@ -25,7 +25,7 @@ func (FreeDOS) Data() OSData {
 	}
 }
 
-func (FreeDOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (FreeDOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(freedosMirror, freedosReleaseRe, -1)
 	if err != nil {
 		return nil, err

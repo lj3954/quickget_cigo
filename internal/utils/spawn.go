@@ -10,11 +10,6 @@ import (
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
 )
 
-type completion struct {
-	Configs []Config
-	Err     error
-}
-
 func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 	ch := make(chan OSData)
 	errs := make(chan error)
@@ -25,13 +20,6 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 		os := distro.Data()
 		failures := make(chan Failure)
 		csErrs := make(chan Failure)
-		resultCh := make(chan completion)
-		go func() {
-			configs, err := distro.CreateConfigs(failures, csErrs)
-			close(failures)
-			close(csErrs)
-			resultCh <- completion{configs, err}
-		}()
 
 		failureSlice := make([]Failure, 0)
 		csFailureSlice := make([]Failure, 0)
@@ -41,21 +29,24 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 			}
 		}()
 		go func() {
-			for failure := range csErrs {
-				csFailureSlice = append(csFailureSlice, failure)
+			for csFailure := range csErrs {
+				csFailureSlice = append(csFailureSlice, csFailure)
 			}
 		}()
 
 		go func() {
 			defer wg.Done()
-			result := <-resultCh
-			if result.Err != nil {
-				status.failedOS(os, result.Err)
+			configs, err := distro.CreateConfigs(failures, csErrs)
+			close(failures)
+			close(csErrs)
+
+			if err != nil {
+				status.failedOS(os, err)
 				return
 			}
-			fixConfigs(&result.Configs)
-			status.addOS(os, result.Configs, failureSlice, csFailureSlice)
-			os.Releases = result.Configs
+			fixConfigs(&configs)
+			status.addOS(os, configs, failureSlice, csFailureSlice)
+			os.Releases = configs
 			ch <- os
 		}()
 	}

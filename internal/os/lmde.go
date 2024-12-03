@@ -20,7 +20,7 @@ func (LMDE) Data() OSData {
 	}
 }
 
-func (LMDE) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (LMDE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(lmdeMirror)
 	if err != nil {
 		return nil, err

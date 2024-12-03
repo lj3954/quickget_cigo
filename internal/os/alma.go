@@ -26,7 +26,7 @@ func (Alma) Data() OSData {
 	}
 }
 
-func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Alma) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (Alma) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) {
+func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan<- Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
 	defer wg.Done()
 
 	mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)

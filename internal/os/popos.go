@@ -19,7 +19,7 @@ func (PopOS) Data() OSData {
 	}
 }
 
-func (PopOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (PopOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	// Pop!_OS does not have an API that can be used to get a list of releases, so we'll just try Ubuntu's
 	ubuntuReleases, err := getUbuntuReleases()
 	if err != nil {
@@ -33,7 +33,7 @@ func (PopOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func addPopOSConfig(release, edition, popEdition string, ch chan Config, wg *sync.WaitGroup, errs chan Failure) {
+func addPopOSConfig(release, edition, popEdition string, ch chan Config, wg *sync.WaitGroup, errs chan<- Failure) {
 	defer wg.Done()
 	url := popApiUrl + release + "/" + popEdition
 	var data popApi

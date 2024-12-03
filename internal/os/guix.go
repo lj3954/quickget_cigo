@@ -22,7 +22,7 @@ func (Guix) Data() OSData {
 	}
 }
 
-func (Guix) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Guix) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(guixDataMirror)
 	if err != nil {
 		return nil, err

@@ -18,7 +18,7 @@ func (ArchLinux) Data() OSData {
 	}
 }
 
-func (ArchLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (ArchLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData archAPI
 	if err := web.CapturePageToJson(archlinuxAPI, &apiData); err != nil {
 		return nil, err

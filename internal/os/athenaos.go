@@ -20,7 +20,7 @@ func (AthenaOS) Data() OSData {
 	}
 }
 
-func (AthenaOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (AthenaOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData []GithubAPI
 	if err := web.CapturePageToJson(athenaAPI, &apiData); err != nil {
 		return nil, err

@@ -24,7 +24,7 @@ func (Garuda) Data() OSData {
 	}
 }
 
-func (Garuda) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Garuda) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(garudaMirror, garudaEditionRe, -1)
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ func (Alpine) Data() OSData {
 	}
 }
 
-func (Alpine) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Alpine) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
 	if err != nil {
 		return nil, err

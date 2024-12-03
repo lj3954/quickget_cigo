@@ -22,7 +22,7 @@ func (BigLinux) Data() OSData {
 	}
 }
 
-func (BigLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (BigLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(biglinuxMirror)
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ func (Haiku) Data() OSData {
 	}
 }
 
-func (Haiku) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Haiku) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(haikuMirror, haikuReleaseRe, 3)
 	if err != nil {
 		return nil, err

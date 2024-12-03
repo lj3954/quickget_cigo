@@ -26,7 +26,7 @@ func (EndlessOS) Data() OSData {
 	}
 }
 
-func (EndlessOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (EndlessOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
 	if err != nil {
 		return nil, err

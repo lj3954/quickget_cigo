@@ -24,7 +24,7 @@ func (GhostBSD) Data() OSData {
 	}
 }
 
-func (GhostBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (GhostBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(ghostbsdMirror, ghostbsdReleaseRe, 4)
 	if err != nil {
 		return nil, err

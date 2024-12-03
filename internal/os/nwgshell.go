@@ -20,7 +20,7 @@ func (NWGShell) Data() OSData {
 	}
 }
 
-func (NWGShell) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (NWGShell) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(nwgshellMirror)
 	if err != nil {
 		return nil, err

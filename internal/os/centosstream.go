@@ -25,7 +25,7 @@ func (CentOSStream) Data() OSData {
 	}
 }
 
-func (CentOSStream) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (CentOSStream) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
 	if err != nil {
 		return nil, err

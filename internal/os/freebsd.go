@@ -26,7 +26,7 @@ func (FreeBSD) Data() OSData {
 	}
 }
 
-func (FreeBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (FreeBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(3)
 	releaseRe := regexp.MustCompile(`href="([0-9\.]+)-RELEASE`)
 	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, wg, errs, csErrs, releaseRe)
@@ -36,7 +36,7 @@ func (FreeBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure, releaseRe *regexp.Regexp) {
+func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure, releaseRe *regexp.Regexp) {
 	defer wg.Done()
 	releases, numReleases, err := getBasicReleases(url, releaseRe, -1)
 	if err != nil {

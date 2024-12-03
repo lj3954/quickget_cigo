@@ -20,7 +20,7 @@ func (ChimeraLinux) Data() OSData {
 	}
 }
 
-func (ChimeraLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (ChimeraLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(chimeraMirror)
 	if err != nil {
 		return nil, err

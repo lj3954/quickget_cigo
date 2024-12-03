@@ -24,7 +24,7 @@ func (OpenIndiana) Data() OSData {
 	}
 }
 
-func (OpenIndiana) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (OpenIndiana) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(openindianaMirror, openindianaReleaseRe, 5)
 	if err != nil {
 		return nil, err

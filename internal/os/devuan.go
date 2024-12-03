@@ -23,7 +23,7 @@ func (Devuan) Data() OSData {
 	}
 }
 
-func (Devuan) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Devuan) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(devuanMirror, devuanReleaseRe, -1)
 	if err != nil {
 		return nil, err

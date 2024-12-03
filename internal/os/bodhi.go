@@ -23,7 +23,7 @@ func (Bodhi) Data() OSData {
 	}
 }
 
-func (Bodhi) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Bodhi) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
 	if err != nil {
 		return nil, err

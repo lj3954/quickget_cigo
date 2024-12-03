@@ -20,7 +20,7 @@ func (CachyOS) Data() OSData {
 	}
 }
 
-func (CachyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (CachyOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	mirrors, err := getCachyOSEditionMirrors()
 	if err != nil {
 		return nil, err

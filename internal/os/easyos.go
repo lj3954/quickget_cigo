@@ -29,7 +29,7 @@ func (EasyOS) Data() OSData {
 	}
 }
 
-func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (EasyOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	releases, err := getEasyOSReleases(5, wg, errs)
 	if err != nil {
@@ -77,7 +77,7 @@ func (EasyOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan Failure) ([]relMirror, error) {
+func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan<- Failure) ([]relMirror, error) {
 	releaseNames, numReleases, err := getBasicReleases(easyosMirror, easyosReleaseNameRe, -1)
 	if err != nil {
 		return nil, err

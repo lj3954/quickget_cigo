@@ -21,7 +21,7 @@ func (Nitrux) Data() OSData {
 	}
 }
 
-func (Nitrux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Nitrux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(nitruxMirror + "ISO/")
 	if err != nil {
 		return nil, err

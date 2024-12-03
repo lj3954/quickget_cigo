@@ -36,7 +36,7 @@ func (Debian) Data() OSData {
 	}
 }
 
-func (Debian) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Debian) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
 	latestRelease := getLatestDebianConfigs(ch, wg, errs, csErrs)
@@ -45,7 +45,7 @@ func (Debian) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) int {
+func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) int {
 	page, err := web.CapturePage(latestDebianMirror)
 	if err != nil {
 		errs <- Failure{Error: err}
@@ -64,7 +64,7 @@ func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs cha
 	return latestRelease
 }
 
-func getOldDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure, latestRelease int) {
+func getOldDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure, latestRelease int) {
 	page, err := web.CapturePage(prevDebianMirror)
 	if err != nil {
 		errs <- Failure{Error: err}
@@ -80,7 +80,7 @@ func getOldDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan F
 	}
 }
 
-func createReleaseMap(html string, errs chan Failure) map[int]string {
+func createReleaseMap(html string, errs chan<- Failure) map[int]string {
 	m := make(map[int]string)
 	for _, match := range debianReleaseRe.FindAllStringSubmatch(html, -1) {
 		fullRelease := match[1]
@@ -101,7 +101,7 @@ func createReleaseMap(html string, errs chan Failure) map[int]string {
 	return m
 }
 
-func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan Failure) {
+func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
 	liveMirror := mirror + fullRelease + "-live/amd64/iso-hybrid/"
 
 	wg.Add(1)

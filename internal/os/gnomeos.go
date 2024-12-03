@@ -23,7 +23,7 @@ func (GnomeOS) Data() OSData {
 	}
 }
 
-func (GnomeOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (GnomeOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
 	if err != nil {
 		return nil, err

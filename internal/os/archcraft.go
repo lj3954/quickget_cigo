@@ -24,7 +24,7 @@ func (Archcraft) Data() OSData {
 	}
 }
 
-func (Archcraft) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Archcraft) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(archcraftMirror, archcraftReleaseRe, 3)
 	if err != nil {
 		return nil, err

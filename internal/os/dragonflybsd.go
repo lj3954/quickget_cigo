@@ -23,7 +23,7 @@ func (DragonFlyBSD) Data() OSData {
 	}
 }
 
-func (DragonFlyBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (DragonFlyBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(dragonflybsdMirror)
 	if err != nil {
 		return nil, err

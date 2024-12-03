@@ -26,7 +26,7 @@ func (NixOS) Data() OSData {
 	}
 }
 
-func (NixOS) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (NixOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getNixReleases(6)
 	if err != nil {
 		return nil, err

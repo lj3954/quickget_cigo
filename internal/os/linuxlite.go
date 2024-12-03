@@ -22,7 +22,7 @@ func (LinuxLite) Data() OSData {
 	}
 }
 
-func (LinuxLite) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (LinuxLite) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleases(linuxliteMirror, linuxliteReleaseRe, 5)
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ func (Mageia) Data() OSData {
 	}
 }
 
-func (Mageia) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Mageia) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(mageiaMirror, mageiaReleaseRe, -1)
 	if err != nil {
 		return nil, err

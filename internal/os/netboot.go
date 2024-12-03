@@ -15,7 +15,7 @@ func (Netboot) Data() OSData {
 	}
 }
 
-func (Netboot) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Netboot) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	checksumUrl := netbootMirror + "netboot.xyz-sha256-checksums.txt"
 	checksums, err := cs.Build(cs.Whitespace{}, checksumUrl)
 	if err != nil {

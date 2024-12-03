@@ -25,7 +25,7 @@ func (NetBSD) Data() OSData {
 	}
 }
 
-func (NetBSD) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (NetBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleasesFunc(netbsdMirror, netbsdReleaseRe, 4, semverCompare)
 	if err != nil {
 		return nil, err

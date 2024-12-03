@@ -23,7 +23,7 @@ func (Batocera) Data() OSData {
 	}
 }
 
-func (Batocera) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Batocera) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleasesFunc(batoceraMirror, batoceraReleaseRe, 3, integerCompare)
 	if err != nil {
 		return nil, err

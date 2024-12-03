@@ -21,7 +21,7 @@ func (Gentoo) Data() OSData {
 	}
 }
 
-func (Gentoo) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
+func (Gentoo) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	architectures := [...]string{"amd64", "arm64"}
 	isoRe := regexp.MustCompile(`\d{8}T\d{6}Z\/(admincd|install|livegui).*?.iso`)
 	ch, wg := getChannelsWith(len(architectures))
