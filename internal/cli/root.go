@@ -79,6 +79,7 @@ func Launch() {
 		os.UbuntuServer{},
 		os.UbuntuStudio{},
 		os.UbuntuUnity{},
+		os.WindowsServer{},
 		os.Xubuntu{},
 	)
 	distros = fixList(distros)
