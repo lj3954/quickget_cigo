@@ -36,7 +36,7 @@ func (ArtixLinux) CreateConfigs(errs, csErrs chan Failure) ([]Config, error) {
 	for i, match := range matches {
 		iso, edition, release := match[1], match[2], match[3]
 		url := artixMirror + iso
-		checksum, _ := checksums[iso]
+		checksum := checksums[iso]
 		configs[i] = Config{
 			Release: release,
 			Edition: edition,

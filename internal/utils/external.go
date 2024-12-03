@@ -47,7 +47,9 @@ func capturePageToBytes(input string) ([]byte, error) {
 		}
 		defer sem.Release(1)
 	}
-	permits.Acquire(context.Background(), 1)
+	if err := permits.Acquire(context.Background(), 1); err != nil {
+		return nil, err
+	}
 	defer permits.Release(1)
 
 	resp, err := client.Get(input)
