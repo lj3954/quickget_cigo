@@ -18,14 +18,7 @@ import (
 
 type Config = quickgetdata.Config
 type Failure = data.Failure
-
-type OSData struct {
-	Name        string   `json:"name"`
-	PrettyName  string   `json:"pretty_name"`
-	Homepage    string   `json:"homepage"`
-	Description string   `json:"description"`
-	Releases    []Config `json:"releases"`
-}
+type OSData = data.OSData
 
 type Distro interface {
 	Data() OSData

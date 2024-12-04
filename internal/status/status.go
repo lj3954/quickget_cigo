@@ -1,4 +1,4 @@
-package utils
+package status
 
 import (
 	"embed"
@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/quickemu-project/quickget_configs/internal/data"
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
@@ -44,14 +46,14 @@ type sourceData struct {
 	Source     qgdata.Source
 }
 
-func createStatus(len int) *Status {
+func Create(len int) *Status {
 	return &Status{
 		StartTime: time.Now(),
 		Data:      make([]osStatus, 0, len),
 	}
 }
 
-func (data OSData) toStatus() osStatus {
+func makeOsStatus(data data.OSData) osStatus {
 	return osStatus{
 		Name:        data.Name,
 		PrettyName:  data.PrettyName,
@@ -60,18 +62,18 @@ func (data OSData) toStatus() osStatus {
 	}
 }
 
-func (s *Status) failedOS(data OSData, err error) {
+func (s *Status) FailedOS(data data.OSData, err error) {
 	s.Lock()
 	defer s.Unlock()
-	status := data.toStatus()
+	status := makeOsStatus(data)
 	status.Err = err
 	s.Data = append(s.Data, status)
 }
 
-func (s *Status) addOS(data OSData, configs []Config, failures, csFailures []Failure) {
+func (s *Status) AddOS(data data.OSData, configs []quickgetdata.Config, failures, csFailures []data.Failure) {
 	s.Lock()
 	defer s.Unlock()
-	status := data.toStatus()
+	status := makeOsStatus(data)
 	for _, failure := range failures {
 		status.Releases = append(status.Releases, ReleaseStatus{
 			Release: failure.Release,

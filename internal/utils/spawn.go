@@ -6,15 +6,16 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-version"
+	"github.com/quickemu-project/quickget_configs/internal/status"
 	"github.com/quickemu-project/quickget_configs/internal/web"
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
-func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
+func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 	ch := make(chan OSData)
 	var wg sync.WaitGroup
 	wg.Add(len(distros))
-	status := createStatus(len(distros))
+	status := status.Create(len(distros))
 	for _, distro := range distros {
 		os := distro.Data()
 		failures := make(chan Failure)
@@ -40,13 +41,13 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 			configs, err := distro.CreateConfigs(failures, csErrs)
 
 			if err != nil {
-				status.failedOS(os, err)
+				status.FailedOS(os, err)
 				return
 			}
 			configs = web.RemoveInvalidConfigs(configs, failures, csErrs)
 
 			fixConfigs(&configs)
-			status.addOS(os, configs, failureSlice, csFailureSlice)
+			status.AddOS(os, configs, failureSlice, csFailureSlice)
 			os.Releases = configs
 			ch <- os
 		}()
