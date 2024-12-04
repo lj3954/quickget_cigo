@@ -7,7 +7,7 @@ import (
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
 	"github.com/quickemu-project/quickget_configs/internal/web"
-	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 const launchpadReleasesUrl = "https://api.launchpad.net/devel/ubuntu/series"

@@ -1,18 +1,17 @@
 package utils
 
 import (
-	"log"
 	"slices"
 	"strings"
 	"sync"
 
 	"github.com/hashicorp/go-version"
-	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	"github.com/quickemu-project/quickget_configs/internal/web"
+	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 	ch := make(chan OSData)
-	errs := make(chan error)
 	var wg sync.WaitGroup
 	wg.Add(len(distros))
 	status := createStatus(len(distros))
@@ -36,14 +35,16 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 
 		go func() {
 			defer wg.Done()
+			defer close(failures)
+			defer close(csErrs)
 			configs, err := distro.CreateConfigs(failures, csErrs)
-			close(failures)
-			close(csErrs)
 
 			if err != nil {
 				status.failedOS(os, err)
 				return
 			}
+			configs = web.RemoveInvalidConfigs(configs, failures, csErrs)
+
 			fixConfigs(&configs)
 			status.addOS(os, configs, failureSlice, csFailureSlice)
 			os.Releases = configs
@@ -54,13 +55,6 @@ func SpawnDistros(distros ...Distro) ([]OSData, *Status) {
 	go func() {
 		wg.Wait()
 		close(ch)
-		close(errs)
-	}()
-
-	go func() {
-		for err := range errs {
-			log.Println(err)
-		}
 	}()
 
 	data := make([]OSData, 0, len(distros))

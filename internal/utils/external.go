@@ -11,11 +11,13 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-version"
+	"github.com/quickemu-project/quickget_configs/internal/data"
 	"github.com/quickemu-project/quickget_configs/internal/web"
-	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
-type Config quickgetdata.Config
+type Config = quickgetdata.Config
+type Failure = data.Failure
 
 type OSData struct {
 	Name        string   `json:"name"`
@@ -27,7 +29,7 @@ type OSData struct {
 
 type Distro interface {
 	Data() OSData
-	CreateConfigs(chan<- Failure, chan<- Failure) ([]Config, error)
+	CreateConfigs(chan<- data.Failure, chan<- data.Failure) ([]Config, error)
 }
 
 func GetChannels() (chan Config, *sync.WaitGroup) {
@@ -51,25 +53,6 @@ func WaitForConfigs(ch chan Config, wg *sync.WaitGroup) []Config {
 		configs = append(configs, config)
 	}
 	return configs
-}
-
-type GithubAPI struct {
-	TagName    string        `json:"tag_name"`
-	Assets     []GithubAsset `json:"assets"`
-	Prerelease bool          `json:"prerelease"`
-	Body       string        `json:"body"`
-}
-
-type GithubAsset struct {
-	Name string `json:"name"`
-	URL  string `json:"browser_download_url"`
-}
-
-type Failure struct {
-	Release string
-	Edition string
-	Arch    quickgetdata.Arch
-	Error   error
 }
 
 func GetSortedReleasesFunc(url string, pattern any, num int, cmp func(a, b string) int) ([]string, error) {

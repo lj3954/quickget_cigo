@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/web"
-	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 const (

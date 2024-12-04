@@ -1,20 +1,21 @@
 package os
 
 import (
+	"github.com/quickemu-project/quickget_configs/internal/data"
 	"github.com/quickemu-project/quickget_configs/internal/utils"
-	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 type (
 	OSData        = utils.OSData
 	Config        = utils.Config
-	GithubAPI     = utils.GithubAPI
-	GithubAsset   = utils.GithubAsset
+	GithubAPI     = data.GithubAPI
+	GithubAsset   = data.GithubAsset
 	Arch          = qgdata.Arch
 	ArchiveFormat = qgdata.ArchiveFormat
 	Source        = qgdata.Source
 	Disk          = qgdata.Disk
-	Failure       = utils.Failure
+	Failure       = data.Failure
 )
 
 const (

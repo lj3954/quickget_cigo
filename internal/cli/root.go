@@ -11,7 +11,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"github.com/quickemu-project/quickget_configs/internal/os"
 	"github.com/quickemu-project/quickget_configs/internal/utils"
-	quickgetdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 func Launch() {

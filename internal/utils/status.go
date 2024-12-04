@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickget_data"
+	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 type Status struct {
