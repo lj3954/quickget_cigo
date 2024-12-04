@@ -16,6 +16,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
+
+      - name: Run templ
+        run: |
+          go install github.com/a-h/templ/cmd/templ@latest
+          templ generate
+
       - name: Build
         run: go build -v -o quickget_cigo ./cmd/main.go
 
