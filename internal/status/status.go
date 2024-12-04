@@ -1,8 +1,7 @@
 package status
 
 import (
-	"embed"
-	"html/template"
+	"context"
 	"log"
 	"os"
 	"slices"
@@ -122,19 +121,8 @@ func (s *Status) Finalize() error {
 	slices.SortFunc(s.Data, func(a, b osStatus) int {
 		return strings.Compare(a.Name, b.Name)
 	})
-	html, err := statusTemplate.ReadFile("statusTemplate/template.html")
-	if err != nil {
-		return err
-	}
-	funcs := template.FuncMap{
-		"div": func(a, b float64) float64 {
-			return a / b
-		},
-	}
-	htmlTemplate, err := template.New("status").Funcs(funcs).Parse(string(html))
-	if err != nil {
-		return err
-	}
+
+	page := statusTempl(s)
 	if err := os.RemoveAll(statusPageDir); err != nil {
 		return err
 	} else if err := os.Mkdir(statusPageDir, 0755); err != nil {
@@ -145,12 +133,9 @@ func (s *Status) Finalize() error {
 		return err
 	}
 	defer file.Close()
-	if err := htmlTemplate.Execute(file, s); err != nil {
+	if err := page.Render(context.Background(), file); err != nil {
 		return err
 	}
 
 	return nil
 }
-
-//go:embed statusTemplate/*
-var statusTemplate embed.FS

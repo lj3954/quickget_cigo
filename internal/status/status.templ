@@ -1,0 +1,161 @@
+package status
+
+import (
+	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
+	"strconv"
+	"time"
+)
+
+templ statusTempl(s *Status) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="UTF-8"/>
+			<title>Quickget CI Status</title>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+                details > summary {
+                    cursor: pointer;
+                    padding: 8px;
+                    border-radius: 4px;
+                }
+                details > summary:hover {
+                    background-color: #f3f4f6;
+                }
+                details[open] > summary {
+                    margin-bottom: 8px;
+                }
+            </style>
+		</head>
+		<body class="bg-gray-50">
+			<div class="max-w-6xl mx-auto p-6">
+				<div class="bg-white shadow rounded-lg p-6">
+					<h1 class="text-2xl font-bold mb-4">Quickget CI Status</h1>
+					@runtime(s.StartTime, s.EndTime)
+					<div class="text-sm text-gray-600 mb-6"></div>
+					for _, os := range s.Data {
+						@osDropdown(os)
+					}
+				</div>
+			</div>
+		</body>
+	</html>
+}
+
+const timeOfDayFormat = "15:04:05"
+
+templ runtime(startTime, endTime time.Time) {
+	{{
+	day := startTime.Format("Monday, January 2, 2006")
+	duration := endTime.Sub(startTime).String()
+	timeZone, _ := startTime.Zone()
+	pStartTime := startTime.Format(timeOfDayFormat)
+	pEndTime := endTime.Format(timeOfDayFormat)
+	}}
+	<div class="text-sm text-gray-600 mb-6">
+		{ day }
+		<br/>
+		Run Time: { duration } ({ pStartTime } - { pEndTime } { timeZone })
+	</div>
+}
+
+templ osDropdown(os osStatus) {
+	<details class="border-t pt-4 mb-6">
+		<summary class="flex items-center justify-between">
+			<div class="flex-1">
+				<h2 class="text-xl font-semibold inline-block">
+					{ os.PrettyName }
+					if os.Err != nil {
+						<span class="text-red-600 text-sm ml-2">Failed: { os.Err.Error() }</span>
+					}
+					<a href={ templ.URL(os.Homepage) } class="text-blue-600 hover:underline text-sm ml-4">Homepage</a>
+				</h2>
+			</div>
+		</summary>
+		<p class="text-gray-600 mt-2">{ os.Description }</p>
+		for _, release := range os.Releases {
+			@renderConfigDetails(release)
+		}
+	</details>
+}
+
+templ renderConfigDetails(release ReleaseStatus) {
+	{{
+	relStr := release.Release
+	if release.Edition != "" {
+		relStr += " (" + release.Edition + ")"
+	}
+	if release.Arch == "" {
+		release.Arch = quickgetdata.X86_64
+	}
+	relStr += " - " + string(release.Arch)
+	}}
+	<div class="mt-4 pl-4 border-l-2 border-gray-200">
+		<h3 class="font-medium">
+			Release: { relStr }
+			if release.Err != nil {
+				<div class="text-red-600 text-sm ml-2">Error: { release.Err.Error() }</div>
+			}
+		</h3>
+		if release.Sources != nil {
+			@renderSources(release.Sources)
+		}
+		if release.DiskImages != nil {
+			@renderDiskImages(release.DiskImages)
+		}
+	</div>
+}
+
+templ renderSources(sources []sourceData) {
+	<div class="mt-2 space-y-2">
+		for _, data := range sources {
+			<div class="text-sm">
+				<span class="font-medium">{ data.SourceType }:</span>
+				@renderSource(data.Source)
+			</div>
+		}
+	</div>
+}
+
+templ renderDiskImages(disks []quickgetdata.Disk) {
+	<div class="mt-2">
+		<div class="text-sm font-medium">Disk Images:</div>
+		<div class="pl-4">
+			for _, disk := range disks {
+				{{
+	diskFormat := disk.Format
+	if diskFormat == "" {
+		diskFormat = quickgetdata.Qcow2
+	}
+				}}
+				<div class="text-sm">
+					@renderSource(disk.Source)
+					<div>Format: { string(diskFormat) }</div>
+					if disk.Size > 0 {
+						{{ diskSize := disk.Size / 1024 / 1024 / 1024 }}
+						<div>Size: { strconv.Itoa(int(diskSize)) } GiB</div>
+					}
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ renderSource(source quickgetdata.Source) {
+	<div class="pl-4">
+		if webSource := source.Web; webSource != nil {
+			<div>URL: { webSource.URL }</div>
+			if checksum := webSource.Checksum; len(checksum)>0 {
+				<div>Checksum: { checksum }</div>
+			}
+			if archiveFormat := webSource.ArchiveFormat; len(archiveFormat)>0 {
+				<div>Archive Format: { string(archiveFormat) }</div>
+			}
+			if filename := webSource.FileName; len(filename)>0 {
+				<div>File Name: { filename }</div>
+			}
+		} else {
+			<div>Unimplemented source type</div>
+		}
+	</div>
+}
