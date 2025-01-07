@@ -18,7 +18,7 @@ import (
 
 type Config = quickgetdata.Config
 type Failure = data.Failure
-type OSData = data.OSData
+type OSData = quickgetdata.OSData
 
 type Distro interface {
 	Data() OSData

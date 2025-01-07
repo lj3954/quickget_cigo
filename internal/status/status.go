@@ -52,7 +52,7 @@ func Create(len int) *Status {
 	}
 }
 
-func makeOsStatus(data data.OSData) osStatus {
+func makeOsStatus(data qgdata.OSData) osStatus {
 	return osStatus{
 		Name:        data.Name,
 		PrettyName:  data.PrettyName,
@@ -61,7 +61,7 @@ func makeOsStatus(data data.OSData) osStatus {
 	}
 }
 
-func (s *Status) FailedOS(data data.OSData, err error) {
+func (s *Status) FailedOS(data qgdata.OSData, err error) {
 	s.Lock()
 	defer s.Unlock()
 	status := makeOsStatus(data)
@@ -69,7 +69,7 @@ func (s *Status) FailedOS(data data.OSData, err error) {
 	s.Data = append(s.Data, status)
 }
 
-func (s *Status) AddOS(data data.OSData, configs []quickgetdata.Config, failures, csFailures []data.Failure) {
+func (s *Status) AddOS(data qgdata.OSData, configs []quickgetdata.Config, failures, csFailures []data.Failure) {
 	s.Lock()
 	defer s.Unlock()
 	status := makeOsStatus(data)
