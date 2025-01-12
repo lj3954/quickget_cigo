@@ -49,7 +49,9 @@ func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 			fixConfigs(&configs)
 			status.AddOS(os, configs, failureSlice, csFailureSlice)
 			os.Releases = configs
-			ch <- os
+			if len(configs) > 0 {
+				ch <- os
+			}
 		}()
 	}
 
