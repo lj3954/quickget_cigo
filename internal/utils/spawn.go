@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"slices"
 	"strings"
 	"sync"
@@ -45,6 +46,11 @@ func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 				return
 			}
 			configs = web.RemoveInvalidConfigs(configs, failures, csErrs)
+
+			if len(configs) == 0 {
+				status.FailedOS(os, errors.New("no valid configs found"))
+				return
+			}
 
 			fixConfigs(&configs)
 			status.AddOS(os, configs, failureSlice, csFailureSlice)

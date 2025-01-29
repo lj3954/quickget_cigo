@@ -135,7 +135,7 @@ func fixList(distros []utils.OSData) []utils.OSData {
 type compressionType int
 
 const (
-	_ = iota
+	_ = compressionType(iota)
 	None
 	Gzip
 	Zstd
