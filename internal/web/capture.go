@@ -21,7 +21,7 @@ var (
 	}
 )
 
-func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
+func getResponse(input string, headers http.Header) (*http.Response, error) {
 	url, err := url.Parse(input)
 	if err != nil {
 		return nil, err
@@ -46,10 +46,30 @@ func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("Failed to capture page %s: %s", input, resp.Status)
+		defer resp.Body.Close()
+		return nil, fmt.Errorf("Failed to make response to page %s: %s", input, resp.Status)
 	}
+
+	return resp, nil
+}
+
+func FinalRedirectUrl(input string) (string, error) {
+	resp, err := getResponse(input, nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	return resp.Request.URL.String(), nil
+}
+
+func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
+	resp, err := getResponse(input, headers)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -83,33 +103,4 @@ func CapturePageAcceptingJson(url string, data any) error {
 
 func CapturePageToXml(url string, data any) error {
 	return capturePageToUnmarshal(url, data, xml.Unmarshal, nil)
-}
-
-func FinalRedirectUrl(input string) (string, error) {
-	url, err := url.Parse(input)
-	if err != nil {
-		return "", err
-	}
-
-	if sem, exists := urlPermits[url.Hostname()]; exists {
-		if err := sem.Acquire(context.Background(), 1); err != nil {
-			return "", err
-		}
-		defer sem.Release(1)
-	}
-	if err := permits.Acquire(context.Background(), 1); err != nil {
-		return "", err
-	}
-	defer permits.Release(1)
-
-	resp, err := client.Get(input)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("Failed to find Redirect URL for page %s: %s", input, resp.Status)
-	}
-
-	return resp.Request.URL.String(), nil
 }
