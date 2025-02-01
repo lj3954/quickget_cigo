@@ -76,6 +76,7 @@ func Launch() {
 		os.Peppermint{},
 		os.PopOS{},
 		os.Porteus{},
+		os.Primtux{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
