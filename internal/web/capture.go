@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -20,7 +21,7 @@ var (
 	}
 )
 
-func capturePageToBytes(input string) ([]byte, error) {
+func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
 	url, err := url.Parse(input)
 	if err != nil {
 		return nil, err
@@ -36,7 +37,12 @@ func capturePageToBytes(input string) ([]byte, error) {
 	}
 	defer permits.Release(1)
 
-	resp, err := client.Get(input)
+	req, err := retryablehttp.NewRequest("GET", input, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = headers
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -53,14 +59,14 @@ func capturePageToBytes(input string) ([]byte, error) {
 }
 
 func CapturePage(input string) (string, error) {
-	body, err := capturePageToBytes(input)
+	body, err := capturePageToBytes(input, nil)
 	if err != nil {
 		return "", err
 	}
 	return string(body), nil
 }
-func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) error) error {
-	page, err := capturePageToBytes(url)
+func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) error, headers http.Header) error {
+	page, err := capturePageToBytes(url, headers)
 	if err != nil {
 		return err
 	}
@@ -68,11 +74,15 @@ func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) er
 }
 
 func CapturePageToJson(url string, data any) error {
-	return capturePageToUnmarshal(url, data, json.Unmarshal)
+	return capturePageToUnmarshal(url, data, json.Unmarshal, nil)
+}
+
+func CapturePageAcceptingJson(url string, data any) error {
+	return capturePageToUnmarshal(url, data, json.Unmarshal, http.Header{"Accept": []string{"application/json"}})
 }
 
 func CapturePageToXml(url string, data any) error {
-	return capturePageToUnmarshal(url, data, xml.Unmarshal)
+	return capturePageToUnmarshal(url, data, xml.Unmarshal, nil)
 }
 
 func FinalRedirectUrl(input string) (string, error) {
