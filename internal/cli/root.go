@@ -78,6 +78,7 @@ func Launch() {
 		os.Porteus{},
 		os.Primtux{},
 		os.ProxmoxVE{},
+		os.PureOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
