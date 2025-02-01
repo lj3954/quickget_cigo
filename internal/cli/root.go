@@ -80,6 +80,7 @@ func Launch() {
 		os.ProxmoxVE{},
 		os.PureOS{},
 		os.ReactOS{},
+		os.RebornOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
