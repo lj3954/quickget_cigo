@@ -72,6 +72,7 @@ func Launch() {
 		os.OpenIndiana{},
 		os.OpenSUSE{},
 		os.OracleLinux{},
+		os.ParrotSec{},
 		os.PopOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
