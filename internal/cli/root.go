@@ -83,6 +83,7 @@ func Launch() {
 		os.RebornOS{},
 		os.RockyLinux{},
 		os.Siduction{},
+		os.Slackware{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
