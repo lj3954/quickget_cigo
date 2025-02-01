@@ -86,6 +86,7 @@ func Launch() {
 		os.Slackware{},
 		os.Slax{},
 		os.Slint{},
+		os.Slitaz{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
