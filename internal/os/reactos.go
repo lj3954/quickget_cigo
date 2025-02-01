@@ -32,6 +32,7 @@ func (ReactOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		{
 			Release: "latest",
 			Edition: "standard",
+			GuestOS: quickgetdata.ReactOS,
 			ISO: []Source{
 				webSource(url, "", quickgetdata.Zip, ""),
 			},
@@ -39,6 +40,7 @@ func (ReactOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		{
 			Release: "latest",
 			Edition: "live",
+			GuestOS: quickgetdata.ReactOS,
 			ISO: []Source{
 				webSource(strings.Replace(url, "iso", "live", 1), "", quickgetdata.Zip, ""),
 			},
