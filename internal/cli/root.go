@@ -70,6 +70,7 @@ func Launch() {
 		os.NWGShell{},
 		os.OpenBSD{},
 		os.OpenIndiana{},
+		os.OpenSUSE{},
 		os.PopOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
