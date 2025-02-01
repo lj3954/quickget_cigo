@@ -1,7 +1,6 @@
 package os
 
 import (
-	"log"
 	"maps"
 	"regexp"
 	"sync"
@@ -29,7 +28,7 @@ func (BunsenLabs) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 	releaseRe := regexp.MustCompile(`href="(([^-]+)-1(:?-[0-9]+)?-amd64.hybrid.iso)"`)
-	checksums := getBunsenLabsChecksums(page)
+	checksums := getBunsenLabsChecksums(page, csErrs)
 
 	matches := releaseRe.FindAllStringSubmatch(page, -1)
 	configs := make([]Config, len(matches))
@@ -47,10 +46,9 @@ func (BunsenLabs) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return configs, nil
 }
 
-func getBunsenLabsChecksums(page string) map[string]string {
+func getBunsenLabsChecksums(page string, csErrs chan<- Failure) map[string]string {
 	checksumRe := regexp.MustCompile(`href="(.*?.sha256.txt)"`)
 	ch := make(chan map[string]string)
-	errs := make(chan error)
 	var wg sync.WaitGroup
 
 	matches := checksumRe.FindAllStringSubmatch(page, -1)
@@ -61,7 +59,7 @@ func getBunsenLabsChecksums(page string) map[string]string {
 			defer wg.Done()
 			checksums, err := cs.Build(cs.Whitespace{}, url)
 			if err != nil {
-				errs <- err
+				csErrs <- Failure{Error: err}
 			} else {
 				ch <- checksums
 			}
@@ -71,12 +69,6 @@ func getBunsenLabsChecksums(page string) map[string]string {
 	go func() {
 		wg.Wait()
 		close(ch)
-		close(errs)
-	}()
-	go func() {
-		for err := range errs {
-			log.Println(err)
-		}
 	}()
 
 	checksums := make(map[string]string)
