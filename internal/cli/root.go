@@ -81,6 +81,7 @@ func Launch() {
 		os.PureOS{},
 		os.ReactOS{},
 		os.RebornOS{},
+		os.RockyLinux{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
