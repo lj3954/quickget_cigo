@@ -75,6 +75,7 @@ func Launch() {
 		os.ParrotSec{},
 		os.Peppermint{},
 		os.PopOS{},
+		os.Porteus{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
