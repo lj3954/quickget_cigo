@@ -74,3 +74,32 @@ func CapturePageToJson(url string, data any) error {
 func CapturePageToXml(url string, data any) error {
 	return capturePageToUnmarshal(url, data, xml.Unmarshal)
 }
+
+func FinalRedirectUrl(input string) (string, error) {
+	url, err := url.Parse(input)
+	if err != nil {
+		return "", err
+	}
+
+	if sem, exists := urlPermits[url.Hostname()]; exists {
+		if err := sem.Acquire(context.Background(), 1); err != nil {
+			return "", err
+		}
+		defer sem.Release(1)
+	}
+	if err := permits.Acquire(context.Background(), 1); err != nil {
+		return "", err
+	}
+	defer permits.Release(1)
+
+	resp, err := client.Get(input)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("Failed to find Redirect URL for page %s: %s", input, resp.Status)
+	}
+
+	return resp.Request.URL.String(), nil
+}

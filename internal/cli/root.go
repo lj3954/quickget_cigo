@@ -79,6 +79,7 @@ func Launch() {
 		os.Primtux{},
 		os.ProxmoxVE{},
 		os.PureOS{},
+		os.ReactOS{},
 		os.Ubuntu{},
 		os.UbuntuBudgie{},
 		os.UbuntuCinnamon{},
