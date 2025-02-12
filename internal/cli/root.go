@@ -24,6 +24,7 @@ func Launch() {
 		os.ArcoLinux{},
 		os.ArtixLinux{},
 		os.AthenaOS{},
+		os.AzureLinux{},
 		os.Batocera{},
 		os.Bazzite{},
 		os.BigLinux{},
