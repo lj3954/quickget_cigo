@@ -31,7 +31,7 @@ func (Windows) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var configs []Config
 	for _, data := range list {
 		if data.Error != nil {
-			errs <- Failure{Release: data.Release, Error: data.Error}
+			errs <- Failure{Release: data.Release, Edition: data.Edition, Arch: data.Arch, Error: data.Error}
 			continue
 		}
 		url := windowsRedirectMirror + data.Url[2:]
