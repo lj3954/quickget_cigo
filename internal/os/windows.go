@@ -6,7 +6,58 @@ import (
 	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
-const windowsServerMirror = "https://www.microsoft.com/en-us/evalcenter/download-windows-server"
+const (
+	windowsRedirectMirror = "https://quickemu-dynamic.lj3954.dev/"
+	windowsServerMirror   = "https://www.microsoft.com/en-us/evalcenter/download-windows-server"
+)
+
+type Windows struct{}
+
+func (Windows) Data() OSData {
+	return OSData{
+		Name:        "windows",
+		PrettyName:  "Windows",
+		Homepage:    "https://www.microsoft.com/en-us/windows/",
+		Description: "Whether you’re gaming, studying, running a business, or running a household, Windows helps you get it done.",
+	}
+}
+
+func (Windows) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+	var list []OsListData
+	if err := web.CapturePageToJson(windowsRedirectMirror+"list?os=windows", &list); err != nil {
+		return nil, err
+	}
+
+	var configs []Config
+	for _, data := range list {
+		if data.Error != nil {
+			errs <- Failure{Release: data.Release, Error: data.Error}
+			continue
+		}
+		url := windowsRedirectMirror + data.Url[2:]
+		configs = append(configs, Config{
+			Release: data.Release,
+			Edition: data.Edition,
+			Arch:    data.Arch,
+			ISO: []Source{
+				webSource(url, data.Checksum, "", data.Filename),
+			},
+			SkipValidation: true,
+		})
+	}
+
+	return configs, nil
+}
+
+type OsListData struct {
+	Release  string `json:"release"`
+	Edition  string `json:"edition"`
+	Arch     Arch   `json:"arch"`
+	Url      string `json:"url"`
+	Filename string `json:"filename,omitempty"`
+	Checksum string `json:"checksum,omitempty"`
+	Error    error  `json:"error,omitempty"`
+}
 
 type WindowsServer struct{}
 

@@ -21,14 +21,16 @@ func RemoveInvalidConfigs(configs []quickgetdata.Config, errs, csErrs chan<- dat
 	for _, config := range configs {
 		go func() {
 			defer wg.Done()
-			if err := validateConfigSources(&config); err != nil {
-				errs <- data.Failure{
-					Release: config.Release,
-					Edition: config.Edition,
-					Arch:    config.Arch,
-					Error:   err,
+			if !config.SkipValidation {
+				if err := validateConfigSources(&config); err != nil {
+					errs <- data.Failure{
+						Release: config.Release,
+						Edition: config.Edition,
+						Arch:    config.Arch,
+						Error:   err,
+					}
+					return
 				}
-				return
 			}
 			ch <- config
 		}()

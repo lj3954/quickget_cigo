@@ -62,17 +62,18 @@ const (
 )
 
 type Config struct {
-	Release    string   `json:"release"`
-	Edition    string   `json:"edition,omitempty"`
-	GuestOS    GuestOS  `json:"os,omitempty"`
-	Arch       Arch     `json:"arch,omitempty"`
-	ISO        []Source `json:"iso,omitempty"`
-	IMG        []Source `json:"img,omitempty"`
-	FixedISO   []Source `json:"fixed_iso,omitempty"`
-	Floppy     []Source `json:"floppy,omitempty"`
-	DiskImages []Disk   `json:"disk_images,omitempty"`
-	TPM        bool     `json:"tpm,omitempty"`
-	RAM        int64    `json:"ram,omitempty"`
+	Release        string   `json:"release"`
+	Edition        string   `json:"edition,omitempty"`
+	GuestOS        GuestOS  `json:"os,omitempty"`
+	Arch           Arch     `json:"arch,omitempty"`
+	ISO            []Source `json:"iso,omitempty"`
+	IMG            []Source `json:"img,omitempty"`
+	FixedISO       []Source `json:"fixed_iso,omitempty"`
+	Floppy         []Source `json:"floppy,omitempty"`
+	DiskImages     []Disk   `json:"disk_images,omitempty"`
+	TPM            bool     `json:"tpm,omitempty"`
+	RAM            int64    `json:"ram,omitempty"`
+	SkipValidation bool     `json:"-"`
 }
 
 type Disk struct {
