@@ -41,7 +41,7 @@ func (CBPP) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 
 		var checksum string
-		for _, line := range strings.Split(data.Body, "\n") {
+		for line := range strings.Lines(data.Body) {
 			if strings.Contains(line, isoAsset.Name) {
 				checksum = strings.SplitN(line, " ", 2)[0]
 				break

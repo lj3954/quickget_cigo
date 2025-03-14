@@ -62,7 +62,7 @@ var Sha512Regex = CustomRegex{
 
 func (Whitespace) BuildWithData(data string) map[string]string {
 	m := make(map[string]string)
-	for _, line := range strings.Split(data, "\n") {
+	for line := range strings.Lines(data) {
 		slice := strings.SplitN(line, " ", 2)
 		if len(slice) == 2 {
 			hash := strings.TrimSpace(slice[0])

@@ -2,6 +2,7 @@ package os
 
 import (
 	"fmt"
+	"iter"
 	"regexp"
 	"slices"
 	"strings"
@@ -66,9 +67,16 @@ func (OracleLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) 
 				if !(strings.Contains(line, "dvd") && strings.Contains(line, "OracleLinux")) {
 					continue
 				}
-				splitLine := strings.Fields(line)
-				checksum := splitLine[0]
-				iso := splitLine[1]
+				nextSplit, stop := iter.Pull(strings.FieldsSeq(line))
+				defer stop()
+				checksum, hasChecksum := nextSplit()
+				if !hasChecksum {
+					errs <- Failure{Release: release, Error: fmt.Errorf("Line %s does not contain the required fields", line)}
+				}
+				iso, hasIso := nextSplit()
+				if !hasIso {
+					errs <- Failure{Release: release, Error: fmt.Errorf("Line %s does not contain the required fields", line)}
+				}
 				url := fmt.Sprintf("https://yum.oracle.com/ISOS/OracleLinux/OL%s/u%s/%s/%s", major, minor, arch, iso)
 				ch <- Config{
 					Release: release,
