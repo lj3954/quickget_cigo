@@ -1,6 +1,7 @@
 package os
 
 import (
+	"errors"
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/web"
@@ -30,8 +31,8 @@ func (Windows) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	var configs []Config
 	for _, data := range list {
-		if data.Error != nil {
-			errs <- Failure{Release: data.Release, Edition: data.Edition, Arch: data.Arch, Error: data.Error}
+		if data.Error != "" {
+			errs <- Failure{Release: data.Release, Edition: data.Edition, Arch: data.Arch, Error: errors.New(data.Error)}
 			continue
 		}
 		url := windowsRedirectMirror + data.Url[2:]
@@ -56,7 +57,7 @@ type OsListData struct {
 	Url      string `json:"url"`
 	Filename string `json:"filename,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
-	Error    error  `json:"error,omitempty"`
+	Error    string `json:"error,omitempty"`
 }
 
 type WindowsServer struct{}
