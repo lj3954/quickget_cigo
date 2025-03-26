@@ -10,6 +10,7 @@ import (
 const (
 	alpineMirror    = "https://dl-cdn.alpinelinux.org/alpine/"
 	alpineReleaseRe = `<a href="(v[0-9]+\.[0-9]+)/"`
+	alpineIsoRe     = `(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`
 )
 
 type Alpine struct{}
@@ -29,34 +30,45 @@ func (Alpine) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
-	isoRe := regexp.MustCompile(`(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`)
+	isoRe := regexp.MustCompile(alpineIsoRe)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
-			mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
-			releaseUrl := mirror + "latest-releases.yaml"
 			go func() {
 				defer wg.Done()
-				page, err := web.CapturePage(releaseUrl)
+				config, err := getAlpineConfig(release, arch, isoRe)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
 					return
 				}
-
-				if slice := isoRe.FindStringSubmatch(page); len(slice) > 0 {
-					iso, checksum := slice[1], slice[2]
-					url := mirror + iso
-					ch <- Config{
-						Release: release,
-						Arch:    arch,
-						ISO: []Source{
-							urlChecksumSource(url, checksum),
-						},
-					}
-				}
+				ch <- *config
 			}()
 		}
 	}
 
 	return waitForConfigs(ch, wg), nil
+}
+
+func getAlpineConfig(release string, arch Arch, isoRe *regexp.Regexp) (config *Config, e error) {
+	mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
+	releaseUrl := mirror + "latest-releases.yaml"
+
+	page, err := web.CapturePage(releaseUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if slice := isoRe.FindStringSubmatch(page); len(slice) > 0 {
+		iso, checksum := slice[1], slice[2]
+		url := mirror + iso
+		config = &Config{
+			Release: release,
+			Arch:    arch,
+			ISO: []Source{
+				urlChecksumSource(url, checksum),
+			},
+		}
+	}
+
+	return
 }
