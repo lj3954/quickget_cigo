@@ -2,9 +2,9 @@ package os
 
 import (
 	"fmt"
+	"iter"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
 	"github.com/quickemu-project/quickget_configs/internal/web"
@@ -36,44 +36,62 @@ func (Alma) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
-			go addAlmaConfigs(release, arch, isoRe, ch, wg, errs, csErrs)
+			go func() {
+				defer wg.Done()
+				configs, csErr, err := getAlmaConfigs(release, arch, isoRe)
+				if err != nil {
+					errs <- Failure{Release: release, Arch: arch, Error: err}
+					return
+				}
+				if csErr != nil {
+					csErrs <- Failure{Release: release, Arch: arch, Error: err}
+				}
+				for config := range configs {
+					ch <- config
+				}
+			}()
 		}
 	}
 
 	return waitForConfigs(ch, wg), nil
 }
 
-func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan<- Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
-	defer wg.Done()
-
+func getAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp) (configs iter.Seq[Config], csErr error, e error) {
 	mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
 	page, err := web.CapturePage(mirror)
 	if err != nil {
-		errs <- Failure{Release: release, Arch: arch, Error: err}
-		return
+		return nil, nil, err
 	}
 
 	checksums, err := cs.Build(cs.Sha256Regex, mirror+"CHECKSUM")
 	if err != nil {
-		csErrs <- Failure{Release: release, Arch: arch, Error: err}
-		return
+		csErr = err
 	}
 
-	for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		if strings.HasSuffix(match[0], ".manifest") {
-			continue
-		}
+	configs = func(yield func(Config) bool) {
+		for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
+			if strings.HasSuffix(match[0], ".manifest") {
+				continue
+			}
 
-		iso, edition := match[1], match[2]
-		url := mirror + iso
-		checksum := checksums[iso]
-		ch <- Config{
-			Release: release,
-			Edition: edition,
-			Arch:    arch,
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
+			iso, edition := match[1], match[2]
+			url := mirror + iso
+			checksum := checksums[iso]
+
+			config := Config{
+				Release: release,
+				Edition: edition,
+				Arch:    arch,
+				ISO: []Source{
+					urlChecksumSource(url, checksum),
+				},
+			}
+
+			if !yield(config) {
+				break
+			}
 		}
 	}
+
+	return
 }
