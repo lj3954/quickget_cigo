@@ -26,7 +26,7 @@ func (ArchLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	numConfigs := min(3, len(apiData.Releases))
 	configs := make([]Config, numConfigs)
-	for i := 0; i < numConfigs; i++ {
+	for i := range numConfigs {
 		data := apiData.Releases[i]
 		release := data.Version
 		if release == apiData.LatestVersion {
