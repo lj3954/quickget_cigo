@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	arcolinuxMirror    = "https://mirror.accum.se/mirror/arcolinux.info/iso/"
-	arcolinuxReleaseRe = `>(v[0-9.]+)/</a`
+	arcolinuxMirror    = "https://ant.seedhost.eu/arcolinux/iso/"
+	arcolinuxReleaseRe = `href='./(v[0-9\.]+)'`
+	arcolinuxIsoRe     = `>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`
+	arcolinuxCsRe      = `>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`
 )
 
 type ArcoLinux struct{}
@@ -24,14 +26,14 @@ func (ArcoLinux) Data() OSData {
 }
 
 func (ArcoLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, -1)
+	releases, numReleases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 
-	isoRe := regexp.MustCompile(`>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`)
+	isoRe := regexp.MustCompile(arcolinuxIsoRe)
 	csRegex := cs.CustomRegex{
-		Regex:      regexp.MustCompile(`>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`),
+		Regex:      regexp.MustCompile(arcolinuxCsRe),
 		KeyIndex:   2,
 		ValueIndex: 1,
 	}
