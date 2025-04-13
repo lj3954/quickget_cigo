@@ -14,18 +14,15 @@ const (
 	kolibriEditionRe = `href="([a-z]{2}_[A-Z]{2})\/"`
 )
 
-type KolibriOS struct{}
-
-func (KolibriOS) Data() OSData {
-	return OSData{
-		Name:        "kolibrios",
-		PrettyName:  "KolibriOS",
-		Homepage:    "https://kolibrios.org/",
-		Description: "Tiny yet incredibly powerful and fast operating system.",
-	}
+var kolibriOS = OS{
+	Name:           "kolibrios",
+	PrettyName:     "KolibriOS",
+	Homepage:       "https://kolibrios.org/",
+	Description:    "Tiny yet incredibly powerful and fast operating system.",
+	ConfigFunction: createKolibriOSConfigs,
 }
 
-func (KolibriOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createKolibriOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(kolibriMirror, kolibriEditionRe, -1)
 	if err != nil {
 		return nil, err

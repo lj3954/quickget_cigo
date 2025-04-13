@@ -11,18 +11,15 @@ import (
 
 const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
 
-type BunsenLabs struct{}
-
-func (BunsenLabs) Data() OSData {
-	return OSData{
-		Name:        "bunsenlabs",
-		PrettyName:  "BunsenLabs",
-		Homepage:    "https://www.bunsenlabs.org/",
-		Description: "Light-weight and easily customizable Openbox desktop. The project is a community continuation of CrunchBang Linux.",
-	}
+var bunsenLabs = OS{
+	Name:           "bunsenlabs",
+	PrettyName:     "BunsenLabs",
+	Homepage:       "https://www.bunsenlabs.org/",
+	Description:    "Light-weight and easily customizable Openbox desktop. The project is a community continuation of CrunchBang Linux.",
+	ConfigFunction: createBunsenLabsConfigs,
 }
 
-func (BunsenLabs) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createBunsenLabsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(bunsenLabsMirror)
 	if err != nil {
 		return nil, err

@@ -12,18 +12,15 @@ const (
 	gnomeosReleaseRe = `href="(\d[^/]+)\/"`
 )
 
-type GnomeOS struct{}
-
-func (GnomeOS) Data() OSData {
-	return OSData{
-		Name:        "gnomeos",
-		PrettyName:  "GNOME OS",
-		Homepage:    "https://os.gnome.org/",
-		Description: "Alpha nightly bleeding edge distro of GNOME",
-	}
+var gnomeOS = OS{
+	Name:           "gnomeos",
+	PrettyName:     "GNOME OS",
+	Homepage:       "https://os.gnome.org/",
+	Description:    "Alpha nightly bleeding edge distro of GNOME",
+	ConfigFunction: createGnomeOSConfigs,
 }
 
-func (GnomeOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createGnomeOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
 	if err != nil {
 		return nil, err

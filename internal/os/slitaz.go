@@ -12,18 +12,15 @@ const (
 	slitazIsoRe  = `href='(slitaz-(rolling(?:-.*?)?)\.iso)'`
 )
 
-type Slitaz struct{}
-
-func (Slitaz) Data() OSData {
-	return OSData{
-		Name:        "slitaz",
-		PrettyName:  "SliTaz",
-		Homepage:    "https://www.slitaz.org/",
-		Description: "Simple, fast and low resource Linux OS for servers & desktops.",
-	}
+var slitaz = OS{
+	Name:           "slitaz",
+	PrettyName:     "SliTaz",
+	Homepage:       "https://www.slitaz.org/",
+	Description:    "Simple, fast and low resource Linux OS for servers & desktops.",
+	ConfigFunction: createSlitazConfigs,
 }
 
-func (Slitaz) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSlitazConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(slitazMirror)
 	if err != nil {
 		return nil, err

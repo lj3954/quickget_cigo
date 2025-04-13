@@ -25,18 +25,15 @@ var (
 	debianNetinstRe = regexp.MustCompile(`>(debian-[0-9].+-(?:amd64|arm64)-(netinst).iso)<`)
 )
 
-type Debian struct{}
-
-func (Debian) Data() OSData {
-	return OSData{
-		Name:        "debian",
-		PrettyName:  "Debian",
-		Homepage:    "https://www.debian.org/",
-		Description: "Complete Free Operating System with perfect level of ease of use and stability.",
-	}
+var debian = OS{
+	Name:           "debian",
+	PrettyName:     "Debian",
+	Homepage:       "https://www.debian.org/",
+	Description:    "Complete Free Operating System with perfect level of ease of use and stability.",
+	ConfigFunction: createDebianConfigs,
 }
 
-func (Debian) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createDebianConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 
 	latestRelease := getLatestDebianConfigs(ch, wg, errs, csErrs)

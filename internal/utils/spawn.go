@@ -12,18 +12,26 @@ import (
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
-func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
+func SpawnDistros(distros []OS) ([]OSData, *status.Status) {
 	ch := make(chan OSData)
 	var wg sync.WaitGroup
-	wg.Add(len(distros))
 	status := status.Create(len(distros))
 	for _, distro := range distros {
-		os := distro.Data()
+		os := OSData{
+			Name:        distro.Name,
+			PrettyName:  distro.PrettyName,
+			Description: distro.Description,
+			Homepage:    distro.Homepage,
+		}
+		if distro.ConfigFunction == nil {
+			status.FailedOS(os, errors.New("Config function is nil"))
+			continue
+		}
+
 		failures := make(chan Failure)
 		csErrs := make(chan Failure)
 
-		failureSlice := make([]Failure, 0)
-		csFailureSlice := make([]Failure, 0)
+		var failureSlice, csFailureSlice []Failure
 		go func() {
 			for failure := range failures {
 				failureSlice = append(failureSlice, failure)
@@ -35,11 +43,12 @@ func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 			}
 		}()
 
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			defer close(failures)
 			defer close(csErrs)
-			configs, err := distro.CreateConfigs(failures, csErrs)
+			configs, err := distro.ConfigFunction(failures, csErrs)
 
 			if err != nil {
 				status.FailedOS(os, err)
@@ -52,9 +61,8 @@ func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 				return
 			}
 
-			fixConfigs(&configs)
-			status.AddOS(os, configs, failureSlice, csFailureSlice)
-			os.Releases = configs
+			os.Releases = fixConfigs(configs)
+			status.AddOS(os, failureSlice, csFailureSlice)
 			if len(configs) > 0 {
 				ch <- os
 			}
@@ -77,9 +85,9 @@ func SpawnDistros(distros ...Distro) ([]OSData, *status.Status) {
 	return data, status
 }
 
-func fixConfigs(configs *[]Config) {
+func fixConfigs(configs []Config) []Config {
 	// We want to sort releases in descending order; editions are typically strings and should be sorted lexicographically
-	slices.SortFunc(*configs, func(a, b Config) int {
+	slices.SortFunc(configs, func(a, b Config) int {
 		if aSemver, err := version.NewVersion(a.Release); err == nil {
 			if bSemver, err := version.NewVersion(b.Release); err == nil {
 				if cmp := bSemver.Compare(aSemver); cmp != 0 {
@@ -93,8 +101,8 @@ func fixConfigs(configs *[]Config) {
 		}
 		return strings.Compare(a.Edition, b.Edition)
 	})
-	for i := range *configs {
-		config := &(*configs)[i]
+	for i := range configs {
+		config := &configs[i]
 		if config.GuestOS == "" {
 			config.GuestOS = qgdata.Linux
 		}
@@ -107,7 +115,7 @@ func fixConfigs(configs *[]Config) {
 			config.Release = "latest"
 		}
 	}
-	*configs = slices.DeleteFunc(*configs, func(c Config) bool {
+	return slices.DeleteFunc(configs, func(c Config) bool {
 		return c.Arch != qgdata.X86_64 && c.Arch != qgdata.Aarch64 && c.Arch != qgdata.Riscv64
 	})
 }

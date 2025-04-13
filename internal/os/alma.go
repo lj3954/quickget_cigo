@@ -15,18 +15,15 @@ const (
 	almaReleaseRe = `<a href="([0-9]+)/"`
 )
 
-type Alma struct{}
-
-func (Alma) Data() OSData {
-	return OSData{
-		Name:        "alma",
-		PrettyName:  "AlmaLinux",
-		Homepage:    "https://almalinux.org/",
-		Description: "Community owned and governed, forever-free enterprise Linux distribution, focused on long-term stability, providing a robust production-grade platform. AlmaLinux OS is binary compatible with RHEL®.",
-	}
+var alma = OS{
+	Name:           "alma",
+	PrettyName:     "AlmaLinux",
+	Homepage:       "https://almalinux.org/",
+	Description:    "Community owned and governed, forever-free enterprise Linux distribution, focused on long-term stability, providing a robust production-grade platform. AlmaLinux OS is binary compatible with RHEL®.",
+	ConfigFunction: createAlmaConfigs,
 }
 
-func (Alma) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
 	if err != nil {
 		return nil, err

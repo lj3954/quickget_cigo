@@ -9,18 +9,15 @@ import (
 
 const cachyOSMirror = "https://mirror.cachyos.org/ISO/"
 
-type CachyOS struct{}
-
-func (CachyOS) Data() OSData {
-	return OSData{
-		Name:        "cachyos",
-		PrettyName:  "CachyOS",
-		Homepage:    "https://cachyos.org/",
-		Description: "Designed to deliver lightning-fast speeds and stability, ensuring a smooth and enjoyable computing experience every time you use it.",
-	}
+var cachyOS = OS{
+	Name:           "cachyos",
+	PrettyName:     "CachyOS",
+	Homepage:       "https://cachyos.org/",
+	Description:    "Designed to deliver lightning-fast speeds and stability, ensuring a smooth and enjoyable computing experience every time you use it.",
+	ConfigFunction: createCachyOSConfigs,
 }
 
-func (CachyOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	mirrors, err := getCachyOSEditionMirrors()
 	if err != nil {
 		return nil, err

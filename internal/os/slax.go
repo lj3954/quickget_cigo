@@ -13,18 +13,15 @@ const (
 	slaxIsoRe  = `href="(slax-64bit-(?:debian|slackware)-[\d\.]+\.iso)"`
 )
 
-type Slax struct{}
-
-func (Slax) Data() OSData {
-	return OSData{
-		Name:        "slax",
-		PrettyName:  "Slax",
-		Homepage:    "https://slax.org/",
-		Description: "Compact, fast, and modern Linux operating system that combines sleek design with modular approach. With the ability to run directly from a USB flash drive without the need for installation, Slax is truly portable and fits easily in your pocket.",
-	}
+var slax = OS{
+	Name:           "slax",
+	PrettyName:     "Slax",
+	Homepage:       "https://slax.org/",
+	Description:    "Compact, fast, and modern Linux operating system that combines sleek design with modular approach. With the ability to run directly from a USB flash drive without the need for installation, Slax is truly portable and fits easily in your pocket.",
+	ConfigFunction: createSlaxConfigs,
 }
 
-func (Slax) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(2)
 	isoRe := regexp.MustCompile(slaxIsoRe)
 	release := "latest"

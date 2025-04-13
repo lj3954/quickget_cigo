@@ -14,18 +14,15 @@ const (
 	porteusIsoRe     = `href="(Porteus-([^-]+)-(.*?)-x86_64.iso)"`
 )
 
-type Porteus struct{}
-
-func (Porteus) Data() OSData {
-	return OSData{
-		Name:        "porteus",
-		PrettyName:  "Porteus",
-		Homepage:    "http://www.porteus.org/",
-		Description: "Complete linux operating system that is optimized to run from CD, USB flash drive, hard drive, or other bootable storage media.",
-	}
+var porteus = OS{
+	Name:           "porteus",
+	PrettyName:     "Porteus",
+	Homepage:       "http://www.porteus.org/",
+	Description:    "Complete linux operating system that is optimized to run from CD, USB flash drive, hard drive, or other bootable storage media.",
+	ConfigFunction: createPorteusConfigs,
 }
 
-func (Porteus) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createPorteusConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(porteusMirror, porteusReleaseRe, 3)
 	if err != nil {
 		return nil, err

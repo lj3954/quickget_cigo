@@ -12,18 +12,15 @@ const (
 	devuanReleaseRe = `href="(devuan_[a-zA-Z]+/)"`
 )
 
-type Devuan struct{}
-
-func (Devuan) Data() OSData {
-	return OSData{
-		Name:        "devuan",
-		PrettyName:  "Devuan",
-		Homepage:    "https://devuan.org/",
-		Description: "Fork of Debian without systemd that allows users to reclaim control over their system by avoiding unnecessary entanglements and ensuring Init Freedom.",
-	}
+var devuan = OS{
+	Name:           "devuan",
+	PrettyName:     "Devuan",
+	Homepage:       "https://devuan.org/",
+	Description:    "Fork of Debian without systemd that allows users to reclaim control over their system by avoiding unnecessary entanglements and ensuring Init Freedom.",
+	ConfigFunction: createDevuanConfigs,
 }
 
-func (Devuan) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(devuanMirror, devuanReleaseRe, -1)
 	if err != nil {
 		return nil, err

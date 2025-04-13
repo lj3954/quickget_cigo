@@ -11,18 +11,15 @@ const (
 	opensuseReleaseRe  = `href=".\/(\d{2}\.\d{1})`
 )
 
-type OpenSUSE struct{}
-
-func (OpenSUSE) Data() OSData {
-	return OSData{
-		Name:        "opensuse",
-		PrettyName:  "openSUSE",
-		Homepage:    "https://www.opensuse.org/",
-		Description: "The makers choice for sysadmins, developers and desktop users.",
-	}
+var openSUSE = OS{
+	Name:           "opensuse",
+	PrettyName:     "openSUSE",
+	Homepage:       "https://www.opensuse.org/",
+	Description:    "The makers choice for sysadmins, developers and desktop users.",
+	ConfigFunction: createOpenSUSEConfigs,
 }
 
-func (OpenSUSE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createOpenSUSEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, _, err := getReverseReleases(opensuseLeapMirror, opensuseReleaseRe, 5)
 	if err != nil {
 		return nil, err

@@ -12,18 +12,15 @@ const (
 	linuxmintReleaseRe = `href="(\d+(?:\.\d+)?)\/"`
 )
 
-type LinuxMint struct{}
-
-func (LinuxMint) Data() OSData {
-	return OSData{
-		Name:        "linuxmint",
-		PrettyName:  "Linux Mint",
-		Homepage:    "https://linuxmint.com/",
-		Description: "Designed to work out of the box and comes fully equipped with the apps most people need.",
-	}
+var linuxMint = OS{
+	Name:           "linuxmint",
+	PrettyName:     "Linux Mint",
+	Homepage:       "https://linuxmint.com/",
+	Description:    "Designed to work out of the box and comes fully equipped with the apps most people need.",
+	ConfigFunction: createLinuxMintConfigs,
 }
 
-func (LinuxMint) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(linuxmintMirror, linuxmintReleaseRe, 5)
 	if err != nil {
 		return nil, err

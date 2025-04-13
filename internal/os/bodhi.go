@@ -12,18 +12,15 @@ const (
 	bodhiReleaseRe = `"name":"([0-9]+.[0-9]+.[0-9]+)"`
 )
 
-type Bodhi struct{}
-
-func (Bodhi) Data() OSData {
-	return OSData{
-		Name:        "bodhi",
-		PrettyName:  "Bodhi",
-		Homepage:    "https://www.bodhilinux.com/",
-		Description: "Lightweight distribution featuring the fast & fully customizable Moksha Desktop.",
-	}
+var bodhi = OS{
+	Name:           "bodhi",
+	PrettyName:     "Bodhi",
+	Homepage:       "https://www.bodhilinux.com/",
+	Description:    "Lightweight distribution featuring the fast & fully customizable Moksha Desktop.",
+	ConfigFunction: createBodhiConfigs,
 }
 
-func (Bodhi) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createBodhiConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
 	if err != nil {
 		return nil, err

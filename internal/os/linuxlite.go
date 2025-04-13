@@ -11,18 +11,15 @@ const (
 	linuxliteReleaseRe = `"name":"(\d(?:\.\d+)+)"`
 )
 
-type LinuxLite struct{}
-
-func (LinuxLite) Data() OSData {
-	return OSData{
-		Name:        "linuxlite",
-		PrettyName:  "Linux Lite",
-		Homepage:    "https://www.linuxliteos.com/",
-		Description: "Your first simple, fast and free stop in the world of Linux.",
-	}
+var linuxLite = OS{
+	Name:           "linuxlite",
+	PrettyName:     "Linux Lite",
+	Homepage:       "https://www.linuxliteos.com/",
+	Description:    "Your first simple, fast and free stop in the world of Linux.",
+	ConfigFunction: createLinuxLiteConfigs,
 }
 
-func (LinuxLite) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createLinuxLiteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleases(linuxliteMirror, linuxliteReleaseRe, 5)
 	if err != nil {
 		return nil, err

@@ -14,18 +14,15 @@ const (
 	siductionIsoRe    = `href="(siduction-.*?\.iso)"`
 )
 
-type Siduction struct{}
-
-func (Siduction) Data() OSData {
-	return OSData{
-		Name:        "siduction",
-		PrettyName:  "Siduction",
-		Homepage:    "https://siduction.org/",
-		Description: "Operating system based on the Linux kernel and the GNU project. In addition, there are applications and libraries from Debian.",
-	}
+var siduction = OS{
+	Name:           "siduction",
+	PrettyName:     "Siduction",
+	Homepage:       "https://siduction.org/",
+	Description:    "Operating system based on the Linux kernel and the GNU project. In addition, there are applications and libraries from Debian.",
+	ConfigFunction: createSiductionConfigs,
 }
 
-func (Siduction) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSiductionConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	subdirRe := regexp.MustCompile(siductionSubdirRe)
 	release := "latest"
 

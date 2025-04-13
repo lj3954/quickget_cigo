@@ -8,32 +8,29 @@ import (
 )
 
 const (
-	arcolinuxMirror    = "https://ant.seedhost.eu/arcolinux/iso/"
-	arcolinuxReleaseRe = `href='./(v[0-9\.]+)'`
-	arcolinuxIsoRe     = `>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`
-	arcolinuxCsRe      = `>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`
+	arcoLinuxMirror    = "https://ant.seedhost.eu/arcolinux/iso/"
+	arcoLinuxReleaseRe = `href='./(v[0-9\.]+)'`
+	arcoLinuxIsoRe     = `>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`
+	arcoLinuxCsRe      = `>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`
 )
 
-type ArcoLinux struct{}
-
-func (ArcoLinux) Data() OSData {
-	return OSData{
-		Name:        "arcolinux",
-		PrettyName:  "ArcoLinux",
-		Homepage:    "https://arcolinux.com/",
-		Description: "It's all about becoming an expert in Linux.",
-	}
+var arcoLinux = OS{
+	Name:           "arcolinux",
+	PrettyName:     "ArcoLinux",
+	Homepage:       "https://arcolinux.com/",
+	Description:    "It's all about becoming an expert in Linux.",
+	ConfigFunction: createArcoLinuxConfigs,
 }
 
-func (ArcoLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(arcolinuxMirror, arcolinuxReleaseRe, 3)
+func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+	releases, numReleases, err := getBasicReleases(arcoLinuxMirror, arcoLinuxReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 
-	isoRe := regexp.MustCompile(arcolinuxIsoRe)
+	isoRe := regexp.MustCompile(arcoLinuxIsoRe)
 	csRegex := cs.CustomRegex{
-		Regex:      regexp.MustCompile(arcolinuxCsRe),
+		Regex:      regexp.MustCompile(arcoLinuxCsRe),
 		KeyIndex:   2,
 		ValueIndex: 1,
 	}
@@ -42,7 +39,7 @@ func (ArcoLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for release := range releases {
 		go func() {
 			defer wg.Done()
-			mirror := arcolinuxMirror + release + "/"
+			mirror := arcoLinuxMirror + release + "/"
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}

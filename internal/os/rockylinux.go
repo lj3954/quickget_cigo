@@ -11,18 +11,15 @@ const (
 	rockyReleaseRe = `href="(\d+\.\d+)/"`
 )
 
-type RockyLinux struct{}
-
-func (RockyLinux) Data() OSData {
-	return OSData{
-		Name:        "rockylinux",
-		PrettyName:  "Rocky Linux",
-		Homepage:    "https://rockylinux.org/",
-		Description: "Open-source enterprise operating system designed to be 100% bug-for-bug compatible with Red Hat Enterprise Linux®.",
-	}
+var rockyLinux = OS{
+	Name:           "rockylinux",
+	PrettyName:     "Rocky Linux",
+	Homepage:       "https://rockylinux.org/",
+	Description:    "Open-source enterprise operating system designed to be 100% bug-for-bug compatible with Red Hat Enterprise Linux®.",
+	ConfigFunction: createRockyLinuxConfigs,
 }
 
-func (RockyLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createRockyLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(rockyMirror, rockyReleaseRe, 3)
 	if err != nil {
 		return nil, err

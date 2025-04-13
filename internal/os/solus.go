@@ -13,18 +13,15 @@ const (
 	solusIsoRe  = `^Solus-([^-]+)-Release-\d{4}-\d{2}-\d{2}\.iso$`
 )
 
-type Solus struct{}
-
-func (Solus) Data() OSData {
-	return OSData{
-		Name:        "solus",
-		PrettyName:  "Solus",
-		Homepage:    "https://getsol.us/",
-		Description: "Designed for home computing. Every tweak enables us to deliver a cohesive computing experience.",
-	}
+var solus = OS{
+	Name:           "solus",
+	PrettyName:     "Solus",
+	Homepage:       "https://getsol.us/",
+	Description:    "Designed for home computing. Every tweak enables us to deliver a cohesive computing experience.",
+	ConfigFunction: createSolusConfigs,
 }
 
-func (Solus) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSolusConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var releases []SolusData
 	if err := web.CapturePageAcceptingJson(solusMirror, &releases); err != nil {
 		return nil, err

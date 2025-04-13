@@ -10,18 +10,15 @@ import (
 
 const nitruxMirror = "https://sourceforge.net/projects/nitruxos/files/Release/"
 
-type Nitrux struct{}
-
-func (Nitrux) Data() OSData {
-	return OSData{
-		Name:        "nitrux",
-		PrettyName:  "Nitrux",
-		Homepage:    "https://nxos.org/",
-		Description: "Powered by Debian, KDE Plasma and Frameworks, and AppImages.",
-	}
+var nitrux = OS{
+	Name:           "nitrux",
+	PrettyName:     "Nitrux",
+	Homepage:       "https://nxos.org/",
+	Description:    "Powered by Debian, KDE Plasma and Frameworks, and AppImages.",
+	ConfigFunction: createNitruxConfigs,
 }
 
-func (Nitrux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(nitruxMirror + "ISO/")
 	if err != nil {
 		return nil, err

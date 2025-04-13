@@ -11,18 +11,15 @@ import (
 
 const biglinuxMirror = "https://iso.biglinux.com.br/"
 
-type BigLinux struct{}
-
-func (BigLinux) Data() OSData {
-	return OSData{
-		Name:        "biglinux",
-		PrettyName:  "BigLinux",
-		Homepage:    "https://www.biglinux.com.br/",
-		Description: "It's the right choice if you want to have an easy and enriching experience with Linux. It has been perfected over more than 19 years, following our motto: 'In search of the perfect system'",
-	}
+var bigLinux = OS{
+	Name:           "biglinux",
+	PrettyName:     "BigLinux",
+	Homepage:       "https://www.biglinux.com.br/",
+	Description:    "It's the right choice if you want to have an easy and enriching experience with Linux. It has been perfected over more than 19 years, following our motto: 'In search of the perfect system'",
+	ConfigFunction: createBigLinuxConfigs,
 }
 
-func (BigLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createBigLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(biglinuxMirror)
 	if err != nil {
 		return nil, err

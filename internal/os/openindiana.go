@@ -13,18 +13,15 @@ const (
 	openindianaReleaseRe = `href="(\d{8})/"`
 )
 
-type OpenIndiana struct{}
-
-func (OpenIndiana) Data() OSData {
-	return OSData{
-		Name:        "openindiana",
-		PrettyName:  "OpenIndiana",
-		Homepage:    "https://www.openindiana.org/",
-		Description: "Community supported illumos-based operating system.",
-	}
+var openIndiana = OS{
+	Name:           "openindiana",
+	PrettyName:     "OpenIndiana",
+	Homepage:       "https://www.openindiana.org/",
+	Description:    "Community supported illumos-based operating system.",
+	ConfigFunction: createOpenIndianaConfigs,
 }
 
-func (OpenIndiana) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createOpenIndianaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(openindianaMirror, openindianaReleaseRe, 5)
 	if err != nil {
 		return nil, err

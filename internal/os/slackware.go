@@ -13,18 +13,15 @@ const (
 	slackwareReleaseRe = `href="(slackware64-(\d+\.\d+)-iso)/"`
 )
 
-type Slackware struct{}
-
-func (Slackware) Data() OSData {
-	return OSData{
-		Name:        "slackware",
-		PrettyName:  "Slackware",
-		Homepage:    "https://www.slackware.com/",
-		Description: "Advanced Linux operating system, designed with the twin goals of ease of use and stability as top priorities.",
-	}
+var slackware = OS{
+	Name:           "slackware",
+	PrettyName:     "Slackware",
+	Homepage:       "https://www.slackware.com/",
+	Description:    "Advanced Linux operating system, designed with the twin goals of ease of use and stability as top priorities.",
+	ConfigFunction: createSlackwareConfigs,
 }
 
-func (Slackware) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSlackwareConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(slackwareMirror)
 	if err != nil {
 		return nil, err

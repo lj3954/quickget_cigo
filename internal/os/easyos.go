@@ -18,18 +18,15 @@ const (
 	easyosReleaseNameRe = `href="([a-z]+/)"`
 )
 
-type EasyOS struct{}
-
-func (EasyOS) Data() OSData {
-	return OSData{
-		Name:        "easyos",
-		PrettyName:  "EasyOS",
-		Homepage:    "https://easyos.org/",
-		Description: "Experimental distribution designed from scratch to support containers.",
-	}
+var easyOS = OS{
+	Name:           "easyos",
+	PrettyName:     "EasyOS",
+	Homepage:       "https://easyos.org/",
+	Description:    "Experimental distribution designed from scratch to support containers.",
+	ConfigFunction: createEasyOSConfigs,
 }
 
-func (EasyOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	releases, err := getEasyOSReleases(5, wg, errs)
 	if err != nil {

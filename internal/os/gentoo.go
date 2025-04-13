@@ -10,18 +10,15 @@ import (
 
 const gentooMirror = "https://distfiles.gentoo.org/releases/"
 
-type Gentoo struct{}
-
-func (Gentoo) Data() OSData {
-	return OSData{
-		Name:        "gentoo",
-		PrettyName:  "Gentoo",
-		Homepage:    "https://www.gentoo.org/",
-		Description: "Highly flexible, source-based Linux distribution.",
-	}
+var gentoo = OS{
+	Name:           "gentoo",
+	PrettyName:     "Gentoo",
+	Homepage:       "https://www.gentoo.org/",
+	Description:    "Highly flexible, source-based Linux distribution.",
+	ConfigFunction: createGentooConfigs,
 }
 
-func (Gentoo) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createGentooConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	architectures := [...]string{"amd64", "arm64"}
 	isoRe := regexp.MustCompile(`\d{8}T\d{6}Z\/(admincd|install|livegui).*?.iso`)
 	ch, wg := getChannelsWith(len(architectures))

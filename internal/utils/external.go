@@ -159,3 +159,11 @@ func SemverCompare(a, b string) int {
 	}
 	return IntegerCompare(a, b)
 }
+
+type OS struct {
+	Name           string
+	PrettyName     string
+	Description    string
+	Homepage       string
+	ConfigFunction func(errs, csErrs chan<- Failure) ([]Config, error)
+}

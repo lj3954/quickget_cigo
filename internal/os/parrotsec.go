@@ -17,18 +17,15 @@ const (
 	parrotSecIsoRe     = `href="(Parrot-([^-]+)-[\d\.]+_([^\.]+)\.(iso|qcow2.xz))"`
 )
 
-type ParrotSec struct{}
-
-func (ParrotSec) Data() OSData {
-	return OSData{
-		Name:        "parrotsec",
-		PrettyName:  "Parrot Security",
-		Homepage:    "https://www.parrotsec.org/",
-		Description: `Provides a huge arsenal of tools, utilities and libraries that IT and security professionals can use to test and assess the security of their assets in a reliable, compliant and reproducible way.`,
-	}
+var parrotSec = OS{
+	Name:           "parrotsec",
+	PrettyName:     "Parrot Security",
+	Homepage:       "https://www.parrotsec.org/",
+	Description:    `Provides a huge arsenal of tools, utilities and libraries that IT and security professionals can use to test and assess the security of their assets in a reliable, compliant and reproducible way.`,
+	ConfigFunction: createParrotSecConfigs,
 }
 
-func (ParrotSec) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleasesFunc(parrotSecMirror, parrotSecReleaseRe, 3, semverCompare)
 	if err != nil {
 		return nil, err

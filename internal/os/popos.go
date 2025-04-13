@@ -8,18 +8,15 @@ import (
 
 const popApiUrl = "https://api.pop-os.org/builds/"
 
-type PopOS struct{}
-
-func (PopOS) Data() OSData {
-	return OSData{
-		Name:        "popos",
-		PrettyName:  "Pop!_OS",
-		Homepage:    "https://pop.system76.com/",
-		Description: "Operating system for STEM and creative professionals who use their computer as a tool to discover and create.",
-	}
+var popOS = OS{
+	Name:           "popos",
+	PrettyName:     "Pop!_OS",
+	Homepage:       "https://pop.system76.com/",
+	Description:    "Operating system for STEM and creative professionals who use their computer as a tool to discover and create.",
+	ConfigFunction: createPopOSConfigs,
 }
 
-func (PopOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	// Pop!_OS does not have an API that can be used to get a list of releases, so we'll just try Ubuntu's
 	ubuntuReleases, err := getUbuntuReleases()
 	if err != nil {
