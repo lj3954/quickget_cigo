@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: quickget_cigo
-          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/*.go') }}
+          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/alias.go') }}
 
       - name: Start config generation
         uses: peter-evans/repository-dispatch@v3
