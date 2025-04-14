@@ -15,18 +15,15 @@ const (
 	freebsdRiscv64Mirror = "https://download.freebsd.org/ftp/releases/riscv/riscv64/"
 )
 
-type FreeBSD struct{}
-
-func (FreeBSD) Data() OSData {
-	return OSData{
-		Name:        "freebsd",
-		PrettyName:  "FreeBSD",
-		Homepage:    "https://www.freebsd.org/",
-		Description: "Operating system used to power modern servers, desktops, and embedded platforms.",
-	}
+var FreeBSD = OS{
+	Name:           "freebsd",
+	PrettyName:     "FreeBSD",
+	Homepage:       "https://www.freebsd.org/",
+	Description:    "Operating system used to power modern servers, desktops, and embedded platforms.",
+	ConfigFunction: createFreeBSDConfigs,
 }
 
-func (FreeBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createFreeBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(3)
 	releaseRe := regexp.MustCompile(`href="([0-9\.]+)-RELEASE`)
 	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, wg, errs, csErrs, releaseRe)

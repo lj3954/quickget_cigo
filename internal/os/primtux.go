@@ -13,18 +13,15 @@ const (
 	primtuxIsoRe  = `"name":"Primtux(\d+)-amd64.iso".*?download_url":"(.*?)"`
 )
 
-type Primtux struct{}
-
-func (Primtux) Data() OSData {
-	return OSData{
-		Name:        "primtux",
-		PrettyName:  "PrimTux",
-		Homepage:    "https://primtux.fr/",
-		Description: "A complete and customizable GNU/Linux operating system intended for primary school students and suitable even for older hardware.",
-	}
+var Primtux = OS{
+	Name:           "primtux",
+	PrettyName:     "PrimTux",
+	Homepage:       "https://primtux.fr/",
+	Description:    "A complete and customizable GNU/Linux operating system intended for primary school students and suitable even for older hardware.",
+	ConfigFunction: createPrimtuxConfigs,
 }
 
-func (Primtux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createPrimtuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(primtuxMirror)
 	if err != nil {
 		return nil, err

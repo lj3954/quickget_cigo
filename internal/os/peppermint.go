@@ -2,22 +2,19 @@ package os
 
 import "github.com/quickemu-project/quickget_configs/internal/cs"
 
-type Peppermint struct{}
-
-func (Peppermint) Data() OSData {
-	return OSData{
-		Name:        "peppermint",
-		PrettyName:  "PeppermintOS",
-		Homepage:    "https://peppermintos.com/",
-		Description: `Provides a user with the opportunity to build the system that best fits their needs. While at the same time providing a functioning OS with minimum hassle out of the box.`,
-	}
+var Peppermint = OS{
+	Name:           "peppermint",
+	PrettyName:     "PeppermintOS",
+	Homepage:       "https://peppermintos.com/",
+	Description:    `Provides a user with the opportunity to build the system that best fits their needs. While at the same time providing a functioning OS with minimum hassle out of the box.`,
+	ConfigFunction: createPeppermintConfigs,
 }
 
 // Peppermint's sourceforge is very convoluted and can't easily be parsed.
 // Non-matching checksum & iso naming, etc
 // Therefore, we'll just hardcode values (yes, this was done manually)
 
-func (Peppermint) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createPeppermintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := []peppermintRelease{
 		{
 			release:     "debian",

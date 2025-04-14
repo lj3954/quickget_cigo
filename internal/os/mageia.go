@@ -12,18 +12,15 @@ const (
 	mageiaReleaseRe = `href="(\d+)\/"`
 )
 
-type Mageia struct{}
-
-func (Mageia) Data() OSData {
-	return OSData{
-		Name:        "mageia",
-		PrettyName:  "Mageia",
-		Homepage:    "https://www.mageia.org/",
-		Description: "Stable, secure operating system for desktop & server.",
-	}
+var Mageia = OS{
+	Name:           "mageia",
+	PrettyName:     "Mageia",
+	Homepage:       "https://www.mageia.org/",
+	Description:    "Stable, secure operating system for desktop & server.",
+	ConfigFunction: createMageiaConfigs,
 }
 
-func (Mageia) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createMageiaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(mageiaMirror, mageiaReleaseRe, -1)
 	if err != nil {
 		return nil, err

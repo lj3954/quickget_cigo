@@ -12,18 +12,15 @@ const (
 	mxlinuxReleaseRe = `title="(\w+)" class="folder`
 )
 
-type MXLinux struct{}
-
-func (MXLinux) Data() OSData {
-	return OSData{
-		Name:        "mxlinux",
-		PrettyName:  "MX Linux",
-		Homepage:    "https://mxlinux.org/",
-		Description: "Designed to combine elegant and efficient desktops with high stability and solid performance.",
-	}
+var MXLinux = OS{
+	Name:           "mxlinux",
+	PrettyName:     "MX Linux",
+	Homepage:       "https://mxlinux.org/",
+	Description:    "Designed to combine elegant and efficient desktops with high stability and solid performance.",
+	ConfigFunction: createMXLinuxConfigs,
 }
 
-func (MXLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createMXLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(mxlinuxMirror, mxlinuxReleaseRe, -1)
 	if err != nil {
 		return nil, err

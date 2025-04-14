@@ -12,18 +12,15 @@ const (
 	haikuReleaseRe = `href="(r\w+)\/"`
 )
 
-type Haiku struct{}
-
-func (Haiku) Data() OSData {
-	return OSData{
-		Name:        "haiku",
-		PrettyName:  "Haiku",
-		Homepage:    "https://www.haiku-os.org/",
-		Description: "Specifically targets personal computing. Inspired by the BeOS, Haiku is fast, simple to use, easy to learn and yet very powerful.",
-	}
+var Haiku = OS{
+	Name:           "haiku",
+	PrettyName:     "Haiku",
+	Homepage:       "https://www.haiku-os.org/",
+	Description:    "Specifically targets personal computing. Inspired by the BeOS, Haiku is fast, simple to use, easy to learn and yet very powerful.",
+	ConfigFunction: createHaikuConfigs,
 }
 
-func (Haiku) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createHaikuConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(haikuMirror, haikuReleaseRe, 3)
 	if err != nil {
 		return nil, err

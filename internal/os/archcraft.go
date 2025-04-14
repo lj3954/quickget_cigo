@@ -13,18 +13,15 @@ const (
 	archcraftReleaseRe = `"name":"v([^"]+)"`
 )
 
-type Archcraft struct{}
-
-func (Archcraft) Data() OSData {
-	return OSData{
-		Name:        "archcraft",
-		PrettyName:  "Archcraft",
-		Homepage:    "https://archcraft.io/",
-		Description: "Yet another minimal Linux distribution, based on Arch Linux.",
-	}
+var Archcraft = OS{
+	Name:           "archcraft",
+	PrettyName:     "Archcraft",
+	Homepage:       "https://archcraft.io/",
+	Description:    "Yet another minimal Linux distribution, based on Arch Linux.",
+	ConfigFunction: createArchcraftConfigs,
 }
 
-func (Archcraft) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createArchcraftConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(archcraftMirror, archcraftReleaseRe, 3)
 	if err != nil {
 		return nil, err

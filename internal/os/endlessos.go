@@ -15,18 +15,15 @@ const (
 	endlessReleaseRe  = `href="(\d+(?:.\d+){2})\/"`
 )
 
-type EndlessOS struct{}
-
-func (EndlessOS) Data() OSData {
-	return OSData{
-		Name:        "endless",
-		PrettyName:  "Endless OS",
-		Homepage:    "https://endlessos.org/",
-		Description: "Completely Free, User-Friendly Operating System Packed with Educational Tools, Games, and More.",
-	}
+var EndlessOS = OS{
+	Name:           "endless",
+	PrettyName:     "Endless OS",
+	Homepage:       "https://endlessos.org/",
+	Description:    "Completely Free, User-Friendly Operating System Packed with Educational Tools, Games, and More.",
+	ConfigFunction: createEndlessOSConfigs,
 }
 
-func (EndlessOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createEndlessOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
 	if err != nil {
 		return nil, err

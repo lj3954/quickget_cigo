@@ -10,18 +10,15 @@ import (
 
 const fedoraJsonUrl = "https://fedoraproject.org/releases.json"
 
-type Fedora struct{}
-
-func (Fedora) Data() OSData {
-	return OSData{
-		Name:        "fedora",
-		PrettyName:  "Fedora",
-		Homepage:    "https://fedoraproject.org/",
-		Description: "Innovative platform for hardware, clouds, and containers, built with love by you.",
-	}
+var Fedora = OS{
+	Name:           "fedora",
+	PrettyName:     "Fedora",
+	Homepage:       "https://fedoraproject.org/",
+	Description:    "Innovative platform for hardware, clouds, and containers, built with love by you.",
+	ConfigFunction: createFedoraConfigs,
 }
 
-func (Fedora) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createFedoraConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releaseData, err := getFedoraReleases()
 	if err != nil {
 		return nil, err

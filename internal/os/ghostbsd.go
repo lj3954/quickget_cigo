@@ -13,18 +13,15 @@ const (
 	ghostbsdReleaseRe = `href="(latest|[\d\.]+)\/"`
 )
 
-type GhostBSD struct{}
-
-func (GhostBSD) Data() OSData {
-	return OSData{
-		Name:        "ghostbsd",
-		PrettyName:  "GhostBSD",
-		Homepage:    "https://www.ghostbsd.org/",
-		Description: "Simple, elegant desktop BSD Operating System.",
-	}
+var GhostBSD = OS{
+	Name:           "ghostbsd",
+	PrettyName:     "GhostBSD",
+	Homepage:       "https://www.ghostbsd.org/",
+	Description:    "Simple, elegant desktop BSD Operating System.",
+	ConfigFunction: createGhostBSDConfigs,
 }
 
-func (GhostBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createGhostBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getReverseReleases(ghostbsdMirror, ghostbsdReleaseRe, 4)
 	if err != nil {
 		return nil, err

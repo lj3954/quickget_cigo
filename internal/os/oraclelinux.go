@@ -15,18 +15,15 @@ const (
 	oracleLinuxReleaseRe      = `href="(OracleLinux-R(\d+)-U(\d+)-Server-([^\.]+)\.checksum)`
 )
 
-type OracleLinux struct{}
-
-func (OracleLinux) Data() OSData {
-	return OSData{
-		Name:        "oraclelinux",
-		PrettyName:  "Oracle Linux",
-		Homepage:    "https://www.oracle.com/linux/",
-		Description: "Linux with everything required to deploy, optimize, and manage applications on-premises, in the cloud, and at the edge.",
-	}
+var OracleLinux = OS{
+	Name:           "oraclelinux",
+	PrettyName:     "Oracle Linux",
+	Homepage:       "https://www.oracle.com/linux/",
+	Description:    "Linux with everything required to deploy, optimize, and manage applications on-premises, in the cloud, and at the edge.",
+	ConfigFunction: createOracleLinuxConfigs,
 }
 
-func (OracleLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createOracleLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(oracleLinuxChecksumMirror)
 	if err != nil {
 		return nil, err

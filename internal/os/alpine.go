@@ -10,26 +10,24 @@ import (
 const (
 	alpineMirror    = "https://dl-cdn.alpinelinux.org/alpine/"
 	alpineReleaseRe = `<a href="(v[0-9]+\.[0-9]+)/"`
+	alpineIsoRe     = `(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`
 )
 
-type Alpine struct{}
-
-func (Alpine) Data() OSData {
-	return OSData{
-		Name:        "alpine",
-		PrettyName:  "Alpine Linux",
-		Homepage:    "https://alpinelinux.org/",
-		Description: "Security-oriented, lightweight Linux distribution based on musl libc and busybox.",
-	}
+var Alpine = OS{
+	Name:           "alpine",
+	PrettyName:     "Alpine Linux",
+	Homepage:       "https://alpinelinux.org/",
+	Description:    "Security-oriented, lightweight Linux distribution based on musl libc and busybox.",
+	ConfigFunction: createAlpineConfigs,
 }
 
-func (Alpine) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createAlpineConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
-	isoRe := regexp.MustCompile(`(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`)
+	isoRe := regexp.MustCompile(alpineIsoRe)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {

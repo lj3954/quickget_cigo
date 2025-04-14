@@ -3,24 +3,21 @@ package os
 import "github.com/quickemu-project/quickget_configs/internal/web"
 
 const (
-	archlinuxAPI    = "https://archlinux.org/releng/releases/json/"
-	archlinuxMirror = "https://mirror.rackspace.com/archlinux"
+	archLinuxAPI    = "https://archlinux.org/releng/releases/json/"
+	archLinuxMirror = "https://mirror.rackspace.com/archlinux"
 )
 
-type ArchLinux struct{}
-
-func (ArchLinux) Data() OSData {
-	return OSData{
-		Name:        "archlinux",
-		PrettyName:  "Arch Linux",
-		Homepage:    "https://archlinux.org/",
-		Description: "Lightweight and flexible Linux® distribution that tries to Keep It Simple.",
-	}
+var ArchLinux = OS{
+	Name:           "archlinux",
+	PrettyName:     "Arch Linux",
+	Homepage:       "https://archlinux.org/",
+	Description:    "Lightweight and flexible Linux® distribution that tries to Keep It Simple.",
+	ConfigFunction: createArchLinuxConfigs,
 }
 
-func (ArchLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createArchLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData archAPI
-	if err := web.CapturePageToJson(archlinuxAPI, &apiData); err != nil {
+	if err := web.CapturePageToJson(archLinuxAPI, &apiData); err != nil {
 		return nil, err
 	}
 
@@ -32,7 +29,7 @@ func (ArchLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		if release == apiData.LatestVersion {
 			release = "latest"
 		}
-		url := archlinuxMirror + data.IsoURL
+		url := archLinuxMirror + data.IsoURL
 		configs[i] = Config{
 			Release: release,
 			ISO: []Source{

@@ -4,18 +4,15 @@ import "github.com/quickemu-project/quickget_configs/internal/cs"
 
 const netbootMirror = "https://boot.netboot.xyz/ipxe/"
 
-type Netboot struct{}
-
-func (Netboot) Data() OSData {
-	return OSData{
-		Name:        "netboot",
-		PrettyName:  "Netboot",
-		Homepage:    "https://netboot.xyz/",
-		Description: "Your favorite operating systems in one place.",
-	}
+var Netboot = OS{
+	Name:           "netboot",
+	PrettyName:     "Netboot",
+	Homepage:       "https://netboot.xyz/",
+	Description:    "Your favorite operating systems in one place.",
+	ConfigFunction: createNetbootConfigs,
 }
 
-func (Netboot) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createNetbootConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	checksumUrl := netbootMirror + "netboot.xyz-sha256-checksums.txt"
 	checksums, err := cs.Build(cs.Whitespace{}, checksumUrl)
 	if err != nil {

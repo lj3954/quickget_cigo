@@ -9,18 +9,15 @@ import (
 
 const athenaAPI = "https://api.github.com/repos/Athena-OS/athena/releases"
 
-type AthenaOS struct{}
-
-func (AthenaOS) Data() OSData {
-	return OSData{
-		Name:        "athenaos",
-		PrettyName:  "Athena OS",
-		Homepage:    "https://athenaos.org/",
-		Description: "Offer a different experience than the most used pentesting distributions by providing only tools that fit with the user needs and improving the access to hacking resources and learning materials.",
-	}
+var AthenaOS = OS{
+	Name:           "athenaos",
+	PrettyName:     "Athena OS",
+	Homepage:       "https://athenaos.org/",
+	Description:    "Offer a different experience than the most used pentesting distributions by providing only tools that fit with the user needs and improving the access to hacking resources and learning materials.",
+	ConfigFunction: createAthenaOSConfigs,
 }
 
-func (AthenaOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createAthenaOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData []GithubAPI
 	if err := web.CapturePageToJson(athenaAPI, &apiData); err != nil {
 		return nil, err

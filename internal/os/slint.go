@@ -14,18 +14,15 @@ const (
 	slintIsoRe     = `href="(slint64-.*?\.iso)"`
 )
 
-type Slint struct{}
-
-func (Slint) Data() OSData {
-	return OSData{
-		Name:        "slint",
-		PrettyName:  "Slint",
-		Homepage:    "https://slint.fr/",
-		Description: "Slint is an easy-to-use, versatile, blind-friendly Linux distribution for 64-bit computers. Slint is based on Slackware and borrows tools from Salix. Maintainer: Didier Spaier.",
-	}
+var Slint = OS{
+	Name:           "slint",
+	PrettyName:     "Slint",
+	Homepage:       "https://slint.fr/",
+	Description:    "Slint is an easy-to-use, versatile, blind-friendly Linux distribution for 64-bit computers. Slint is based on Slackware and borrows tools from Salix. Maintainer: Didier Spaier.",
+	ConfigFunction: createSlintConfigs,
 }
 
-func (Slint) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releaseRe := regexp.MustCompile(slintReleaseRe)
 	page, err := web.CapturePage(slintMirror)
 	if err != nil {

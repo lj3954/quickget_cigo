@@ -12,18 +12,15 @@ const (
 	elementaryChecksumUrl = "https://elementary.io/docs/installation"
 )
 
-type Elementary struct{}
-
-func (Elementary) Data() OSData {
-	return OSData{
-		Name:        "elementary",
-		PrettyName:  "elementary OS",
-		Homepage:    "https://elementary.io/",
-		Description: "Thoughtful, capable, and ethical replacement for Windows and macOS.",
-	}
+var Elementary = OS{
+	Name:           "elementary",
+	PrettyName:     "elementary OS",
+	Homepage:       "https://elementary.io/",
+	Description:    "Thoughtful, capable, and ethical replacement for Windows and macOS.",
+	ConfigFunction: createElementaryConfigs,
 }
 
-func (Elementary) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createElementaryConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(elementaryUrl)
 	if err != nil {
 		return nil, err

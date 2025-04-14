@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/quickemu-project/quickget_configs/internal/data"
-	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
@@ -69,7 +68,7 @@ func (s *Status) FailedOS(data qgdata.OSData, err error) {
 	s.Data = append(s.Data, status)
 }
 
-func (s *Status) AddOS(data qgdata.OSData, configs []quickgetdata.Config, failures, csFailures []data.Failure) {
+func (s *Status) AddOS(data qgdata.OSData, failures, csFailures []data.Failure) {
 	s.Lock()
 	defer s.Unlock()
 	status := makeOsStatus(data)
@@ -84,7 +83,7 @@ func (s *Status) AddOS(data qgdata.OSData, configs []quickgetdata.Config, failur
 	for _, failure := range csFailures {
 		log.Printf("(Unimplemented) Checksum Failure: %s", failure)
 	}
-	for _, config := range configs {
+	for _, config := range data.Releases {
 		sourceLen := len(config.ISO) + len(config.IMG) + len(config.FixedISO) + len(config.Floppy)
 		sources := make([]sourceData, 0, sourceLen)
 		addSources(&sources, "ISO", config.ISO)

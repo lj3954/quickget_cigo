@@ -12,18 +12,15 @@ const (
 	proxmoxIsoRe    = `href="(proxmox-ve_(\d+\.\d+)-\d+\.iso)"`
 )
 
-type ProxmoxVE struct{}
-
-func (ProxmoxVE) Data() OSData {
-	return OSData{
-		Name:        "proxmox-ve",
-		PrettyName:  "Proxmox VE",
-		Homepage:    "https://www.proxmox.com/en/proxmox-virtual-environment",
-		Description: "Proxmox Virtual Environment is a complete, open-source server management platform for enterprise virtualization.",
-	}
+var ProxmoxVE = OS{
+	Name:           "proxmox-ve",
+	PrettyName:     "Proxmox VE",
+	Homepage:       "https://www.proxmox.com/en/proxmox-virtual-environment",
+	Description:    "Proxmox Virtual Environment is a complete, open-source server management platform for enterprise virtualization.",
+	ConfigFunction: createProxmoxVEConfigs,
 }
 
-func (ProxmoxVE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createProxmoxVEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(proxmoxVeMirror)
 	if err != nil {
 		return nil, err

@@ -12,18 +12,15 @@ import (
 
 const dragonflybsdMirror = "https://mirror-master.dragonflybsd.org/iso-images/"
 
-type DragonFlyBSD struct{}
-
-func (DragonFlyBSD) Data() OSData {
-	return OSData{
-		Name:        "dragonflybsd",
-		PrettyName:  "DragonFlyBSD",
-		Homepage:    "https://www.dragonflybsd.org/",
-		Description: "Provides an opportunity for the BSD base to grow in an entirely different direction from the one taken in the FreeBSD, NetBSD, and OpenBSD series.",
-	}
+var DragonFlyBSD = OS{
+	Name:           "dragonflybsd",
+	PrettyName:     "DragonFlyBSD",
+	Homepage:       "https://www.dragonflybsd.org/",
+	Description:    "Provides an opportunity for the BSD base to grow in an entirely different direction from the one taken in the FreeBSD, NetBSD, and OpenBSD series.",
+	ConfigFunction: createDragonFlyBSDConfigs,
 }
 
-func (DragonFlyBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(dragonflybsdMirror)
 	if err != nil {
 		return nil, err

@@ -9,18 +9,15 @@ import (
 
 const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
 
-type ArtixLinux struct{}
-
-func (ArtixLinux) Data() OSData {
-	return OSData{
-		Name:        "artixlinux",
-		PrettyName:  "Artix Linux",
-		Homepage:    "https://artixlinux.org/",
-		Description: "The Art of Linux. Simple. Fast. Systemd-free.",
-	}
+var ArtixLinux = OS{
+	Name:           "artixlinux",
+	PrettyName:     "Artix Linux",
+	Homepage:       "https://artixlinux.org/",
+	Description:    "The Art of Linux. Simple. Fast. Systemd-free.",
+	ConfigFunction: createArtixLinuxConfigs,
 }
 
-func (ArtixLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createArtixLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(artixMirror)
 	if err != nil {
 		return nil, err

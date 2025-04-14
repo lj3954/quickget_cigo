@@ -9,18 +9,15 @@ import (
 
 const chimeraMirror = "https://repo.chimera-linux.org/live/latest/"
 
-type ChimeraLinux struct{}
-
-func (ChimeraLinux) Data() OSData {
-	return OSData{
-		Name:        "chimeralinux",
-		PrettyName:  "Chimera Linux",
-		Homepage:    "https://chimera-linux.org/",
-		Description: "Modern, general-purpose non-GNU Linux distribution.",
-	}
+var ChimeraLinux = OS{
+	Name:           "chimeralinux",
+	PrettyName:     "Chimera Linux",
+	Homepage:       "https://chimera-linux.org/",
+	Description:    "Modern, general-purpose non-GNU Linux distribution.",
+	ConfigFunction: createChimeraLinuxConfigs,
 }
 
-func (ChimeraLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createChimeraLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(chimeraMirror)
 	if err != nil {
 		return nil, err

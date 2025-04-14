@@ -14,18 +14,15 @@ const (
 	centOSReleaseRe = `href="([0-9]+)-stream/"`
 )
 
-type CentOSStream struct{}
-
-func (CentOSStream) Data() OSData {
-	return OSData{
-		Name:        "centos-stream",
-		PrettyName:  "CentOS Stream",
-		Homepage:    "https://www.centos.org/centos-stream/",
-		Description: "Continuously delivered distro that tracks just ahead of Red Hat Enterprise Linux (RHEL) development, positioned as a midstream between Fedora Linux and RHEL.",
-	}
+var CentOSStream = OS{
+	Name:           "centos-stream",
+	PrettyName:     "CentOS Stream",
+	Homepage:       "https://www.centos.org/centos-stream/",
+	Description:    "Continuously delivered distro that tracks just ahead of Red Hat Enterprise Linux (RHEL) development, positioned as a midstream between Fedora Linux and RHEL.",
+	ConfigFunction: createCentOSStreamConfigs,
 }
 
-func (CentOSStream) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createCentOSStreamConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
 	if err != nil {
 		return nil, err

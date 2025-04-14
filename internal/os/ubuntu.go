@@ -12,71 +12,44 @@ import (
 
 const launchpadReleasesUrl = "https://api.launchpad.net/devel/ubuntu/series"
 
-type (
-	Edubuntu       struct{}
-	Kubuntu        struct{}
-	Lubuntu        struct{}
-	Ubuntu         struct{}
-	UbuntuBudgie   struct{}
-	UbuntuCinnamon struct{}
-	UbuntuKylin    struct{}
-	UbuntuMATE     struct{}
-	UbuntuServer   struct{}
-	UbuntuStudio   struct{}
-	UbuntuUnity    struct{}
-	Xubuntu        struct{}
-)
-
-func (Edubuntu) Data() OSData {
-	return OSData{
-		Name:        "edubuntu",
-		PrettyName:  "Edubuntu",
-		Homepage:    "https://www.edubuntu.org/",
-		Description: "Stable, secure and privacy concious option for schools.",
-	}
+var Edubuntu = OS{
+	Name:        "edubuntu",
+	PrettyName:  "Edubuntu",
+	Homepage:    "https://www.edubuntu.org/",
+	Description: "Stable, secure and privacy concious option for schools.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("edubuntu", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (Edubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("edubuntu", x86_64_only[:], errs, csErrs)
+var Kubuntu = OS{
+	Name:        "kubuntu",
+	PrettyName:  "Kubuntu",
+	Homepage:    "https://kubuntu.org/",
+	Description: "Free, complete, and open-source alternative to Microsoft Windows and Mac OS X which contains everything you need to work, play, or share.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("kubuntu", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (Kubuntu) Data() OSData {
-	return OSData{
-		Name:        "kubuntu",
-		PrettyName:  "Kubuntu",
-		Homepage:    "https://kubuntu.org/",
-		Description: "Free, complete, and open-source alternative to Microsoft Windows and Mac OS X which contains everything you need to work, play, or share.",
-	}
+var Lubuntu = OS{
+	Name:        "lubuntu",
+	PrettyName:  "Lubuntu",
+	Homepage:    "https://lubuntu.me/",
+	Description: "Complete Operating System that ships the essential apps and services for daily use: office applications, PDF reader, image editor, music and video players, etc.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("lubuntu", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (Kubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("kubuntu", x86_64_only[:], errs, csErrs)
-}
-
-func (Lubuntu) Data() OSData {
-	return OSData{
-		Name:        "lubuntu",
-		PrettyName:  "Lubuntu",
-		Homepage:    "https://lubuntu.me/",
-		Description: "Complete Operating System that ships the essential apps and services for daily use: office applications, PDF reader, image editor, music and video players, etc.",
-	}
-}
-
-func (Lubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("lubuntu", x86_64_only[:], errs, csErrs)
-}
-
-func (Ubuntu) Data() OSData {
-	return OSData{
-		Name:        "ubuntu",
-		PrettyName:  "Ubuntu",
-		Homepage:    "https://www.ubuntu.com/",
-		Description: "Complete desktop Linux operating system, freely available with both community and professional support.",
-	}
-}
-
-func (Ubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntu", x86_64_aarch64[:], errs, csErrs)
+var Ubuntu = OS{
+	Name:        "ubuntu",
+	PrettyName:  "Ubuntu",
+	Homepage:    "https://www.ubuntu.com/",
+	Description: "Complete desktop Linux operating system, freely available with both community and professional support.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntu", x86_64_aarch64[:], errs, csErrs)
+	},
 }
 
 var getUbuntuReleases = sync.OnceValues(fetchUbuntuReleases)
@@ -97,108 +70,84 @@ func fetchUbuntuReleases() ([]string, error) {
 	return append(releases, "daily-live"), nil
 }
 
-func (UbuntuBudgie) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-budgie",
-		PrettyName:  "Ubuntu Budgie",
-		Homepage:    "https://ubuntubudgie.org/",
-		Description: "Community developed distribution, integrating the Budgie Desktop Environment with Ubuntu at its core.",
-	}
+var UbuntuBudgie = OS{
+	Name:        "ubuntu-budgie",
+	PrettyName:  "Ubuntu Budgie",
+	Homepage:    "https://ubuntubudgie.org/",
+	Description: "Community developed distribution, integrating the Budgie Desktop Environment with Ubuntu at its core.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntu-budgie", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuBudgie) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntu-budgie", x86_64_only[:], errs, csErrs)
+var UbuntuCinnamon = OS{
+	Name:        "ubuntu-cinnamon",
+	PrettyName:  "Ubuntu Cinnamon",
+	Homepage:    "https://ubuntucinnamon.org/",
+	Description: "Community-driven, featuring Linux Mint's Cinnamon Desktop with Ubuntu at the core, packed fast and full of features, here is the most traditionally modern desktop you will ever love.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntucinnamon", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuCinnamon) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-cinnamon",
-		PrettyName:  "Ubuntu Cinnamon",
-		Homepage:    "https://ubuntucinnamon.org/",
-		Description: "Community-driven, featuring Linux Mint’s Cinnamon Desktop with Ubuntu at the core, packed fast and full of features, here is the most traditionally modern desktop you will ever love.",
-	}
+var UbuntuKylin = OS{
+	Name:        "ubuntu-kylin",
+	PrettyName:  "Ubuntu Kylin",
+	Homepage:    "https://www.ubuntukylin.com/",
+	Description: "Universal desktop operating system for personal computers, laptops, and embedded devices. It is dedicated to bringing a smarter user experience to users all over the world.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntukylin", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuCinnamon) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntucinnamon", x86_64_only[:], errs, csErrs)
+var UbuntuMATE = OS{
+	Name:        "ubuntu-mate",
+	PrettyName:  "Ubuntu MATE",
+	Homepage:    "https://ubuntu-mate.org/",
+	Description: "Stable, easy-to-use operating system with a configurable desktop environment. It is ideal for those who want the most out of their computers and prefer a traditional desktop metaphor.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntu-mate", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuKylin) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-kylin",
-		PrettyName:  "Ubuntu Kylin",
-		Homepage:    "https://www.ubuntukylin.com/",
-		Description: "Universal desktop operating system for personal computers, laptops, and embedded devices. It is dedicated to bringing a smarter user experience to users all over the world.",
-	}
+var UbuntuServer = OS{
+	Name:        "ubuntu-server",
+	PrettyName:  "Ubuntu Server",
+	Homepage:    "https://www.ubuntu.com/server",
+	Description: "Brings economic and technical scalability to your datacentre, public or private. Whether you want to deploy an OpenStack cloud, a Kubernetes cluster or a 50,000-node render farm, Ubuntu Server delivers the best value scale-out performance available.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntu-server", three_architectures[:], errs, csErrs)
+	},
 }
 
-func (UbuntuKylin) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntukylin", x86_64_only[:], errs, csErrs)
+var UbuntuStudio = OS{
+	Name:        "ubuntu-studio",
+	PrettyName:  "Ubuntu Studio",
+	Homepage:    "https://ubuntustudio.org/",
+	Description: "Comes preinstalled with a selection of the most common free multimedia applications available, and is configured for best performance for various purposes: Audio, Graphics, Video, Photography and Publishing.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntustudio", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuMATE) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-mate",
-		PrettyName:  "Ubuntu MATE",
-		Homepage:    "https://ubuntu-mate.org/",
-		Description: "Stable, easy-to-use operating system with a configurable desktop environment. It is ideal for those who want the most out of their computers and prefer a traditional desktop metaphor.",
-	}
+var UbuntuUnity = OS{
+	Name:        "ubuntu-unity",
+	PrettyName:  "Ubuntu Unity",
+	Homepage:    "https://ubuntuunity.org/",
+	Description: "Flavor of Ubuntu featuring the Unity7 desktop environment (the default desktop environment used by Ubuntu from 2010-2017).",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("ubuntu-unity", x86_64_only[:], errs, csErrs)
+	},
 }
 
-func (UbuntuMATE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntu-mate", x86_64_only[:], errs, csErrs)
-}
-
-func (UbuntuServer) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-server",
-		PrettyName:  "Ubuntu Server",
-		Homepage:    "https://www.ubuntu.com/server",
-		Description: "Brings economic and technical scalability to your datacentre, public or private. Whether you want to deploy an OpenStack cloud, a Kubernetes cluster or a 50,000-node render farm, Ubuntu Server delivers the best value scale-out performance available.",
-	}
-}
-
-func (UbuntuServer) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntu-server", three_architectures[:], errs, csErrs)
-}
-
-func (UbuntuStudio) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-studio",
-		PrettyName:  "Ubuntu Studio",
-		Homepage:    "https://ubuntustudio.org/",
-		Description: "Comes preinstalled with a selection of the most common free multimedia applications available, and is configured for best performance for various purposes: Audio, Graphics, Video, Photography and Publishing.",
-	}
-}
-
-func (UbuntuStudio) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntustudio", x86_64_only[:], errs, csErrs)
-}
-
-func (UbuntuUnity) Data() OSData {
-	return OSData{
-		Name:        "ubuntu-unity",
-		PrettyName:  "Ubuntu Unity",
-		Homepage:    "https://ubuntuunity.org/",
-		Description: "Flavor of Ubuntu featuring the Unity7 desktop environment (the default desktop environment used by Ubuntu from 2010-2017).",
-	}
-}
-
-func (UbuntuUnity) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("ubuntu-unity", x86_64_only[:], errs, csErrs)
-}
-
-func (Xubuntu) Data() OSData {
-	return OSData{
-		Name:        "xubuntu",
-		PrettyName:  "Xubuntu",
-		Homepage:    "https://xubuntu.org/",
-		Description: "Elegant and easy to use operating system. Xubuntu comes with Xfce, which is a stable, light and configurable desktop environment.",
-	}
-}
-
-func (Xubuntu) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	return getUbuntuConfigs("xubuntu", x86_64_only[:], errs, csErrs)
+var Xubuntu = OS{
+	Name:        "xubuntu",
+	PrettyName:  "Xubuntu",
+	Homepage:    "https://xubuntu.org/",
+	Description: "Elegant and easy to use operating system. Xubuntu comes with Xfce, which is a stable, light and configurable desktop environment.",
+	ConfigFunction: func(errs, csErrs chan<- Failure) ([]Config, error) {
+		return getUbuntuConfigs("xubuntu", x86_64_only[:], errs, csErrs)
+	},
 }
 
 type launchpadContents struct {
@@ -216,48 +165,61 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan<- 
 	ch, wg := getChannelsWith(len(releases) * len(architectures))
 	for _, release := range releases {
 		for _, arch := range architectures {
-			url := getUbuntuUrl(release, variant, arch)
 			go func() {
 				defer wg.Done()
-				page, err := web.CapturePage(url + "SHA256SUMS")
+				config, err, csErr := getUbuntuConfig(release, variant, arch)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
-					return
 				}
-				line := getUbuntuLine(page, variant, arch)
-				if line == "" {
-					return
+				if csErr != nil {
+					csErrs <- Failure{Release: release, Arch: arch, Error: csErr}
 				}
-
-				checksum, err := cs.BuildSingleWhitespace(line)
-				if err != nil {
-					csErrs <- Failure{Release: release, Arch: arch, Error: err}
+				if config != nil {
+					ch <- *config
 				}
-				iso := url + line[strings.Index(line, "*")+1:]
-
-				config := Config{
-					Release: release,
-					Arch:    arch,
-				}
-				if !strings.Contains(release, "daily") && semverCompare(release, "16.04") < 0 {
-					config.GuestOS = quickgetdata.LinuxOld
-				}
-				if arch == riscv64 {
-					config.IMG = []Source{
-						webSource(iso, checksum, quickgetdata.Gz, ""),
-					}
-				} else {
-					config.ISO = []Source{
-						urlChecksumSource(iso, checksum),
-					}
-				}
-
-				ch <- config
 			}()
 		}
 	}
 
 	return waitForConfigs(ch, wg), nil
+}
+
+func getUbuntuConfig(release string, variant string, arch Arch) (c *Config, e error, csErr error) {
+	url := getUbuntuUrl(release, variant, arch)
+
+	page, err := web.CapturePage(url + "SHA256SUMS")
+	if err != nil {
+		return nil, err, nil
+	}
+	line := getUbuntuLine(page, variant, arch)
+	if line == "" {
+		return
+	}
+
+	checksum, err := cs.BuildSingleWhitespace(line)
+	if err != nil {
+		csErr = err
+	}
+	iso := url + line[strings.Index(line, "*")+1:]
+
+	c = &Config{
+		Release: release,
+		Arch:    arch,
+	}
+	if !strings.Contains(release, "daily") && semverCompare(release, "16.04") < 0 {
+		c.GuestOS = quickgetdata.LinuxOld
+	}
+	if arch == riscv64 {
+		c.IMG = []Source{
+			webSource(iso, checksum, quickgetdata.Gz, ""),
+		}
+	} else {
+		c.ISO = []Source{
+			urlChecksumSource(iso, checksum),
+		}
+	}
+
+	return
 }
 
 func getUbuntuLine(page, variant string, arch Arch) string {

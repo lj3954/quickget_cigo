@@ -14,18 +14,15 @@ const (
 	manjaroSwayJsonUrl = "https://mirror.manjaro-sway.download/manjaro-sway/release.json"
 )
 
-type Manjaro struct{}
-
-func (Manjaro) Data() OSData {
-	return OSData{
-		Name:        "manjaro",
-		PrettyName:  "Manjaro",
-		Homepage:    "https://manjaro.org/",
-		Description: "Versatile, free, and open-source Linux operating system designed with a strong focus on safeguarding user privacy and offering extensive control over hardware.",
-	}
+var Manjaro = OS{
+	Name:           "manjaro",
+	PrettyName:     "Manjaro",
+	Homepage:       "https://manjaro.org/",
+	Description:    "Versatile, free, and open-source Linux operating system designed with a strong focus on safeguarding user privacy and offering extensive control over hardware.",
+	ConfigFunction: createManjaroConfigs,
 }
 
-func (Manjaro) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createManjaroConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
 	wg.Add(2)
 	go func() {

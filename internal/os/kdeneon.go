@@ -8,18 +8,15 @@ import (
 
 const kdeNeonMirror = "https://files.kde.org/neon/images/"
 
-type KDENeon struct{}
-
-func (KDENeon) Data() OSData {
-	return OSData{
-		Name:        "kdeneon",
-		PrettyName:  "KDE Neon",
-		Homepage:    "https://neon.kde.org/",
-		Description: "Latest and greatest of KDE community software packaged on a rock-solid base.",
-	}
+var KDENeon = OS{
+	Name:           "kdeneon",
+	PrettyName:     "KDE Neon",
+	Homepage:       "https://neon.kde.org/",
+	Description:    "Latest and greatest of KDE community software packaged on a rock-solid base.",
+	ConfigFunction: createKdeNeonConfigs,
 }
 
-func (KDENeon) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createKdeNeonConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"user", "testing", "unstable", "developer"}
 	ch, wg := getChannelsWith(len(releases))
 	for _, release := range releases {

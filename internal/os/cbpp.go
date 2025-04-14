@@ -8,18 +8,15 @@ import (
 
 const cbppApi = "https://api.github.com/repos/CBPP/cbpp/releases"
 
-type CBPP struct{}
-
-func (CBPP) Data() OSData {
-	return OSData{
-		Name:        "crunchbang++",
-		PrettyName:  "Crunchbang++",
-		Homepage:    "https://crunchbangplusplus.org/",
-		Description: "The classic minimal crunchbang feel, now with debian 12 bookworm.",
-	}
+var CBPP = OS{
+	Name:           "crunchbang++",
+	PrettyName:     "Crunchbang++",
+	Homepage:       "https://crunchbangplusplus.org/",
+	Description:    "The classic minimal crunchbang feel, now with debian 12 bookworm.",
+	ConfigFunction: createCBPPConfigs,
 }
 
-func (CBPP) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createCBPPConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var apiData []GithubAPI
 	if err := web.CapturePageToJson(cbppApi, &apiData); err != nil {
 		return nil, err

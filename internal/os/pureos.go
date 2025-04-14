@@ -18,18 +18,15 @@ const (
 	pureOsIsoRe     = `href="(pureos-([\d\.]+)-.*?-\d{8}_amd64.iso)"`
 )
 
-type PureOS struct{}
-
-func (PureOS) Data() OSData {
-	return OSData{
-		Name:        "pureos",
-		PrettyName:  "PureOS",
-		Homepage:    "https://www.pureos.net/",
-		Description: "PureOS is a fully free/libre and open source GNU/Linux operating system, endorsed by the Free Software Foundation.",
-	}
+var PureOS = OS{
+	Name:           "pureos",
+	PrettyName:     "PureOS",
+	Homepage:       "https://www.pureos.net/",
+	Description:    "PureOS is a fully free/libre and open source GNU/Linux operating system, endorsed by the Free Software Foundation.",
+	ConfigFunction: createPureOSConfigs,
 }
 
-func (PureOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(pureOsMirror, pureOsReleaseRe, -1)
 	if err != nil {
 		return nil, err

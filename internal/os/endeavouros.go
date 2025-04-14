@@ -9,18 +9,15 @@ import (
 
 const endeavourMirror = "https://mirror.alpix.eu/endeavouros/iso/"
 
-type EndeavourOS struct{}
-
-func (EndeavourOS) Data() OSData {
-	return OSData{
-		Name:        "endeavouros",
-		PrettyName:  "EndeavourOS",
-		Homepage:    "https://endeavouros.com/",
-		Description: "Provides an Arch experience without the hassle of installing it manually for both x86_64 and ARM systems.",
-	}
+var EndeavourOS = OS{
+	Name:           "endeavouros",
+	PrettyName:     "EndeavourOS",
+	Homepage:       "https://endeavouros.com/",
+	Description:    "Provides an Arch experience without the hassle of installing it manually for both x86_64 and ARM systems.",
+	ConfigFunction: createEndeavourOSConfigs,
 }
 
-func (EndeavourOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createEndeavourOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(endeavourMirror)
 	if err != nil {
 		return nil, err

@@ -14,18 +14,15 @@ const (
 	bazziteMirror   = "https://download.bazzite.gg/"
 )
 
-type Bazzite struct{}
-
-func (Bazzite) Data() OSData {
-	return OSData{
-		Name:        "bazzite",
-		PrettyName:  "Bazzite",
-		Homepage:    "https://bazzite.gg/",
-		Description: "Container native gaming and a ready-to-game SteamOS like.",
-	}
+var Bazzite = OS{
+	Name:           "bazzite",
+	PrettyName:     "Bazzite",
+	Homepage:       "https://bazzite.gg/",
+	Description:    "Container native gaming and a ready-to-game SteamOS like.",
+	ConfigFunction: createBazziteConfigs,
 }
 
-func (Bazzite) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(bazziteWorkflow)
 	if err != nil {
 		return nil, err

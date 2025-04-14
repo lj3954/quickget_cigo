@@ -14,18 +14,15 @@ const (
 	freedosReleaseRe = `href="(\d+\.\d+)/"`
 )
 
-type FreeDOS struct{}
-
-func (FreeDOS) Data() OSData {
-	return OSData{
-		Name:        "freedos",
-		PrettyName:  "FreeDOS",
-		Homepage:    "https://www.freedos.org/",
-		Description: "DOS-compatible operating system that you can use to play classic DOS games, run legacy business software, or develop embedded systems.",
-	}
+var FreeDOS = OS{
+	Name:           "freedos",
+	PrettyName:     "FreeDOS",
+	Homepage:       "https://www.freedos.org/",
+	Description:    "DOS-compatible operating system that you can use to play classic DOS games, run legacy business software, or develop embedded systems.",
+	ConfigFunction: createFreeDOSConfigs,
 }
 
-func (FreeDOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(freedosMirror, freedosReleaseRe, -1)
 	if err != nil {
 		return nil, err

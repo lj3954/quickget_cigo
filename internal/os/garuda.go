@@ -13,18 +13,15 @@ const (
 	garudaEditionRe = `href="([^.]+)\/"`
 )
 
-type Garuda struct{}
-
-func (Garuda) Data() OSData {
-	return OSData{
-		Name:        "garuda",
-		PrettyName:  "Garuda Linux",
-		Homepage:    "https://garudalinux.org/",
-		Description: "Feature rich and easy to use Linux distribution.",
-	}
+var Garuda = OS{
+	Name:           "garuda",
+	PrettyName:     "Garuda Linux",
+	Homepage:       "https://garudalinux.org/",
+	Description:    "Feature rich and easy to use Linux distribution.",
+	ConfigFunction: createGarudaConfigs,
 }
 
-func (Garuda) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createGarudaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	editions, numEditions, err := getBasicReleases(garudaMirror, garudaEditionRe, -1)
 	if err != nil {
 		return nil, err

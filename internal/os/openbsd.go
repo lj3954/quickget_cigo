@@ -13,18 +13,15 @@ const (
 	openbsdReleaseRe = `href="(\d[\d\.]+)/"`
 )
 
-type OpenBSD struct{}
-
-func (OpenBSD) Data() OSData {
-	return OSData{
-		Name:        "openbsd",
-		PrettyName:  "OpenBSD",
-		Homepage:    "https://www.openbsd.org/",
-		Description: "FREE, multi-platform 4.4BSD-based UNIX-like operating system. Our efforts emphasize portability, standardization, correctness, proactive security and integrated cryptography.",
-	}
+var OpenBSD = OS{
+	Name:           "openbsd",
+	PrettyName:     "OpenBSD",
+	Homepage:       "https://www.openbsd.org/",
+	Description:    "FREE, multi-platform 4.4BSD-based UNIX-like operating system. Our efforts emphasize portability, standardization, correctness, proactive security and integrated cryptography.",
+	ConfigFunction: createOpenBSDConfigs,
 }
 
-func (OpenBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createOpenBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(openbsdMirror, openbsdReleaseRe, 4)
 	if err != nil {
 		return nil, err

@@ -9,18 +9,15 @@ import (
 
 const lmdeMirror = "https://mirrors.edge.kernel.org/linuxmint/debian/"
 
-type LMDE struct{}
-
-func (LMDE) Data() OSData {
-	return OSData{
-		Name:        "lmde",
-		PrettyName:  "Linux Mint Debian Edition",
-		Homepage:    "https://linuxmint.com/download_lmde.php",
-		Description: "Aims to be as similar as possible to Linux Mint, but without using Ubuntu. The package base is provided by Debian instead.",
-	}
+var LMDE = OS{
+	Name:           "lmde",
+	PrettyName:     "Linux Mint Debian Edition",
+	Homepage:       "https://linuxmint.com/download_lmde.php",
+	Description:    "Aims to be as similar as possible to Linux Mint, but without using Ubuntu. The package base is provided by Debian instead.",
+	ConfigFunction: createLmdeConfigs,
 }
 
-func (LMDE) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(lmdeMirror)
 	if err != nil {
 		return nil, err

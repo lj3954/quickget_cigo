@@ -2,18 +2,15 @@ package os
 
 import "github.com/quickemu-project/quickget_configs/internal/cs"
 
-type AzureLinux struct{}
-
-func (AzureLinux) Data() OSData {
-	return OSData{
-		Name:        "azurelinux",
-		PrettyName:  "Azure Linux",
-		Homepage:    "https://github.com/microsoft/azurelinux",
-		Description: "Linux OS for Azure 1P services and edge appliances",
-	}
+var AzureLinux = OS{
+	Name:           "azurelinux",
+	PrettyName:     "Azure Linux",
+	Homepage:       "https://github.com/microsoft/azurelinux",
+	Description:    "Linux OS for Azure 1P services and edge appliances",
+	ConfigFunction: createAzureLinuxConfigs,
 }
 
-func (AzureLinux) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createAzureLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(len(x86_64_aarch64))
 	for _, arch := range x86_64_aarch64 {
 		go func() {

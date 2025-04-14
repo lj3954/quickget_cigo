@@ -16,18 +16,15 @@ const (
 	antiXReleaseRe = `"name":"antiX-([0-9.]+)"`
 )
 
-type AntiX struct{}
-
-func (AntiX) Data() OSData {
-	return OSData{
-		Name:        "antix",
-		PrettyName:  "antiX",
-		Homepage:    "https://antixlinux.com/",
-		Description: "Fast, lightweight and easy to install systemd-free linux live CD distribution based on Debian Stable for Intel-AMD x86 compatible systems.",
-	}
+var AntiX = OS{
+	Name:           "antix",
+	PrettyName:     "antiX",
+	Homepage:       "https://antixlinux.com/",
+	Description:    "Fast, lightweight and easy to install systemd-free linux live CD distribution based on Debian Stable for Intel-AMD x86 compatible systems.",
+	ConfigFunction: createAntiXConfigs,
 }
 
-func (AntiX) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createAntiXConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(antiXMirror, antiXReleaseRe, 3)
 	if err != nil {
 		return nil, err
@@ -38,11 +35,11 @@ func (AntiX) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for release := range releases {
 		mirror := fmt.Sprintf("%santiX-%s/", antiXMirror, release)
 		checksumUrl := mirror + "README.txt/download"
-		go createAntiXConfigs(ch, errs, csErrs, wg, release, mirror, checksumUrl, isoRe, "-sysv")
+		go createFinalAntiXConfigs(ch, errs, csErrs, wg, release, mirror, checksumUrl, isoRe, "-sysv")
 
 		runitMirror := fmt.Sprintf("%srunit-antiX-%s/", mirror, release)
 		runitChecksumUrl := runitMirror + "README2.txt/download"
-		go createAntiXConfigs(ch, errs, csErrs, wg, release, runitMirror, runitChecksumUrl, isoRe, "-runit")
+		go createFinalAntiXConfigs(ch, errs, csErrs, wg, release, runitMirror, runitChecksumUrl, isoRe, "-runit")
 	}
 
 	return waitForConfigs(ch, wg), nil
@@ -60,7 +57,7 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	return cs.Whitespace{}.BuildWithData(data[1]), nil
 }
 
-func createAntiXConfigs(ch chan Config, errs, csErrs chan<- Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
+func createFinalAntiXConfigs(ch chan Config, errs, csErrs chan<- Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
 	defer wg.Done()
 	page, err := web.CapturePage(url)
 	if err != nil {

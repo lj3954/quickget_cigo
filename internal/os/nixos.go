@@ -15,18 +15,15 @@ const (
 	nixDownloadUrl = "https://channels.nixos.org"
 )
 
-type NixOS struct{}
-
-func (NixOS) Data() OSData {
-	return OSData{
-		Name:        "nixos",
-		PrettyName:  "NixOS",
-		Homepage:    "https://nixos.org/",
-		Description: "Linux distribution based on Nix package manager, tool that takes a unique approach to package management and system configuration.",
-	}
+var NixOS = OS{
+	Name:           "nixos",
+	PrettyName:     "NixOS",
+	Homepage:       "https://nixos.org/",
+	Description:    "Linux distribution based on Nix package manager, tool that takes a unique approach to package management and system configuration.",
+	ConfigFunction: createNixOSConfigs,
 }
 
-func (NixOS) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createNixOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getNixReleases(6)
 	if err != nil {
 		return nil, err

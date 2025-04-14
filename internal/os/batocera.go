@@ -12,18 +12,15 @@ const (
 	batoceraReleaseRe = `<a href="([0-9]{2})/"`
 )
 
-type Batocera struct{}
-
-func (Batocera) Data() OSData {
-	return OSData{
-		Name:        "batocera",
-		PrettyName:  "Batocera",
-		Homepage:    "https://batocera.org/",
-		Description: "Retro-gaming distribution with the aim of turning any computer/nano computer into a gaming console during a game or permanently.",
-	}
+var Batocera = OS{
+	Name:           "batocera",
+	PrettyName:     "Batocera",
+	Homepage:       "https://batocera.org/",
+	Description:    "Retro-gaming distribution with the aim of turning any computer/nano computer into a gaming console during a game or permanently.",
+	ConfigFunction: createBatoceraConfigs,
 }
 
-func (Batocera) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createBatoceraConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleasesFunc(batoceraMirror, batoceraReleaseRe, 3, integerCompare)
 	if err != nil {
 		return nil, err

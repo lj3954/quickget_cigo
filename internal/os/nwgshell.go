@@ -9,18 +9,15 @@ import (
 
 const nwgshellMirror = "https://sourceforge.net/projects/nwg-iso/files/"
 
-type NWGShell struct{}
-
-func (NWGShell) Data() OSData {
-	return OSData{
-		Name:        "nwg-shell",
-		PrettyName:  "nwg-shell",
-		Homepage:    "https://nwg-piotr.github.io/nwg-shell/",
-		Description: "Arch Linux ISO with nwg-shell for sway and Hyprland",
-	}
+var NWGShell = OS{
+	Name:           "nwg-shell",
+	PrettyName:     "nwg-shell",
+	Homepage:       "https://nwg-piotr.github.io/nwg-shell/",
+	Description:    "Arch Linux ISO with nwg-shell for sway and Hyprland",
+	ConfigFunction: createNwgShellConfigs,
 }
 
-func (NWGShell) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createNwgShellConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(nwgshellMirror)
 	if err != nil {
 		return nil, err

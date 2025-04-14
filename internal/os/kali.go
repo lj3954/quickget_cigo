@@ -10,18 +10,15 @@ import (
 
 const kaliMirror = "https://cdimage.kali.org/"
 
-type Kali struct{}
-
-func (Kali) Data() OSData {
-	return OSData{
-		Name:        "kali",
-		PrettyName:  "Kali Linux",
-		Homepage:    "https://www.kali.org/",
-		Description: "The most advanced Penetration Testing Distribution.",
-	}
+var Kali = OS{
+	Name:           "kali",
+	PrettyName:     "Kali Linux",
+	Homepage:       "https://www.kali.org/",
+	Description:    "The most advanced Penetration Testing Distribution.",
+	ConfigFunction: createKaliConfigs,
 }
 
-func (Kali) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"current", "kali-weekly"}
 	ch, wg := getChannelsWith(len(releases))
 	isoRe := regexp.MustCompile(`href="(kali-linux-\d{4}-[^-]+-(installer|live)-(amd64|arm64).iso)"`)

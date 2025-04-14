@@ -13,18 +13,15 @@ const (
 	deepinReleaseRe = `class="name">([\d.]+)\/`
 )
 
-type Deepin struct{}
-
-func (Deepin) Data() OSData {
-	return OSData{
-		Name:        "deepin",
-		PrettyName:  "Deepin",
-		Homepage:    "https://www.deepin.org/",
-		Description: "Beautiful UI design, intimate human-computer interaction, and friendly community environment make you feel at home.",
-	}
+var Deepin = OS{
+	Name:           "deepin",
+	PrettyName:     "Deepin",
+	Homepage:       "https://www.deepin.org/",
+	Description:    "Beautiful UI design, intimate human-computer interaction, and friendly community environment make you feel at home.",
+	ConfigFunction: createDeepinConfigs,
 }
 
-func (Deepin) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createDeepinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, numReleases, err := getBasicReleases(deepinMirror, deepinReleaseRe, -1)
 	if err != nil {
 		return nil, err

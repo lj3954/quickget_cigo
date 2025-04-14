@@ -11,18 +11,15 @@ const (
 	guixDataMirror = "https://mirrors.ibiblio.org/gnu/guix/"
 )
 
-type Guix struct{}
-
-func (Guix) Data() OSData {
-	return OSData{
-		Name:        "guix",
-		PrettyName:  "Guix",
-		Homepage:    "https://guix.gnu.org/",
-		Description: "Distribution of the GNU operating system developed by the GNU Project—which respects the freedom of computer users.",
-	}
+var Guix = OS{
+	Name:           "guix",
+	PrettyName:     "Guix",
+	Homepage:       "https://guix.gnu.org/",
+	Description:    "Distribution of the GNU operating system developed by the GNU Project—which respects the freedom of computer users.",
+	ConfigFunction: createGuixConfigs,
 }
 
-func (Guix) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createGuixConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	page, err := web.CapturePage(guixDataMirror)
 	if err != nil {
 		return nil, err

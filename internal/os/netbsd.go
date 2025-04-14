@@ -14,18 +14,15 @@ const (
 	netbsdAarch64IsoFormat = "NetBSD-%s-evbarm-aarch64.iso"
 )
 
-type NetBSD struct{}
-
-func (NetBSD) Data() OSData {
-	return OSData{
-		Name:        "netbsd",
-		PrettyName:  "NetBSD",
-		Homepage:    "https://www.netbsd.org/",
-		Description: "Free, fast, secure, and highly portable Unix-like Open Source operating system. It is available for a wide range of platforms, from large-scale servers and powerful desktop systems to handheld and embedded devices.",
-	}
+var NetBSD = OS{
+	Name:           "netbsd",
+	PrettyName:     "NetBSD",
+	Homepage:       "https://www.netbsd.org/",
+	Description:    "Free, fast, secure, and highly portable Unix-like Open Source operating system. It is available for a wide range of platforms, from large-scale servers and powerful desktop systems to handheld and embedded devices.",
+	ConfigFunction: createNetBSDConfigs,
 }
 
-func (NetBSD) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createNetBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases, err := getSortedReleasesFunc(netbsdMirror, netbsdReleaseRe, 4, semverCompare)
 	if err != nil {
 		return nil, err

@@ -12,18 +12,15 @@ const (
 	windowsServerMirror   = "https://www.microsoft.com/en-us/evalcenter/download-windows-server"
 )
 
-type Windows struct{}
-
-func (Windows) Data() OSData {
-	return OSData{
-		Name:        "windows",
-		PrettyName:  "Windows",
-		Homepage:    "https://www.microsoft.com/en-us/windows/",
-		Description: "Whether you’re gaming, studying, running a business, or running a household, Windows helps you get it done.",
-	}
+var Windows = OS{
+	Name:           "windows",
+	PrettyName:     "Windows",
+	Homepage:       "https://www.microsoft.com/en-us/windows/",
+	Description:    "Whether you're gaming, studying, running a business, or running a household, Windows helps you get it done.",
+	ConfigFunction: createWindowsConfigs,
 }
 
-func (Windows) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+func createWindowsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var list []OsListData
 	if err := web.CapturePageToJson(windowsRedirectMirror+"list?os=windows", &list); err != nil {
 		return nil, err
@@ -60,17 +57,15 @@ type OsListData struct {
 	Error    string `json:"error,omitempty"`
 }
 
-type WindowsServer struct{}
-
-func (WindowsServer) Data() OSData {
-	return OSData{
-		Name:        "windows-server",
-		PrettyName:  "Windows Server",
-		Homepage:    "https://www.microsoft.com/en-us/windows-server/",
-		Description: "Platform for building an infrastructure of connected applications, networks, and web services.",
-	}
+var WindowsServer = OS{
+	Name:           "windows-server",
+	PrettyName:     "Windows Server",
+	Homepage:       "https://www.microsoft.com/en-us/windows-server/",
+	Description:    "Platform for building an infrastructure of connected applications, networks, and web services.",
+	ConfigFunction: createWindowsServerConfigs,
 }
-func (WindowsServer) CreateConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+
+func createWindowsServerConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"2025", "2022", "2019", "2016"}
 	isoRe := regexp.MustCompile(`scope="row"> (.*?) <\/th>.*?ISO.*?data-target="(https:.*?)"`)
 	ch, wg := getChannelsWith(len(releases))
