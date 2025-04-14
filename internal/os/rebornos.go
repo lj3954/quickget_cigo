@@ -1,8 +1,17 @@
 package os
 
-import "github.com/quickemu-project/quickget_configs/internal/web"
+import (
+	"errors"
+	"regexp"
 
-const rebornOsApi = "https://meta.cdn.soulharsh007.dev/RebornOS-ISO?format=json"
+	"github.com/quickemu-project/quickget_configs/internal/web"
+)
+
+const (
+	rebornOsDlPage = "https://downloads.rebornos.org/"
+	rebornOsCsRe   = `SHA256.*?([a-f0-9]{64})</div>`
+	rebornOsUrlRe  = `href="(https://cdn.soulharsh007.dev/RebornOS-ISO/reborn.*?)"`
+)
 
 var RebornOS = OS{
 	Name:           "rebornos",
@@ -13,20 +22,32 @@ var RebornOS = OS{
 }
 
 func createRebornOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	var data rebornOsData
-	if err := web.CapturePageToJson(rebornOsApi, &data); err != nil {
+	page, err := web.CapturePage(rebornOsDlPage)
+	if err != nil {
 		return nil, err
+	}
+	csRe := regexp.MustCompile(rebornOsCsRe)
+	urlRe := regexp.MustCompile(rebornOsUrlRe)
+
+	release := "latest"
+	urlResult := urlRe.FindStringSubmatch(page)
+	if urlResult == nil {
+		return nil, errors.New("Could not find download URL in HTML")
+	}
+	url := urlResult[1]
+
+	checksumResult := csRe.FindStringSubmatch(page)
+	var checksum string
+	if checksumResult == nil {
+		csErrs <- Failure{Release: release, Error: errors.New("Could not find checksum from HTML")}
+	} else {
+		checksum = checksumResult[1]
 	}
 	return []Config{
 		{
 			ISO: []Source{
-				urlChecksumSource(data.URL, data.Checksum),
+				urlChecksumSource(url, checksum),
 			},
 		},
 	}, nil
-}
-
-type rebornOsData struct {
-	URL      string `json:"url"`
-	Checksum string `json:"md5"`
 }
