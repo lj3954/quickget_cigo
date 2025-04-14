@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	openindianaMirror    = "https://dlc.openindiana.org/isos/hipster/"
-	openindianaReleaseRe = `href="(\d{8})/"`
+	openIndianaMirror    = "https://dlc.openindiana.org/isos/hipster/"
+	openIndianaReleaseRe = `href="./(\d{8})/"`
+	openIndianaIsoRe     = `href="./(OI-hipster-([^-]+)-\d{8}.iso)"`
 )
 
 var OpenIndiana = OS{
@@ -22,15 +23,15 @@ var OpenIndiana = OS{
 }
 
 func createOpenIndianaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getReverseReleases(openindianaMirror, openindianaReleaseRe, 5)
+	releases, numReleases, err := getReverseReleases(openIndianaMirror, openIndianaReleaseRe, 5)
 	if err != nil {
 		return nil, err
 	}
-	isoRe := regexp.MustCompile(`href="(OI-hipster-([^-]+)-\d{8}.iso)"`)
+	isoRe := regexp.MustCompile(openIndianaIsoRe)
 	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
-		mirror := openindianaMirror + release + "/"
+		mirror := openIndianaMirror + release + "/"
 		go func() {
 			defer wg.Done()
 			page, err := web.CapturePage(mirror)
