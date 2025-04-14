@@ -28,7 +28,7 @@ func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 	workflowRe := regexp.MustCompile(`- (bazzite-?(.*))`)
-	excludedEditions := []string{"nvidia", "ally", "asus"}
+	excludedEditions := []string{"nvidia", "ally", "asus", "surface"}
 	ch, wg := getChannels()
 
 	release := "latest"
@@ -39,7 +39,7 @@ func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		} else if len(edition) <= 4 {
 			edition += "-plasma"
 		}
-		url := bazziteMirror + match[1] + "-stable.iso"
+		url := bazziteMirror + match[1] + "-stable-amd64.iso"
 		if isExcludedEdition(edition, excludedEditions) {
 			continue
 		}
