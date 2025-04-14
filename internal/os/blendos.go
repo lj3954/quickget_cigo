@@ -12,7 +12,7 @@ func createBlendOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return []Config{
 		{
 			ISO: []Source{
-				urlSource("https://kc1.mirrors.199693.xyz/blend/isos/testing/blendOS.iso"),
+				urlSource("https://git.blendos.co/api/v4/projects/32/jobs/artifacts/main/raw/blendOS.iso?job=build-job"),
 			},
 		},
 	}, nil
