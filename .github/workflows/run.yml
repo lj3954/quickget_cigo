@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: quickget_cigo
-          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/root.go') }}
+          key: ${{ runner.os }}-quickget_cigo-${{ hashFiles('**/**.go') }}
 
       - name: Generate data
         run: ./quickget_cigo
