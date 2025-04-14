@@ -79,6 +79,7 @@ func (s *Status) AddOS(data qgdata.OSData, failures, csFailures []data.Failure) 
 			Arch:    failure.Arch,
 			Err:     failure.Error,
 		})
+		log.Printf("Failure: %s", failure)
 	}
 	for _, failure := range csFailures {
 		log.Printf("(Unimplemented) Checksum Failure: %s", failure)
