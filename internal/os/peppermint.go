@@ -2,7 +2,7 @@ package os
 
 import "github.com/quickemu-project/quickget_configs/internal/cs"
 
-var peppermint = OS{
+var Peppermint = OS{
 	Name:           "peppermint",
 	PrettyName:     "PeppermintOS",
 	Homepage:       "https://peppermintos.com/",

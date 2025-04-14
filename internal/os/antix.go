@@ -16,7 +16,7 @@ const (
 	antiXReleaseRe = `"name":"antiX-([0-9.]+)"`
 )
 
-var antiX = OS{
+var AntiX = OS{
 	Name:           "antix",
 	PrettyName:     "antiX",
 	Homepage:       "https://antixlinux.com/",

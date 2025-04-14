@@ -9,7 +9,7 @@ import (
 
 const athenaAPI = "https://api.github.com/repos/Athena-OS/athena/releases"
 
-var athenaOS = OS{
+var AthenaOS = OS{
 	Name:           "athenaos",
 	PrettyName:     "Athena OS",
 	Homepage:       "https://athenaos.org/",

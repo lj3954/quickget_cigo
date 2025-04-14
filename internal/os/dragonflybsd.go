@@ -12,7 +12,7 @@ import (
 
 const dragonflybsdMirror = "https://mirror-master.dragonflybsd.org/iso-images/"
 
-var dragonFlyBSD = OS{
+var DragonFlyBSD = OS{
 	Name:           "dragonflybsd",
 	PrettyName:     "DragonFlyBSD",
 	Homepage:       "https://www.dragonflybsd.org/",

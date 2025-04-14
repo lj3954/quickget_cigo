@@ -9,7 +9,7 @@ import (
 
 const chimeraMirror = "https://repo.chimera-linux.org/live/latest/"
 
-var chimeraLinux = OS{
+var ChimeraLinux = OS{
 	Name:           "chimeralinux",
 	PrettyName:     "Chimera Linux",
 	Homepage:       "https://chimera-linux.org/",

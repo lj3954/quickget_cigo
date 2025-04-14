@@ -11,7 +11,7 @@ const (
 	guixDataMirror = "https://mirrors.ibiblio.org/gnu/guix/"
 )
 
-var guix = OS{
+var Guix = OS{
 	Name:           "guix",
 	PrettyName:     "Guix",
 	Homepage:       "https://guix.gnu.org/",

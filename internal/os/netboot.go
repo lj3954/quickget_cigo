@@ -4,7 +4,7 @@ import "github.com/quickemu-project/quickget_configs/internal/cs"
 
 const netbootMirror = "https://boot.netboot.xyz/ipxe/"
 
-var netboot = OS{
+var Netboot = OS{
 	Name:           "netboot",
 	PrettyName:     "Netboot",
 	Homepage:       "https://netboot.xyz/",

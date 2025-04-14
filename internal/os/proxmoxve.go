@@ -12,7 +12,7 @@ const (
 	proxmoxIsoRe    = `href="(proxmox-ve_(\d+\.\d+)-\d+\.iso)"`
 )
 
-var proxmoxVE = OS{
+var ProxmoxVE = OS{
 	Name:           "proxmox-ve",
 	PrettyName:     "Proxmox VE",
 	Homepage:       "https://www.proxmox.com/en/proxmox-virtual-environment",

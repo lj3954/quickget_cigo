@@ -13,7 +13,7 @@ const (
 	slaxIsoRe  = `href="(slax-64bit-(?:debian|slackware)-[\d\.]+\.iso)"`
 )
 
-var slax = OS{
+var Slax = OS{
 	Name:           "slax",
 	PrettyName:     "Slax",
 	Homepage:       "https://slax.org/",

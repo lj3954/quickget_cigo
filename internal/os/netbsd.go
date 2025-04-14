@@ -14,7 +14,7 @@ const (
 	netbsdAarch64IsoFormat = "NetBSD-%s-evbarm-aarch64.iso"
 )
 
-var netBSD = OS{
+var NetBSD = OS{
 	Name:           "netbsd",
 	PrettyName:     "NetBSD",
 	Homepage:       "https://www.netbsd.org/",

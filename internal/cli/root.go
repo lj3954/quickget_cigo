@@ -15,7 +15,7 @@ import (
 )
 
 func Launch() {
-	distros, status := utils.SpawnDistros(os.List)
+	distros, status := utils.SpawnDistros(os.List...)
 	distros = fixList(distros)
 
 	if err := status.Finalize(); err != nil {

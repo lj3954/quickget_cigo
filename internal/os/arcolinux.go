@@ -14,7 +14,7 @@ const (
 	arcoLinuxCsRe      = `>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`
 )
 
-var arcoLinux = OS{
+var ArcoLinux = OS{
 	Name:           "arcolinux",
 	PrettyName:     "ArcoLinux",
 	Homepage:       "https://arcolinux.com/",

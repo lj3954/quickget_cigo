@@ -13,7 +13,7 @@ const (
 	openindianaReleaseRe = `href="(\d{8})/"`
 )
 
-var openIndiana = OS{
+var OpenIndiana = OS{
 	Name:           "openindiana",
 	PrettyName:     "OpenIndiana",
 	Homepage:       "https://www.openindiana.org/",

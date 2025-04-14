@@ -14,7 +14,7 @@ const (
 	siductionIsoRe    = `href="(siduction-.*?\.iso)"`
 )
 
-var siduction = OS{
+var Siduction = OS{
 	Name:           "siduction",
 	PrettyName:     "Siduction",
 	Homepage:       "https://siduction.org/",

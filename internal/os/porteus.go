@@ -14,7 +14,7 @@ const (
 	porteusIsoRe     = `href="(Porteus-([^-]+)-(.*?)-x86_64.iso)"`
 )
 
-var porteus = OS{
+var Porteus = OS{
 	Name:           "porteus",
 	PrettyName:     "Porteus",
 	Homepage:       "http://www.porteus.org/",

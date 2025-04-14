@@ -11,7 +11,7 @@ const (
 	reactOsLatestRel = "https://sourceforge.net/projects/reactos/files/latest/download"
 )
 
-var reactOS = OS{
+var ReactOS = OS{
 	Name:           "reactos",
 	PrettyName:     "ReactOS",
 	Homepage:       "https://reactos.org/",

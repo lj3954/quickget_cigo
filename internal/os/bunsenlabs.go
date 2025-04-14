@@ -11,7 +11,7 @@ import (
 
 const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
 
-var bunsenLabs = OS{
+var BunsenLabs = OS{
 	Name:           "bunsenlabs",
 	PrettyName:     "BunsenLabs",
 	Homepage:       "https://www.bunsenlabs.org/",

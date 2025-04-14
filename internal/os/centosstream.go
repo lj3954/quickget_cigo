@@ -14,7 +14,7 @@ const (
 	centOSReleaseRe = `href="([0-9]+)-stream/"`
 )
 
-var centOSStream = OS{
+var CentOSStream = OS{
 	Name:           "centos-stream",
 	PrettyName:     "CentOS Stream",
 	Homepage:       "https://www.centos.org/centos-stream/",

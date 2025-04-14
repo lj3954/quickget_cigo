@@ -2,7 +2,7 @@ package os
 
 import "github.com/quickemu-project/quickget_configs/internal/cs"
 
-var azureLinux = OS{
+var AzureLinux = OS{
 	Name:           "azurelinux",
 	PrettyName:     "Azure Linux",
 	Homepage:       "https://github.com/microsoft/azurelinux",

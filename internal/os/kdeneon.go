@@ -8,7 +8,7 @@ import (
 
 const kdeNeonMirror = "https://files.kde.org/neon/images/"
 
-var kdeNeon = OS{
+var KDENeon = OS{
 	Name:           "kdeneon",
 	PrettyName:     "KDE Neon",
 	Homepage:       "https://neon.kde.org/",

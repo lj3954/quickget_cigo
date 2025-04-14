@@ -8,7 +8,7 @@ import (
 
 const popApiUrl = "https://api.pop-os.org/builds/"
 
-var popOS = OS{
+var PopOS = OS{
 	Name:           "popos",
 	PrettyName:     "Pop!_OS",
 	Homepage:       "https://pop.system76.com/",

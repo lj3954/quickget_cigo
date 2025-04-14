@@ -13,7 +13,7 @@ const (
 	ghostbsdReleaseRe = `href="(latest|[\d\.]+)\/"`
 )
 
-var ghostBSD = OS{
+var GhostBSD = OS{
 	Name:           "ghostbsd",
 	PrettyName:     "GhostBSD",
 	Homepage:       "https://www.ghostbsd.org/",

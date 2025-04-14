@@ -13,7 +13,7 @@ const (
 	deepinReleaseRe = `class="name">([\d.]+)\/`
 )
 
-var deepin = OS{
+var Deepin = OS{
 	Name:           "deepin",
 	PrettyName:     "Deepin",
 	Homepage:       "https://www.deepin.org/",

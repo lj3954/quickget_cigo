@@ -4,7 +4,7 @@ import "github.com/quickemu-project/quickget_configs/internal/web"
 
 const rebornOsApi = "https://meta.cdn.soulharsh007.dev/RebornOS-ISO?format=json"
 
-var rebornOS = OS{
+var RebornOS = OS{
 	Name:           "rebornos",
 	PrettyName:     "RebornOS",
 	Homepage:       "https://rebornos.org/",

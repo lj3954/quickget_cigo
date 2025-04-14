@@ -12,7 +12,7 @@ const (
 	windowsServerMirror   = "https://www.microsoft.com/en-us/evalcenter/download-windows-server"
 )
 
-var windows = OS{
+var Windows = OS{
 	Name:           "windows",
 	PrettyName:     "Windows",
 	Homepage:       "https://www.microsoft.com/en-us/windows/",
@@ -57,7 +57,7 @@ type OsListData struct {
 	Error    string `json:"error,omitempty"`
 }
 
-var windowsServer = OS{
+var WindowsServer = OS{
 	Name:           "windows-server",
 	PrettyName:     "Windows Server",
 	Homepage:       "https://www.microsoft.com/en-us/windows-server/",

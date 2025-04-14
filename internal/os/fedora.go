@@ -10,7 +10,7 @@ import (
 
 const fedoraJsonUrl = "https://fedoraproject.org/releases.json"
 
-var fedora = OS{
+var Fedora = OS{
 	Name:           "fedora",
 	PrettyName:     "Fedora",
 	Homepage:       "https://fedoraproject.org/",

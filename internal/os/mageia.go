@@ -12,7 +12,7 @@ const (
 	mageiaReleaseRe = `href="(\d+)\/"`
 )
 
-var mageia = OS{
+var Mageia = OS{
 	Name:           "mageia",
 	PrettyName:     "Mageia",
 	Homepage:       "https://www.mageia.org/",

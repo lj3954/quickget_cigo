@@ -12,7 +12,7 @@ const (
 	elementaryChecksumUrl = "https://elementary.io/docs/installation"
 )
 
-var elementary = OS{
+var Elementary = OS{
 	Name:           "elementary",
 	PrettyName:     "elementary OS",
 	Homepage:       "https://elementary.io/",

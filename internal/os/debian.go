@@ -25,7 +25,7 @@ var (
 	debianNetinstRe = regexp.MustCompile(`>(debian-[0-9].+-(?:amd64|arm64)-(netinst).iso)<`)
 )
 
-var debian = OS{
+var Debian = OS{
 	Name:           "debian",
 	PrettyName:     "Debian",
 	Homepage:       "https://www.debian.org/",

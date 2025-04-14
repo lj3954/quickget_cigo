@@ -12,7 +12,7 @@ const (
 	devuanReleaseRe = `href="(devuan_[a-zA-Z]+/)"`
 )
 
-var devuan = OS{
+var Devuan = OS{
 	Name:           "devuan",
 	PrettyName:     "Devuan",
 	Homepage:       "https://devuan.org/",

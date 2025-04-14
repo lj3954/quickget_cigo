@@ -12,7 +12,7 @@ const (
 	bodhiReleaseRe = `"name":"([0-9]+.[0-9]+.[0-9]+)"`
 )
 
-var bodhi = OS{
+var Bodhi = OS{
 	Name:           "bodhi",
 	PrettyName:     "Bodhi",
 	Homepage:       "https://www.bodhilinux.com/",

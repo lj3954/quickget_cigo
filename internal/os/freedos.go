@@ -14,7 +14,7 @@ const (
 	freedosReleaseRe = `href="(\d+\.\d+)/"`
 )
 
-var freeDOS = OS{
+var FreeDOS = OS{
 	Name:           "freedos",
 	PrettyName:     "FreeDOS",
 	Homepage:       "https://www.freedos.org/",

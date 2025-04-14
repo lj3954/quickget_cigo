@@ -14,7 +14,7 @@ const (
 	bazziteMirror   = "https://download.bazzite.gg/"
 )
 
-var bazzite = OS{
+var Bazzite = OS{
 	Name:           "bazzite",
 	PrettyName:     "Bazzite",
 	Homepage:       "https://bazzite.gg/",

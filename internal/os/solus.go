@@ -13,7 +13,7 @@ const (
 	solusIsoRe  = `^Solus-([^-]+)-Release-\d{4}-\d{2}-\d{2}\.iso$`
 )
 
-var solus = OS{
+var Solus = OS{
 	Name:           "solus",
 	PrettyName:     "Solus",
 	Homepage:       "https://getsol.us/",

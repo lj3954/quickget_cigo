@@ -15,7 +15,7 @@ const (
 	freebsdRiscv64Mirror = "https://download.freebsd.org/ftp/releases/riscv/riscv64/"
 )
 
-var freeBSD = OS{
+var FreeBSD = OS{
 	Name:           "freebsd",
 	PrettyName:     "FreeBSD",
 	Homepage:       "https://www.freebsd.org/",

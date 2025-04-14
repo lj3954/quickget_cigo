@@ -1,6 +1,6 @@
 package os
 
-var blendOS = OS{
+var BlendOS = OS{
 	Name:           "blendos",
 	PrettyName:     "BlendOS",
 	Homepage:       "https://blendos.co/",

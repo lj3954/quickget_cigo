@@ -12,7 +12,7 @@ const (
 	slitazIsoRe  = `href='(slitaz-(rolling(?:-.*?)?)\.iso)'`
 )
 
-var slitaz = OS{
+var Slitaz = OS{
 	Name:           "slitaz",
 	PrettyName:     "SliTaz",
 	Homepage:       "https://www.slitaz.org/",

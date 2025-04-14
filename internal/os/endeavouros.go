@@ -9,7 +9,7 @@ import (
 
 const endeavourMirror = "https://mirror.alpix.eu/endeavouros/iso/"
 
-var endeavourOS = OS{
+var EndeavourOS = OS{
 	Name:           "endeavouros",
 	PrettyName:     "EndeavourOS",
 	Homepage:       "https://endeavouros.com/",

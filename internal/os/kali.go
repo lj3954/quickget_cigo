@@ -10,7 +10,7 @@ import (
 
 const kaliMirror = "https://cdimage.kali.org/"
 
-var kali = OS{
+var Kali = OS{
 	Name:           "kali",
 	PrettyName:     "Kali Linux",
 	Homepage:       "https://www.kali.org/",

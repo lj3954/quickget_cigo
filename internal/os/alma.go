@@ -15,7 +15,7 @@ const (
 	almaReleaseRe = `<a href="([0-9]+)/"`
 )
 
-var alma = OS{
+var Alma = OS{
 	Name:           "alma",
 	PrettyName:     "AlmaLinux",
 	Homepage:       "https://almalinux.org/",

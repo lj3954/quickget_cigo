@@ -13,7 +13,7 @@ const (
 	slackwareReleaseRe = `href="(slackware64-(\d+\.\d+)-iso)/"`
 )
 
-var slackware = OS{
+var Slackware = OS{
 	Name:           "slackware",
 	PrettyName:     "Slackware",
 	Homepage:       "https://www.slackware.com/",

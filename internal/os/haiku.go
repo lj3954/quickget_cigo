@@ -12,7 +12,7 @@ const (
 	haikuReleaseRe = `href="(r\w+)\/"`
 )
 
-var haiku = OS{
+var Haiku = OS{
 	Name:           "haiku",
 	PrettyName:     "Haiku",
 	Homepage:       "https://www.haiku-os.org/",

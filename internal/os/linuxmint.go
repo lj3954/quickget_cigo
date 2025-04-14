@@ -12,7 +12,7 @@ const (
 	linuxmintReleaseRe = `href="(\d+(?:\.\d+)?)\/"`
 )
 
-var linuxMint = OS{
+var LinuxMint = OS{
 	Name:           "linuxmint",
 	PrettyName:     "Linux Mint",
 	Homepage:       "https://linuxmint.com/",

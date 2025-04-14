@@ -10,7 +10,7 @@ import (
 
 const gentooMirror = "https://distfiles.gentoo.org/releases/"
 
-var gentoo = OS{
+var Gentoo = OS{
 	Name:           "gentoo",
 	PrettyName:     "Gentoo",
 	Homepage:       "https://www.gentoo.org/",

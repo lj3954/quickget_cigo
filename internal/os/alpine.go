@@ -13,7 +13,7 @@ const (
 	alpineIsoRe     = `(?s)iso: (alpine-virt-[0-9]+\.[0-9]+.*?.iso).*? sha256: ([0-9a-f]+)`
 )
 
-var alpine = OS{
+var Alpine = OS{
 	Name:           "alpine",
 	PrettyName:     "Alpine Linux",
 	Homepage:       "https://alpinelinux.org/",

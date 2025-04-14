@@ -9,7 +9,7 @@ import (
 
 const nwgshellMirror = "https://sourceforge.net/projects/nwg-iso/files/"
 
-var nwgShell = OS{
+var NWGShell = OS{
 	Name:           "nwg-shell",
 	PrettyName:     "nwg-shell",
 	Homepage:       "https://nwg-piotr.github.io/nwg-shell/",

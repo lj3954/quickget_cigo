@@ -13,7 +13,7 @@ const (
 	primtuxIsoRe  = `"name":"Primtux(\d+)-amd64.iso".*?download_url":"(.*?)"`
 )
 
-var primtux = OS{
+var Primtux = OS{
 	Name:           "primtux",
 	PrettyName:     "PrimTux",
 	Homepage:       "https://primtux.fr/",

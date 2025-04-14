@@ -13,7 +13,7 @@ const (
 	archcraftReleaseRe = `"name":"v([^"]+)"`
 )
 
-var archCraft = OS{
+var Archcraft = OS{
 	Name:           "archcraft",
 	PrettyName:     "Archcraft",
 	Homepage:       "https://archcraft.io/",

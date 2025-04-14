@@ -12,7 +12,7 @@ import (
 	qgdata "github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
-func SpawnDistros(distros []OS) ([]OSData, *status.Status) {
+func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 	ch := make(chan OSData)
 	var wg sync.WaitGroup
 	status := status.Create(len(distros))

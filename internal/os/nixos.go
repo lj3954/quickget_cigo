@@ -15,7 +15,7 @@ const (
 	nixDownloadUrl = "https://channels.nixos.org"
 )
 
-var nixOS = OS{
+var NixOS = OS{
 	Name:           "nixos",
 	PrettyName:     "NixOS",
 	Homepage:       "https://nixos.org/",

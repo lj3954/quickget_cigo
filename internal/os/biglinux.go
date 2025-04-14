@@ -11,7 +11,7 @@ import (
 
 const biglinuxMirror = "https://iso.biglinux.com.br/"
 
-var bigLinux = OS{
+var BigLinux = OS{
 	Name:           "biglinux",
 	PrettyName:     "BigLinux",
 	Homepage:       "https://www.biglinux.com.br/",

@@ -11,7 +11,7 @@ const (
 	linuxliteReleaseRe = `"name":"(\d(?:\.\d+)+)"`
 )
 
-var linuxLite = OS{
+var LinuxLite = OS{
 	Name:           "linuxlite",
 	PrettyName:     "Linux Lite",
 	Homepage:       "https://www.linuxliteos.com/",

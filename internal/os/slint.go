@@ -14,7 +14,7 @@ const (
 	slintIsoRe     = `href="(slint64-.*?\.iso)"`
 )
 
-var slint = OS{
+var Slint = OS{
 	Name:           "slint",
 	PrettyName:     "Slint",
 	Homepage:       "https://slint.fr/",

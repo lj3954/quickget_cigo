@@ -18,7 +18,7 @@ const (
 	easyosReleaseNameRe = `href="([a-z]+/)"`
 )
 
-var easyOS = OS{
+var EasyOS = OS{
 	Name:           "easyos",
 	PrettyName:     "EasyOS",
 	Homepage:       "https://easyos.org/",

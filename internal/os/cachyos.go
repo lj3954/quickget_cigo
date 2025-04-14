@@ -9,7 +9,7 @@ import (
 
 const cachyOSMirror = "https://mirror.cachyos.org/ISO/"
 
-var cachyOS = OS{
+var CachyOS = OS{
 	Name:           "cachyos",
 	PrettyName:     "CachyOS",
 	Homepage:       "https://cachyos.org/",

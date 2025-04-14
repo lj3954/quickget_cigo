@@ -15,7 +15,7 @@ const (
 	endlessReleaseRe  = `href="(\d+(?:.\d+){2})\/"`
 )
 
-var endlessOS = OS{
+var EndlessOS = OS{
 	Name:           "endless",
 	PrettyName:     "Endless OS",
 	Homepage:       "https://endlessos.org/",

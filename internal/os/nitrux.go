@@ -10,7 +10,7 @@ import (
 
 const nitruxMirror = "https://sourceforge.net/projects/nitruxos/files/Release/"
 
-var nitrux = OS{
+var Nitrux = OS{
 	Name:           "nitrux",
 	PrettyName:     "Nitrux",
 	Homepage:       "https://nxos.org/",

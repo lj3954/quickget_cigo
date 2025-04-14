@@ -11,7 +11,7 @@ const (
 	opensuseReleaseRe  = `href=".\/(\d{2}\.\d{1})`
 )
 
-var openSUSE = OS{
+var OpenSUSE = OS{
 	Name:           "opensuse",
 	PrettyName:     "openSUSE",
 	Homepage:       "https://www.opensuse.org/",

@@ -13,7 +13,7 @@ const (
 	garudaEditionRe = `href="([^.]+)\/"`
 )
 
-var garuda = OS{
+var Garuda = OS{
 	Name:           "garuda",
 	PrettyName:     "Garuda Linux",
 	Homepage:       "https://garudalinux.org/",

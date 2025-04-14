@@ -7,7 +7,7 @@ const (
 	archLinuxMirror = "https://mirror.rackspace.com/archlinux"
 )
 
-var archLinux = OS{
+var ArchLinux = OS{
 	Name:           "archlinux",
 	PrettyName:     "Arch Linux",
 	Homepage:       "https://archlinux.org/",

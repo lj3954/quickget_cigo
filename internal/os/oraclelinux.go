@@ -15,7 +15,7 @@ const (
 	oracleLinuxReleaseRe      = `href="(OracleLinux-R(\d+)-U(\d+)-Server-([^\.]+)\.checksum)`
 )
 
-var oracleLinux = OS{
+var OracleLinux = OS{
 	Name:           "oraclelinux",
 	PrettyName:     "Oracle Linux",
 	Homepage:       "https://www.oracle.com/linux/",

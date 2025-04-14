@@ -13,7 +13,7 @@ const (
 	openbsdReleaseRe = `href="(\d[\d\.]+)/"`
 )
 
-var openBSD = OS{
+var OpenBSD = OS{
 	Name:           "openbsd",
 	PrettyName:     "OpenBSD",
 	Homepage:       "https://www.openbsd.org/",

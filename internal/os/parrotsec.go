@@ -17,7 +17,7 @@ const (
 	parrotSecIsoRe     = `href="(Parrot-([^-]+)-[\d\.]+_([^\.]+)\.(iso|qcow2.xz))"`
 )
 
-var parrotSec = OS{
+var ParrotSec = OS{
 	Name:           "parrotsec",
 	PrettyName:     "Parrot Security",
 	Homepage:       "https://www.parrotsec.org/",

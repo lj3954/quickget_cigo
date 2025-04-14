@@ -14,7 +14,7 @@ const (
 	kolibriEditionRe = `href="([a-z]{2}_[A-Z]{2})\/"`
 )
 
-var kolibriOS = OS{
+var KolibriOS = OS{
 	Name:           "kolibrios",
 	PrettyName:     "KolibriOS",
 	Homepage:       "https://kolibrios.org/",

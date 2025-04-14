@@ -11,7 +11,7 @@ const (
 	rockyReleaseRe = `href="(\d+\.\d+)/"`
 )
 
-var rockyLinux = OS{
+var RockyLinux = OS{
 	Name:           "rockylinux",
 	PrettyName:     "Rocky Linux",
 	Homepage:       "https://rockylinux.org/",

@@ -9,7 +9,7 @@ import (
 
 const lmdeMirror = "https://mirrors.edge.kernel.org/linuxmint/debian/"
 
-var lmde = OS{
+var LMDE = OS{
 	Name:           "lmde",
 	PrettyName:     "Linux Mint Debian Edition",
 	Homepage:       "https://linuxmint.com/download_lmde.php",

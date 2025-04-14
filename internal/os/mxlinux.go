@@ -12,7 +12,7 @@ const (
 	mxlinuxReleaseRe = `title="(\w+)" class="folder`
 )
 
-var mxLinux = OS{
+var MXLinux = OS{
 	Name:           "mxlinux",
 	PrettyName:     "MX Linux",
 	Homepage:       "https://mxlinux.org/",

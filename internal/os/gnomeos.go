@@ -12,7 +12,7 @@ const (
 	gnomeosReleaseRe = `href="(\d[^/]+)\/"`
 )
 
-var gnomeOS = OS{
+var GnomeOS = OS{
 	Name:           "gnomeos",
 	PrettyName:     "GNOME OS",
 	Homepage:       "https://os.gnome.org/",

@@ -12,7 +12,7 @@ const (
 	batoceraReleaseRe = `<a href="([0-9]{2})/"`
 )
 
-var batocera = OS{
+var Batocera = OS{
 	Name:           "batocera",
 	PrettyName:     "Batocera",
 	Homepage:       "https://batocera.org/",

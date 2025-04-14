@@ -14,7 +14,7 @@ const (
 	manjaroSwayJsonUrl = "https://mirror.manjaro-sway.download/manjaro-sway/release.json"
 )
 
-var manjaro = OS{
+var Manjaro = OS{
 	Name:           "manjaro",
 	PrettyName:     "Manjaro",
 	Homepage:       "https://manjaro.org/",

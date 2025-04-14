@@ -9,7 +9,7 @@ import (
 
 const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
 
-var artixLinux = OS{
+var ArtixLinux = OS{
 	Name:           "artixlinux",
 	PrettyName:     "Artix Linux",
 	Homepage:       "https://artixlinux.org/",
