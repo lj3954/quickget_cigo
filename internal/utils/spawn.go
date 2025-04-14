@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"log"
 	"slices"
 	"strings"
 	"sync"
@@ -46,8 +47,6 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			defer close(failures)
-			defer close(csErrs)
 			configs, err := distro.ConfigFunction(failures, csErrs)
 
 			if err != nil {
@@ -56,7 +55,13 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 			}
 			configs = web.RemoveInvalidConfigs(configs, failures, csErrs)
 
+			close(failures)
+			close(csErrs)
+
 			if len(configs) == 0 {
+				for _, failure := range failureSlice {
+					log.Printf("Failure: %s", failure)
+				}
 				status.FailedOS(os, errors.New("no valid configs found"))
 				return
 			}
