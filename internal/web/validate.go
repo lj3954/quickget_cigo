@@ -21,7 +21,7 @@ func RemoveInvalidConfigs(configs []quickgetdata.Config, errs, csErrs chan<- dat
 	for _, config := range configs {
 		go func() {
 			defer wg.Done()
-			if !config.SkipValidation {
+			if !config.Validation.Skip {
 				if err := validateConfigSources(&config); err != nil {
 					errs <- data.Failure{
 						Release: config.Release,
@@ -54,14 +54,14 @@ func validateConfigSources(config *quickgetdata.Config) error {
 		config.FixedISO,
 		config.Floppy,
 	)
-	if err := validateSources(sources); err != nil {
+	if err := validateSources(sources, config.Validation); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func validateSources(sources iter.Seq[*quickgetdata.Source]) error {
+func validateSources(sources iter.Seq[*quickgetdata.Source], validation quickgetdata.Validation) error {
 	var wg sync.WaitGroup
 	errs := make(chan error)
 	for source := range sources {
@@ -69,7 +69,7 @@ func validateSources(sources iter.Seq[*quickgetdata.Source]) error {
 		go func() {
 			defer wg.Done()
 			if webSource := source.Web; webSource != nil {
-				filename, err := resolveURLFilename(webSource.URL)
+				filename, err := resolveURLFilename(webSource.URL, validation)
 				if err != nil {
 					errs <- err
 				}
@@ -80,7 +80,7 @@ func validateSources(sources iter.Seq[*quickgetdata.Source]) error {
 					webSource.FileName = filename
 				}
 			} else if dockerSource := source.Docker; dockerSource != nil {
-				if _, err := resolveURL(dockerSource.URL); err != nil {
+				if _, err := resolveURL(dockerSource.URL, validation); err != nil {
 					errs <- err
 				}
 			}
@@ -99,7 +99,7 @@ func validateSources(sources iter.Seq[*quickgetdata.Source]) error {
 	return nil
 }
 
-func resolveURL(input string) (*http.Response, error) {
+func resolveURL(input string, validation quickgetdata.Validation) (*http.Response, error) {
 	url, err := url.Parse(input)
 	if err != nil {
 		return nil, err
@@ -122,14 +122,16 @@ func resolveURL(input string) (*http.Response, error) {
 	status := resp.StatusCode
 	if status == http.StatusTooManyRequests {
 		log.Printf("Warning: Got status too many requests for URL %s\n", url)
+	} else if validation.Accept403 && status == http.StatusForbidden {
+		log.Printf("Warning: Got status forbidden for URL %s\n", url)
 	} else if status < http.StatusOK || status >= http.StatusMultipleChoices {
 		return nil, fmt.Errorf("Failed to resolve URL %s: %s", url, resp.Status)
 	}
 	return resp, nil
 }
 
-func resolveURLFilename(url string) (string, error) {
-	resp, err := resolveURL(url)
+func resolveURLFilename(url string, validation quickgetdata.Validation) (string, error) {
+	resp, err := resolveURL(url, validation)
 	if err != nil {
 		return "", err
 	}

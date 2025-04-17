@@ -40,7 +40,7 @@ func createWindowsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			ISO: []Source{
 				webSource(url, data.Checksum, "", data.Filename),
 			},
-			SkipValidation: true,
+			Validation: Validation{Skip: true},
 		})
 	}
 

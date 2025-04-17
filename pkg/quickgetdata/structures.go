@@ -62,18 +62,24 @@ const (
 )
 
 type Config struct {
-	Release        string   `json:"release"`
-	Edition        string   `json:"edition,omitempty"`
-	GuestOS        GuestOS  `json:"os,omitempty"`
-	Arch           Arch     `json:"arch,omitempty"`
-	ISO            []Source `json:"iso,omitempty"`
-	IMG            []Source `json:"img,omitempty"`
-	FixedISO       []Source `json:"fixed_iso,omitempty"`
-	Floppy         []Source `json:"floppy,omitempty"`
-	DiskImages     []Disk   `json:"disk_images,omitempty"`
-	TPM            bool     `json:"tpm,omitempty"`
-	RAM            int64    `json:"ram,omitempty"`
-	SkipValidation bool     `json:"-"`
+	Release    string   `json:"release"`
+	Edition    string   `json:"edition,omitempty"`
+	GuestOS    GuestOS  `json:"os,omitempty"`
+	Arch       Arch     `json:"arch,omitempty"`
+	ISO        []Source `json:"iso,omitempty"`
+	IMG        []Source `json:"img,omitempty"`
+	FixedISO   []Source `json:"fixed_iso,omitempty"`
+	Floppy     []Source `json:"floppy,omitempty"`
+	DiskImages []Disk   `json:"disk_images,omitempty"`
+	TPM        bool     `json:"tpm,omitempty"`
+	RAM        int64    `json:"ram,omitempty"`
+	// This field tells the config generation to modify URL validation logic. This can be done because of ratelimits, datacenter IP blocking, or any other reason
+	Validation Validation `json:"-"`
+}
+
+type Validation struct {
+	Skip      bool
+	Accept403 bool
 }
 
 type Disk struct {

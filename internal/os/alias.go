@@ -17,6 +17,7 @@ type (
 	Source        = qgdata.Source
 	Disk          = qgdata.Disk
 	Failure       = data.Failure
+	Validation    = qgdata.Validation
 )
 
 const (

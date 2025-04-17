@@ -57,6 +57,7 @@ func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				ISO: []Source{
 					urlChecksumSource(url, checksum),
 				},
+				Validation: Validation{Accept403: true},
 			}
 		}()
 	}
