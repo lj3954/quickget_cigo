@@ -124,6 +124,7 @@ var List = []OS{
 	Slint,
 	Slitaz,
 	Solus,
+	SparkyLinux,
 	Ubuntu,
 	UbuntuBudgie,
 	UbuntuCinnamon,
