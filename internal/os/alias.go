@@ -127,6 +127,7 @@ var List = []OS{
 	SparkyLinux,
 	SpiralLinux,
 	Tails,
+	TinyCore,
 	Ubuntu,
 	UbuntuBudgie,
 	UbuntuCinnamon,
