@@ -126,6 +126,7 @@ var List = []OS{
 	Solus,
 	SparkyLinux,
 	SpiralLinux,
+	Tails,
 	Ubuntu,
 	UbuntuBudgie,
 	UbuntuCinnamon,
