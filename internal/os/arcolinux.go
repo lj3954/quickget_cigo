@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	arcoLinuxMirror    = "https://ant.seedhost.eu/arcolinux/iso/"
-	arcoLinuxReleaseRe = `href='./(v[0-9\.]+)'`
-	arcoLinuxIsoRe     = `>(arco([^-]+)-[v0-9.]+-x86_64.iso)</a>`
-	arcoLinuxCsRe      = `>(arco([^-]+)-[v0-9.]+-x86_64.iso.sha256)</a>`
+	arcoLinuxMirror    = "https://sourceforge.net/projects/arconetpro/files/"
+	arcoLinuxEditionRe = `title="(arco[^-]+)" class="folder ">`
+	arcoLinuxIsoRe     = `title="((?:arco|arch)[^-]+-(?:20|v)(\d{2}\.\d{2}\.\d{2})-x86_64\.iso)" class="file ">`
 )
 
 var ArcoLinux = OS{
@@ -23,53 +22,41 @@ var ArcoLinux = OS{
 }
 
 func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(arcoLinuxMirror, arcoLinuxReleaseRe, 3)
+	editions, numEditions, err := getBasicReleases(arcoLinuxMirror, arcoLinuxEditionRe, -1)
 	if err != nil {
 		return nil, err
 	}
 
 	isoRe := regexp.MustCompile(arcoLinuxIsoRe)
-	csRegex := cs.CustomRegex{
-		Regex:      regexp.MustCompile(arcoLinuxCsRe),
-		KeyIndex:   2,
-		ValueIndex: 1,
-	}
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannelsWith(numEditions)
 
-	for release := range releases {
+	for edition := range editions {
 		go func() {
 			defer wg.Done()
-			mirror := arcoLinuxMirror + release + "/"
+			mirror := arcoLinuxMirror + edition + "/"
 			page, err := web.CapturePage(mirror)
 			if err != nil {
-				errs <- Failure{Release: release, Error: err}
+				errs <- Failure{Edition: edition, Error: err}
 				return
 			}
-			checksums := csRegex.BuildWithData(page)
 
-			matches := isoRe.FindAllStringSubmatch(page, -1)
+			matches := isoRe.FindAllStringSubmatch(page, 3)
+			wg.Add(len(matches))
 			for _, match := range matches {
 				url := mirror + match[1]
-				edition := match[2]
-				checksumUrlExt, checksumUrlExists := checksums[match[2]]
-				wg.Add(1)
+				release := match[2]
 				go func() {
 					defer wg.Done()
-					var checksum string
-					if checksumUrlExists {
-						cs, err := cs.SingleWhitespace(mirror + checksumUrlExt)
-						if err != nil {
-							csErrs <- Failure{Release: release, Edition: edition, Error: err}
-						} else {
-							checksum = cs
-						}
+					checksum, err := cs.SingleWhitespace(url + ".md5/download")
+					if err != nil {
+						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
 
 					ch <- Config{
 						Release: release,
 						Edition: edition,
 						ISO: []Source{
-							urlChecksumSource(url, checksum),
+							urlChecksumSource(url+"/download", checksum),
 						},
 					}
 				}()
