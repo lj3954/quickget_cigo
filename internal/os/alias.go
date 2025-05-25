@@ -128,6 +128,7 @@ var List = []OS{
 	SpiralLinux,
 	Tails,
 	TinyCore,
+	Trisquel,
 	Ubuntu,
 	UbuntuBudgie,
 	UbuntuCinnamon,
