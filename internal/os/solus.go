@@ -10,7 +10,7 @@ import (
 
 const (
 	solusMirror = "https://downloads.getsol.us/isos/"
-	solusIsoRe  = `^Solus-([^-]+)-Release-\d{4}-\d{2}-\d{2}\.iso$`
+	solusIsoRe  = `^Solus-(.*?)-Release-\d{4}-\d{2}-\d{2}\.iso$`
 )
 
 var Solus = OS{
@@ -46,13 +46,14 @@ func createSolusConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					continue
 				}
 				url := url + iso.Name
+				edition := isoMatch[1]
 				checksum, err := cs.SingleWhitespace(url + ".sha256sum")
 				if err != nil {
-					csErrs <- Failure{Release: release, Error: err}
+					csErrs <- Failure{Release: release, Edition: edition, Error: err}
 				}
 				ch <- Config{
 					Release: release,
-					Edition: isoMatch[1],
+					Edition: edition,
 					ISO: []Source{
 						urlChecksumSource(url, checksum),
 					},
