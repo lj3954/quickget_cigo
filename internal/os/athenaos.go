@@ -54,29 +54,24 @@ func createAthenaOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 		}
 
-		if checksumUrl == "" {
-			ch <- Config{
-				Release: release,
-				ISO: []Source{
-					urlSource(isoAsset.URL),
-				},
-			}
-		} else {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				checksum, err := cs.SingleWhitespace(checksumUrl)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var checksum string
+			if checksumUrl != "" {
+				var err error
+				checksum, err = cs.SingleWhitespace(checksumUrl)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
 				}
-				ch <- Config{
-					Release: release,
-					ISO: []Source{
-						urlChecksumSource(isoAsset.URL, checksum),
-					},
-				}
-			}()
-		}
+			}
+			ch <- Config{
+				Release: release,
+				ISO: []Source{
+					webSource(isoAsset.URL, checksum, "", isoAsset.Name),
+				},
+			}
+		}()
 	}
 	return waitForConfigs(ch, wg), nil
 }

@@ -48,7 +48,7 @@ func createCBPPConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		configs = append(configs, Config{
 			Release: release,
 			ISO: []Source{
-				urlChecksumSource(isoAsset.URL, checksum),
+				webSource(isoAsset.URL, checksum, "", isoAsset.Name),
 			},
 		})
 	}
