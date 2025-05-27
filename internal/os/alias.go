@@ -130,6 +130,7 @@ var List = []OS{
 	TinyCore,
 	Trisquel,
 	TrueNAS,
+	Tuxedo,
 	Ubuntu,
 	UbuntuBudgie,
 	UbuntuCinnamon,
