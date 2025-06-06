@@ -3,9 +3,9 @@ package os
 import (
 	"errors"
 	"fmt"
+	"iter"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
 	"github.com/quickemu-project/quickget_configs/internal/web"
@@ -32,14 +32,29 @@ func createAntiXConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(numReleases * 2)
 	isoRe := regexp.MustCompile(`"name":"(antiX-[0-9.]+(?:-runit)?(?:-[^_]+)?_x64-([^.]+).iso)".*?"download_url":"(.*?)"`)
 
+	var addConfigs = func(release string, mirror string, checksumUrl string, editionSuffix string) {
+		defer wg.Done()
+		configs, csErr, err := createFinalAntiXConfigs(release, mirror, checksumUrl, isoRe, editionSuffix)
+		if err != nil {
+			errs <- Failure{Release: release, Error: err}
+			return
+		}
+		if csErr != nil {
+			csErrs <- Failure{Release: release, Error: csErr}
+		}
+		for config := range configs {
+			ch <- config
+		}
+	}
+
 	for release := range releases {
 		mirror := fmt.Sprintf("%santiX-%s/", antiXMirror, release)
 		checksumUrl := mirror + "README.txt/download"
-		go createFinalAntiXConfigs(ch, errs, csErrs, wg, release, mirror, checksumUrl, isoRe, "-sysv")
+		go addConfigs(release, mirror, checksumUrl, "-sysv")
 
 		runitMirror := fmt.Sprintf("%srunit-antiX-%s/", mirror, release)
 		runitChecksumUrl := runitMirror + "README2.txt/download"
-		go createFinalAntiXConfigs(ch, errs, csErrs, wg, release, runitMirror, runitChecksumUrl, isoRe, "-runit")
+		go addConfigs(release, runitMirror, runitChecksumUrl, "-runit")
 	}
 
 	return waitForConfigs(ch, wg), nil
@@ -57,25 +72,30 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	return cs.Whitespace.BuildWithData(data[1]), nil
 }
 
-func createFinalAntiXConfigs(ch chan Config, errs, csErrs chan<- Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {
-	defer wg.Done()
+func createFinalAntiXConfigs(release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) (configs iter.Seq[Config], csErr error, err error) {
 	page, err := web.CapturePage(url)
 	if err != nil {
-		errs <- Failure{Release: release, Error: err}
 		return
 	}
 	checksums, err := createAntiXChecksums(checksumUrl)
 	if err != nil {
-		csErrs <- Failure{Release: release, Error: err}
+		csErr = err
 	}
-	for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		checksum, url := checksums[match[1]], match[3]
-		ch <- Config{
-			Release: release,
-			Edition: match[2] + editionSuffix,
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
+
+	return func(yield func(Config) bool) {
+		for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
+			checksum, url := checksums[match[1]], match[3]
+			config := Config{
+				Release: release,
+				Edition: match[2] + editionSuffix,
+				ISO: []Source{
+					urlChecksumSource(url, checksum),
+				},
+			}
+
+			if !yield(config) {
+				return
+			}
 		}
-	}
+	}, csErr, nil
 }
