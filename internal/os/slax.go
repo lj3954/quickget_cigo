@@ -44,7 +44,7 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 		iso := isoMatch[1]
 
-		checksums, err := cs.Build(cs.Whitespace{}, url+"md5.txt")
+		checksums, err := cs.Build(cs.Whitespace, url+"md5.txt")
 		if err != nil {
 			csErrs <- Failure{Release: release, Edition: edition, Error: err}
 		}
@@ -77,7 +77,7 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 		iso := isoMatch[1]
 
-		checksums, err := cs.Build(cs.Whitespace{}, url+"md5.txt")
+		checksums, err := cs.Build(cs.Whitespace, url+"md5.txt")
 		if err != nil {
 			csErrs <- Failure{Release: release, Edition: edition, Error: err}
 		}

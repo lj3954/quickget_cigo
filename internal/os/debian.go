@@ -109,7 +109,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 			errs <- Failure{Release: release, Error: err}
 			return
 		}
-		checksums, err := cs.Build(cs.Whitespace{}, liveMirror+"SHA256SUMS")
+		checksums, err := cs.Build(cs.Whitespace, liveMirror+"SHA256SUMS")
 		if err != nil {
 			csErrs <- Failure{Release: release, Error: err}
 		}
@@ -138,7 +138,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace{}, netInstMirror+"SHA256SUMS")
+			checksums, err := cs.Build(cs.Whitespace, netInstMirror+"SHA256SUMS")
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

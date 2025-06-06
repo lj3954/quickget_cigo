@@ -29,7 +29,7 @@ func createProxmoxVEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(proxmoxIsoRe)
 	matches := isoRe.FindAllStringSubmatch(page, -1)
 
-	checksums, err := cs.Build(cs.Whitespace{}, proxmoxVeMirror+"SHA256SUMS")
+	checksums, err := cs.Build(cs.Whitespace, proxmoxVeMirror+"SHA256SUMS")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

@@ -44,7 +44,7 @@ func createPorteusConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			if len(matches) == 0 {
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace{}, url+"sha256sums.txt")
+			checksums, err := cs.Build(cs.Whitespace, url+"sha256sums.txt")
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

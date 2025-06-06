@@ -22,7 +22,7 @@ func createArtixLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace{}, artixMirror+"sha256sums")
+	checksums, err := cs.Build(cs.Whitespace, artixMirror+"sha256sums")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

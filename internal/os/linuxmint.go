@@ -38,7 +38,7 @@ func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace{}, checksumUrl)
+			checksums, err := cs.Build(cs.Whitespace, checksumUrl)
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

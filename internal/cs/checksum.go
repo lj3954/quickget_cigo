@@ -37,7 +37,10 @@ func Build(cs ChecksumSeparation, url string) (map[string]string, error) {
 	return cs.BuildWithData(data), nil
 }
 
-type Whitespace struct{}
+type innerWhitespace struct{}
+
+var Whitespace = innerWhitespace{}
+
 type CustomRegex struct {
 	Regex      *regexp.Regexp
 	KeyIndex   int
@@ -60,7 +63,7 @@ var Sha512Regex = CustomRegex{
 	ValueIndex: 2,
 }
 
-func (Whitespace) BuildWithData(data string) map[string]string {
+func (innerWhitespace) BuildWithData(data string) map[string]string {
 	m := make(map[string]string)
 	for line := range strings.Lines(data) {
 		slice := strings.SplitN(line, " ", 2)

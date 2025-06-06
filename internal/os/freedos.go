@@ -74,5 +74,5 @@ func getFreeDOSChecksums(url, page string, checksumRe *regexp.Regexp) (map[strin
 	if csUrlMatch == "" {
 		return nil, errors.New("Could not find Checksum URL")
 	}
-	return cs.Build(cs.Whitespace{}, url+csUrlMatch)
+	return cs.Build(cs.Whitespace, url+csUrlMatch)
 }

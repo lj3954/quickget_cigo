@@ -31,7 +31,7 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace{}, mirror+"SHA256SUMS")
+			checksums, err := cs.Build(cs.Whitespace, mirror+"SHA256SUMS")
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			}

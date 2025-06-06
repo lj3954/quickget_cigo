@@ -22,7 +22,7 @@ func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace{}, lmdeMirror+"sha256sum.txt")
+	checksums, err := cs.Build(cs.Whitespace, lmdeMirror+"sha256sum.txt")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

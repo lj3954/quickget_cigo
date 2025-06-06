@@ -79,7 +79,7 @@ func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					url += iso
 
 					checksumUrl := strings.Replace(url, "iso", "checksums_sha256.txt", 1)
-					checksums, err := cs.Build(cs.Whitespace{}, checksumUrl)
+					checksums, err := cs.Build(cs.Whitespace, checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Error: err}
 					}

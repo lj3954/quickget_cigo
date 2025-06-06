@@ -43,7 +43,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			csUrlMatch := csUrlRe.FindStringSubmatch(page)
 			if csUrlMatch != nil {
 				checksumUrl := mirror + csUrlMatch[1]
-				cs, err := cs.Build(cs.Whitespace{}, checksumUrl)
+				cs, err := cs.Build(cs.Whitespace, checksumUrl)
 				if err != nil {
 					csErrs <- Failure{Error: err}
 				} else {

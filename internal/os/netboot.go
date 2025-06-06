@@ -14,7 +14,7 @@ var Netboot = OS{
 
 func createNetbootConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	checksumUrl := netbootMirror + "netboot.xyz-sha256-checksums.txt"
-	checksums, err := cs.Build(cs.Whitespace{}, checksumUrl)
+	checksums, err := cs.Build(cs.Whitespace, checksumUrl)
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}

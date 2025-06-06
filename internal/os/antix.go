@@ -54,7 +54,7 @@ func createAntiXChecksums(url string) (map[string]string, error) {
 	if len(data) != 2 {
 		return nil, errors.New("Could not find antiX 'sha256' separator")
 	}
-	return cs.Whitespace{}.BuildWithData(data[1]), nil
+	return cs.Whitespace.BuildWithData(data[1]), nil
 }
 
 func createFinalAntiXConfigs(ch chan Config, errs, csErrs chan<- Failure, wg *sync.WaitGroup, release, url, checksumUrl string, isoRe *regexp.Regexp, editionSuffix string) {

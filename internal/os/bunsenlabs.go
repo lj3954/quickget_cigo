@@ -54,7 +54,7 @@ func getBunsenLabsChecksums(page string, csErrs chan<- Failure) map[string]strin
 		url := bunsenLabsMirror + match[1]
 		go func() {
 			defer wg.Done()
-			checksums, err := cs.Build(cs.Whitespace{}, url)
+			checksums, err := cs.Build(cs.Whitespace, url)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			} else {

@@ -22,7 +22,7 @@ func createNwgShellConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace{}, nwgshellMirror+"sha256sums.txt/download")
+	checksums, err := cs.Build(cs.Whitespace, nwgshellMirror+"sha256sums.txt/download")
 	if err != nil {
 		csErrs <- Failure{Error: err}
 	}
