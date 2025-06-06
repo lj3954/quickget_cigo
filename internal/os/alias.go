@@ -140,6 +140,7 @@ var List = []OS{
 	UbuntuStudio,
 	UbuntuUnity,
 	VanillaOS,
+	Void,
 	WindowsServer,
 	Windows,
 	Xubuntu,
