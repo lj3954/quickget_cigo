@@ -144,4 +144,5 @@ var List = []OS{
 	WindowsServer,
 	Windows,
 	Xubuntu,
+	Zorin,
 }

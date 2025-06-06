@@ -18,6 +18,7 @@ var (
 	permits    = semaphore.NewWeighted(150)
 	urlPermits = map[string]*semaphore.Weighted{
 		"sourceforge.net": semaphore.NewWeighted(5),
+		"zrn.co":          semaphore.NewWeighted(3),
 	}
 )
 
