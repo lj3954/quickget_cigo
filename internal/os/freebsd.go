@@ -27,7 +27,7 @@ func createFreeBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannelsWith(3)
 	releaseRe := regexp.MustCompile(`href="([0-9\.]+)-RELEASE`)
 	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, wg, errs, csErrs, releaseRe)
-	go buildFreeBSDConfigs(freebsdX86Mirror, "arm64-aarch64", aarch64, ch, wg, errs, csErrs, releaseRe)
+	go buildFreeBSDConfigs(freebsdAarch64Mirror, "arm64-aarch64", aarch64, ch, wg, errs, csErrs, releaseRe)
 	go buildFreeBSDConfigs(freebsdRiscv64Mirror, "riscv-riscv64", riscv64, ch, wg, errs, csErrs, releaseRe)
 
 	return waitForConfigs(ch, wg), nil
