@@ -9,6 +9,8 @@ import (
 const (
 	guixDlMirror   = "https://ftpmirror.gnu.org/gnu/guix/"
 	guixDataMirror = "https://mirrors.ibiblio.org/gnu/guix/"
+	guixVmImageRe  = `href="(guix-system-vm-image-([\d\.]+).x86_64-linux.qcow2)"`
+	guixIsoRe      = `href="(guix-system-install-([\d\.]+).x86_64-linux.iso)"`
 )
 
 var Guix = OS{
@@ -24,8 +26,8 @@ func createGuixConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	vmImageRe := regexp.MustCompile(`href="(guix-system-vm-image-([\d\.]+).x86_64-linux.qcow2)"`)
-	isoRe := regexp.MustCompile(`href="(guix-system-install-([\d\.]+).x86_64-linux.iso)"`)
+	vmImageRe := regexp.MustCompile(guixVmImageRe)
+	isoRe := regexp.MustCompile(guixIsoRe)
 
 	configs := make([]Config, 0)
 	for _, match := range vmImageRe.FindAllStringSubmatch(page, -1) {
