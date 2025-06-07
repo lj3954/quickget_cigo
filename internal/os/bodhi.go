@@ -10,6 +10,7 @@ import (
 const (
 	bodhiMirror    = "https://sourceforge.net/projects/bodhilinux/files/"
 	bodhiReleaseRe = `"name":"([0-9]+.[0-9]+.[0-9]+)"`
+	bodhiIsoRe     = `"name":"(bodhi-[0-9]+.[0-9]+.[0-9]+-64(-[^-.]+)?.iso)"`
 )
 
 var Bodhi = OS{
@@ -25,7 +26,7 @@ func createBodhiConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	isoRe := regexp.MustCompile(`"name":"(bodhi-[0-9]+.[0-9]+.[0-9]+-64(-[^-.]+)?.iso)"`)
+	isoRe := regexp.MustCompile(bodhiIsoRe)
 	ch, wg := getChannelsWith(numReleases)
 
 	for release := range releases {
