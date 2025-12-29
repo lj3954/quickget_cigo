@@ -50,9 +50,7 @@ func createGhostBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				url := mirror + iso
 				checksumUrl := url + ".sha256"
 
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksum, err := web.CapturePage(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -67,7 +65,7 @@ func createGhostBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
 		}()
 	}

@@ -11,10 +11,9 @@ var AzureLinux = OS{
 }
 
 func createAzureLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	ch, wg := getChannelsWith(len(x86_64_aarch64))
+	ch, wg := getChannels()
 	for _, arch := range x86_64_aarch64 {
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			urlBase := "https://aka.ms/azurelinux-3.0-" + string(arch)
 			url := urlBase + ".iso"
 
@@ -30,7 +29,7 @@ func createAzureLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					urlChecksumSource(url, checksum),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

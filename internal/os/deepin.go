@@ -22,38 +22,38 @@ var Deepin = OS{
 }
 
 func createDeepinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(deepinMirror, deepinReleaseRe, -1)
+	releases, _, err := getBasicReleases(deepinMirror, deepinReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 	archRe := regexp.MustCompile(`class="name">(amd64|arm64)\/`)
 	for release := range releases {
 		mirror := deepinMirror + release + "/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			architectures, numArchitectures, err := getBasicReleases(mirror, archRe, -1)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			if numArchitectures > 0 {
-				wg.Add(numArchitectures)
 				for arch := range architectures {
 					mirror := mirror + arch + "/"
-					go addDeepinConfigs(mirror, release, Arch(arch), ch, wg, csErrs)
+					wg.Go(func() {
+						addDeepinConfigs(mirror, release, Arch(arch), ch, wg, csErrs)
+					})
 				}
 			} else {
-				wg.Add(1)
-				go addDeepinConfigs(mirror, release, x86_64, ch, wg, csErrs)
+				wg.Go(func() {
+					addDeepinConfigs(mirror, release, x86_64, ch, wg, csErrs)
+				})
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }
 
 func addDeepinConfigs(url, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
-	defer wg.Done()
 	isoUrl := fmt.Sprintf("%sdeepin-desktop-community-%s-%s.iso", url, release, arch)
 	checksum, err := cs.SingleWhitespace(url + "SHA256SUMS")
 	if err != nil {

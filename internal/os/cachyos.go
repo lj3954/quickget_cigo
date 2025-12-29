@@ -22,34 +22,29 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(len(mirrors))
+	ch, wg := getChannels()
 	releaseRe := regexp.MustCompile(`href="([0-9]+)/"`)
 	isoRe := regexp.MustCompile(`href="(cachyos-([^-]+)-linux-[0-9]+.iso)"`)
 
 	for _, mirror := range mirrors {
-		go func() {
-			defer wg.Done()
-			releases, numReleases, err := getBasicReleases(mirror, releaseRe, -1)
+		wg.Go(func() {
+			releases, _, err := getBasicReleases(mirror, releaseRe, -1)
 			if err != nil {
 				errs <- Failure{Error: err}
 			}
-			wg.Add(numReleases)
 			for release := range releases {
 				mirror := mirror + release + "/"
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					page, err := web.CapturePage(mirror)
 					if err != nil {
 						errs <- Failure{Release: release, Error: err}
 						return
 					}
 					matches := isoRe.FindAllStringSubmatch(page, -1)
-					wg.Add(len(matches))
 					for _, match := range matches {
 						url := mirror + match[1]
 						edition := match[2]
-						go func() {
-							defer wg.Done()
+						wg.Go(func() {
 							checksum, err := cs.SingleWhitespace(url + ".sha256")
 							if err != nil {
 								csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -61,11 +56,11 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 									urlChecksumSource(url, checksum),
 								},
 							}
-						}()
+						})
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }

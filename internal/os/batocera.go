@@ -26,12 +26,11 @@ func createBatoceraConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`<a href="(batocera-x86_64.*?.img.gz)`)
-	ch, wg := getChannelsWith(len(releases))
+	ch, wg := getChannels()
 
 	for _, release := range releases {
 		url := batoceraMirror + release + "/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(url)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -50,7 +49,7 @@ func createBatoceraConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					webSource(img, "", quickgetdata.Gz, ""),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

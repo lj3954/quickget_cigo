@@ -24,13 +24,12 @@ func createEndeavourOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 	isoRe := regexp.MustCompile(`href="(EndeavourOS_[^\d]+(\d{4}.\d{2}.\d{2}).iso)"`)
 	matches := isoRe.FindAllStringSubmatch(page, -1)
-	ch, wg := getChannelsWith(len(matches))
+	ch, wg := getChannels()
 	for _, match := range matches {
 		release := match[2]
 		url := endeavourMirror + match[1]
 		checksumUrl := url + ".sha256sum"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			checksum, err := cs.SingleWhitespace(checksumUrl)
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
@@ -41,7 +40,7 @@ func createEndeavourOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					urlChecksumSource(url, checksum),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

@@ -21,27 +21,24 @@ var Mageia = OS{
 }
 
 func createMageiaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(mageiaMirror, mageiaReleaseRe, -1)
+	releases, _, err := getBasicReleases(mageiaMirror, mageiaReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 	editionRe := regexp.MustCompile(`href="Mageia-\d+-Live-([^-]+)-x86_64`)
 
 	for release := range releases {
 		mirror := mageiaMirror + release + "/"
-		go func() {
-			defer wg.Done()
-			editions, numEditions, err := getBasicReleases(mirror, editionRe, -1)
+		wg.Go(func() {
+			editions, _, err := getBasicReleases(mirror, editionRe, -1)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			wg.Add(numEditions)
 			for edition := range editions {
 				isoText := fmt.Sprintf("Mageia-%s-Live-%s-x86_64", release, edition)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					url := mirror + isoText + "/" + isoText + ".iso"
 					checksum, err := cs.SingleWhitespace(url + ".sha512")
 					if err != nil {
@@ -54,9 +51,9 @@ func createMageiaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

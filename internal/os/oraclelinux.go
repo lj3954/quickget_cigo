@@ -49,9 +49,7 @@ func createOracleLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		if i >= 4 {
 			break
 		}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			major, minor, arch := match[2], match[3], match[4]
 			release := major + "." + minor
 			checksumData, err := web.CapturePage(oracleLinuxChecksumMirror + match[1])
@@ -83,7 +81,7 @@ func createOracleLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					},
 				}
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

@@ -22,17 +22,16 @@ var Archcraft = OS{
 }
 
 func createArchcraftConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(archcraftMirror, archcraftReleaseRe, 3)
+	releases, _, err := getBasicReleases(archcraftMirror, archcraftReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 	urlRe := regexp.MustCompile(`"name":"archcraft-.*?-x86_64.iso".*?"download_url":"([^"]+)".*?"name":"archcraft-.*?-x86_64.iso.sha256sum".*?"download_url":"([^"]+)"`)
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 
 	for release := range releases {
 		mirror := fmt.Sprintf("%sv%s/", archcraftMirror, release)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -51,7 +50,7 @@ func createArchcraftConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					},
 				}
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

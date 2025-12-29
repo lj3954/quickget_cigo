@@ -44,9 +44,7 @@ func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			continue
 		}
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			checksum, err := cs.SingleWhitespace(url + "-CHECKSUM")
 			if err != nil {
 				csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -59,7 +57,7 @@ func createBazziteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				},
 				Validation: Validation{Accept403: true},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

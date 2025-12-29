@@ -23,19 +23,18 @@ var CentOSStream = OS{
 }
 
 func createCentOSStreamConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
+	releases, _, err := getBasicReleases(centOSMirror, centOSReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(`href="(CentOS-Stream-[0-9]+-[0-9]{8}.0-[^-]+-([^-]+)\.iso)"`)
-	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
+	ch, wg := getChannels()
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirrorAdd := fmt.Sprintf("%s-stream/BaseOS/%s/iso/", release, arch)
 			mirror := centOSMirror + mirrorAdd
 
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				page, err := web.CapturePage(mirror)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
@@ -58,7 +57,7 @@ func createCentOSStreamConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 						},
 					}
 				}
-			}()
+			})
 		}
 	}
 	return waitForConfigs(ch, wg), nil

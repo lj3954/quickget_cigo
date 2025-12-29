@@ -24,28 +24,31 @@ var FreeBSD = OS{
 }
 
 func createFreeBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	ch, wg := getChannelsWith(3)
+	ch, wg := getChannels()
 	releaseRe := regexp.MustCompile(`href="([0-9\.]+)-RELEASE`)
-	go buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, wg, errs, csErrs, releaseRe)
-	go buildFreeBSDConfigs(freebsdAarch64Mirror, "arm64-aarch64", aarch64, ch, wg, errs, csErrs, releaseRe)
-	go buildFreeBSDConfigs(freebsdRiscv64Mirror, "riscv-riscv64", riscv64, ch, wg, errs, csErrs, releaseRe)
+	wg.Go(func() {
+		buildFreeBSDConfigs(freebsdX86Mirror, "amd64", x86_64, ch, wg, errs, csErrs, releaseRe)
+	})
+	wg.Go(func() {
+		buildFreeBSDConfigs(freebsdAarch64Mirror, "arm64-aarch64", aarch64, ch, wg, errs, csErrs, releaseRe)
+	})
+	wg.Go(func() {
+		buildFreeBSDConfigs(freebsdRiscv64Mirror, "riscv-riscv64", riscv64, ch, wg, errs, csErrs, releaseRe)
+	})
 
 	return waitForConfigs(ch, wg), nil
 }
 
 func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure, releaseRe *regexp.Regexp) {
-	defer wg.Done()
-	releases, numReleases, err := getBasicReleases(url, releaseRe, -1)
+	releases, _, err := getBasicReleases(url, releaseRe, -1)
 	if err != nil {
 		errs <- Failure{Error: err}
 		return
 	}
-	wg.Add(2 * numReleases)
 
 	freebsdEditions := [2]string{"disc1", "dvd1"}
 	for release := range releases {
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			checksumUrl := fmt.Sprintf("%sISO-IMAGES/%s/CHECKSUM.SHA256-FreeBSD-%s-RELEASE-%s", url, release, release, denom)
 			checksums, err := cs.Build(cs.Sha256Regex, checksumUrl)
 			if err != nil {
@@ -65,11 +68,10 @@ func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.
 					},
 				}
 			}
-		}()
+		})
 
 		// VM Images (qcow2)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			mirrorArch := arch
 			if arch == x86_64 {
 				mirrorArch = "amd64"
@@ -94,6 +96,6 @@ func buildFreeBSDConfigs(url, denom string, arch Arch, ch chan Config, wg *sync.
 					},
 				},
 			}
-		}()
+		})
 	}
 }

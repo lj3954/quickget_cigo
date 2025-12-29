@@ -17,10 +17,8 @@ import (
 func RemoveInvalidConfigs(configs []quickgetdata.Config, errs, csErrs chan<- data.Failure) []quickgetdata.Config {
 	var wg sync.WaitGroup
 	ch := make(chan quickgetdata.Config)
-	wg.Add(len(configs))
 	for _, config := range configs {
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if !config.Validation.Skip {
 				if err := validateConfigSources(&config); err != nil {
 					errs <- data.Failure{
@@ -33,7 +31,7 @@ func RemoveInvalidConfigs(configs []quickgetdata.Config, errs, csErrs chan<- dat
 				}
 			}
 			ch <- config
-		}()
+		})
 	}
 	go func() {
 		wg.Wait()
@@ -65,9 +63,7 @@ func validateSources(sources iter.Seq[*quickgetdata.Source], validation quickget
 	var wg sync.WaitGroup
 	errs := make(chan error)
 	for source := range sources {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if webSource := source.Web; webSource != nil {
 				filename, err := resolveURLFilename(webSource.URL, validation)
 				if err != nil {
@@ -84,7 +80,7 @@ func validateSources(sources iter.Seq[*quickgetdata.Source], validation quickget
 					errs <- err
 				}
 			}
-		}()
+		})
 	}
 	go func() {
 		wg.Wait()

@@ -55,9 +55,7 @@ func createVanillaOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 		usedReleases[release] = struct{}{}
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			var checksum string
 			if checksumUrl != "" {
 				var err error
@@ -72,7 +70,7 @@ func createVanillaOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					webSource(isoAsset.URL, checksum, "", isoAsset.Name),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

@@ -36,14 +36,12 @@ func createSiductionConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for subdir := range subdirs {
 		url := siductionMirror + subdir + "/"
-		editions, numEditions, err := getBasicReleases(url, subdirRe, -1)
+		editions, _, err := getBasicReleases(url, subdirRe, -1)
 		if err != nil {
 			return nil, err
 		}
-		wg.Add(numEditions)
 		for edition := range editions {
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				url := url + edition + "/"
 				page, err := web.CapturePage(url)
 				if err != nil {
@@ -70,7 +68,7 @@ func createSiductionConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 						urlChecksumSource(url, checksum),
 					},
 				}
-			}()
+			})
 		}
 	}
 	return waitForConfigs(ch, wg), nil

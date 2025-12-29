@@ -30,11 +30,11 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 	matches := releaseRe.FindAllStringSubmatch(page, -1)
 
-	ch, wg := getChannelsWith(len(matches))
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(slintIsoRe)
 
 	for _, match := range matches {
-		go func() {
+		wg.Go(func() {
 			defer wg.Done()
 			release := match[2]
 			url := slintMirror + match[1] + "iso/"
@@ -62,7 +62,7 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					urlChecksumSource(url, checksums[iso]),
 				},
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }

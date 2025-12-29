@@ -101,9 +101,7 @@ func createReleaseMap(html string, errs chan<- Failure) map[int]string {
 func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
 	liveMirror := mirror + fullRelease + "-live/amd64/iso-hybrid/"
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		page, err := web.CapturePage(liveMirror)
 		if err != nil {
 			errs <- Failure{Release: release, Error: err}
@@ -125,14 +123,12 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 				},
 			}
 		}
-	}()
+	})
 
 	architectures := [2]string{"amd64", "arm64"}
-	wg.Add(len(architectures))
 	for _, arch := range architectures {
 		netInstMirror := fmt.Sprintf("%s%s/%s/iso-cd/", mirror, fullRelease, arch)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(netInstMirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -156,6 +152,6 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 					},
 				}
 			}
-		}()
+		})
 	}
 }

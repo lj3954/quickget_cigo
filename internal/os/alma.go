@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
 	"github.com/quickemu-project/quickget_configs/internal/web"
@@ -24,25 +23,25 @@ var Alma = OS{
 }
 
 func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
+	releases, _, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
-			go addAlmaConfigs(release, arch, isoRe, ch, wg, errs, csErrs)
+			wg.Go(func() {
+				addAlmaConfigs(release, arch, isoRe, ch, errs, csErrs)
+			})
 		}
 	}
 
 	return waitForConfigs(ch, wg), nil
 }
 
-func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan<- Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
-	defer wg.Done()
-
+func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan<- Config, errs, csErrs chan<- Failure) {
 	mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
 	page, err := web.CapturePage(mirror)
 	if err != nil {

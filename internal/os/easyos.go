@@ -32,13 +32,10 @@ func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	wg.Add(len(releases))
-
 	imgRe := regexp.MustCompile(`href="(easy-[0-9.]+-amd64.img(.gz)?)"`)
 	for _, relMirror := range releases {
 		release, mirror := relMirror.release, relMirror.mirror
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -68,18 +65,17 @@ func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					},
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
 }
 
 func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan<- Failure) ([]relMirror, error) {
-	releaseNames, numReleases, err := getBasicReleases(easyosMirror, easyosReleaseNameRe, -1)
+	releaseNames, _, err := getBasicReleases(easyosMirror, easyosReleaseNameRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	wg.Add(numReleases)
 	subdirectoryRe := regexp.MustCompile(`href="([0-9]{4}/)"`)
 	releaseRe := regexp.MustCompile(`href="([0-9](?:\.[0-9]+)+)/"`)
 
@@ -92,19 +88,16 @@ func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan<- Failure)
 
 	for releaseName := range releaseNames {
 		mirror := easyosMirror + releaseName
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Error: err}
 				return
 			}
 			matches := subdirectoryRe.FindAllStringSubmatch(page, -1)
-			wg.Add(len(matches))
 			for _, match := range matches {
 				mirror := mirror + match[1]
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					page, err := web.CapturePage(mirror)
 					if err != nil {
 						errs <- Failure{Error: err}
@@ -116,9 +109,9 @@ func getEasyOSReleases(maxReleases int, wg *sync.WaitGroup, errs chan<- Failure)
 							mirror:  mirror + match[1] + "/",
 						}
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	for relMirror := range ch {
