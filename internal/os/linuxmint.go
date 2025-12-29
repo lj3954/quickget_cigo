@@ -58,6 +58,7 @@ func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *
 
 	checksums := make(map[string]string)
 	for k, f := range contents.Files {
+		k = strings.ToLower(k)
 		if strings.HasSuffix(k, ".txt") && strings.Contains(k, "sum") {
 			checksums, err = cs.Build(cs.Whitespace, f.URL)
 			if err != nil {
