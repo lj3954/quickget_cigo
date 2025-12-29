@@ -1,7 +1,6 @@
 package mirror
 
 import (
-	"fmt"
 	"net/url"
 	"path"
 	"regexp"
@@ -63,7 +62,6 @@ func parseFileSize(value string) (int64, error) {
 		nonDigitIndex--
 	}
 
-	fmt.Println(nonDigitIndex, value)
 	v, err := strconv.ParseFloat(value[:nonDigitIndex], 64)
 	if err != nil {
 		return 0, err
