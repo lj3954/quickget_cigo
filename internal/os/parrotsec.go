@@ -35,9 +35,7 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(parrotSecIsoRe)
 
 	for _, release := range slices.Backward(releases) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			url := parrotSecMirror + release + "/"
 			page, err := web.CapturePage(url)
 			if err != nil {
@@ -46,10 +44,8 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			matches := isoRe.FindAllStringSubmatch(page, -1)
-			wg.Add(len(matches))
 			for _, match := range matches {
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					url := url + match[1]
 					config := Config{
 						Release: release,
@@ -88,9 +84,9 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					}
 
 					ch <- config
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

@@ -25,15 +25,14 @@ var AntiX = OS{
 }
 
 func createAntiXConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(antiXMirror, antiXReleaseRe, 3)
+	releases, _, err := getBasicReleases(antiXMirror, antiXReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases * 2)
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(`"name":"(antiX-[0-9.]+(?:-runit)?(?:-[^_]+)?_x64-([^.]+).iso)".*?"download_url":"(.*?)"`)
 
 	var addConfigs = func(release string, mirror string, checksumUrl string, editionSuffix string) {
-		defer wg.Done()
 		configs, csErr, err := createFinalAntiXConfigs(release, mirror, checksumUrl, isoRe, editionSuffix)
 		if err != nil {
 			errs <- Failure{Release: release, Error: err}
@@ -50,11 +49,15 @@ func createAntiXConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for release := range releases {
 		mirror := fmt.Sprintf("%santiX-%s/", antiXMirror, release)
 		checksumUrl := mirror + "README.txt/download"
-		go addConfigs(release, mirror, checksumUrl, "-sysv")
+		wg.Go(func() {
+			addConfigs(release, mirror, checksumUrl, "-sysv")
+		})
 
 		runitMirror := fmt.Sprintf("%srunit-antiX-%s/", mirror, release)
 		runitChecksumUrl := runitMirror + "README2.txt/download"
-		go addConfigs(release, runitMirror, runitChecksumUrl, "-runit")
+		wg.Go(func() {
+			addConfigs(release, runitMirror, runitChecksumUrl, "-runit")
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

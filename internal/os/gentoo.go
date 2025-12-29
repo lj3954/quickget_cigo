@@ -21,20 +21,18 @@ var Gentoo = OS{
 func createGentooConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	architectures := [...]string{"amd64", "arm64"}
 	isoRe := regexp.MustCompile(`\d{8}T\d{6}Z\/(admincd|install|livegui).*?.iso`)
-	ch, wg := getChannelsWith(len(architectures))
+	ch, wg := getChannels()
 
 	release := "latest"
 	for _, arch := range architectures {
 		mirror := gentooMirror + arch + "/autobuilds/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror + "latest-iso.txt")
 			if err != nil {
 				errs <- Failure{Release: release, Arch: Arch(arch), Error: err}
 				return
 			}
 			matches := isoRe.FindAllStringSubmatch(page, -1)
-			wg.Add(len(matches))
 			for _, match := range matches {
 				edition := match[1]
 				if edition == "install" {
@@ -43,8 +41,7 @@ func createGentooConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				url := mirror + match[0]
 				checksumUrl := url + ".sha256"
 
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksumPage, err := web.CapturePage(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Arch: Arch(arch), Error: err}
@@ -68,9 +65,9 @@ func createGentooConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }

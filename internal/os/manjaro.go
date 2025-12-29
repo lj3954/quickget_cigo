@@ -24,9 +24,7 @@ var Manjaro = OS{
 
 func createManjaroConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	ch, wg := getChannels()
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		var data manjaroData
 		if err := web.CapturePageToJson(manjaroJsonUrl, &data); err != nil {
 			errs <- Failure{Error: err}
@@ -34,12 +32,11 @@ func createManjaroConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		addManjaroConfigs(data.Official, x86_64, ch, wg, csErrs)
 		addManjaroConfigs(data.Community, x86_64, ch, wg, csErrs)
 		addManjaroConfigs(data.Arm.Generic, aarch64, ch, wg, csErrs)
-	}()
+	})
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		addManjaroSwayConfig(ch, errs, csErrs)
-	}()
+	})
 	return waitForConfigs(ch, wg), nil
 }
 
@@ -88,15 +85,13 @@ func addManjaroConfig(entry manjaroEntry, edition string, minimal bool, arch Arc
 		return
 	}
 
-	wg.Add(1)
 	var release string
 	if minimal {
 		release = "minimal"
 	} else {
 		release = "standard"
 	}
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		checksum, err := cs.SingleWhitespace(entry.Checksum)
 		if err != nil {
 			csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}
@@ -119,7 +114,7 @@ func addManjaroConfig(entry manjaroEntry, edition string, minimal bool, arch Arc
 			}
 		}
 		ch <- config
-	}()
+	})
 }
 
 type manjaroData struct {

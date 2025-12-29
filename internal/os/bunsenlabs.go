@@ -49,18 +49,16 @@ func getBunsenLabsChecksums(page string, csErrs chan<- Failure) map[string]strin
 	var wg sync.WaitGroup
 
 	matches := checksumRe.FindAllStringSubmatch(page, -1)
-	wg.Add(len(matches))
 	for _, match := range matches {
 		url := bunsenLabsMirror + match[1]
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			checksums, err := cs.Build(cs.Whitespace, url)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			} else {
 				ch <- checksums
 			}
-		}()
+		})
 	}
 
 	go func() {

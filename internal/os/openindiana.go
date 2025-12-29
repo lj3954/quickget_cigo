@@ -23,30 +23,27 @@ var OpenIndiana = OS{
 }
 
 func createOpenIndianaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getReverseReleases(openIndianaMirror, openIndianaReleaseRe, 5)
+	releases, _, err := getReverseReleases(openIndianaMirror, openIndianaReleaseRe, 5)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(openIndianaIsoRe)
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 
 	for release := range releases {
 		mirror := openIndianaMirror + release + "/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			matches := isoRe.FindAllStringSubmatch(page, -1)
-			wg.Add(len(matches))
 			for _, match := range matches {
 				iso, edition := match[1], match[2]
 				url := mirror + iso
 				checksumUrl := url + ".sha256sum"
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksum, err := cs.SingleWhitespace(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -59,9 +56,9 @@ func createOpenIndianaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }

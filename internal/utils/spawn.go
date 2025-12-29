@@ -44,9 +44,7 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 			}
 		}()
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			configs, err := distro.ConfigFunction(failures, csErrs)
 
 			if err != nil {
@@ -71,7 +69,7 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 			if len(configs) > 0 {
 				ch <- os
 			}
-		}()
+		})
 	}
 
 	go func() {

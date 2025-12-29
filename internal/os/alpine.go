@@ -22,19 +22,18 @@ var Alpine = OS{
 }
 
 func createAlpineConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
+	releases, _, err := getBasicReleases(alpineMirror, alpineReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases * len(x86_64_aarch64))
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(alpineIsoRe)
 
 	for release := range releases {
 		for _, arch := range x86_64_aarch64 {
 			mirror := fmt.Sprintf("%s%s/releases/%s/", alpineMirror, release, arch)
 			releaseUrl := mirror + "latest-releases.yaml"
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				page, err := web.CapturePage(releaseUrl)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
@@ -52,7 +51,7 @@ func createAlpineConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 						},
 					}
 				}
-			}()
+			})
 		}
 	}
 

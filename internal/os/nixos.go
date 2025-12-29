@@ -33,9 +33,7 @@ func createNixOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for release := range releases {
 		mirror := fmt.Sprintf("%s&prefix=nixos-%s/", nixDataUrl, release)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			data, err := getNixXML(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
@@ -57,9 +55,7 @@ func createNixOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					continue
 				}
 
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksum, err := cs.SingleWhitespace(url + ".sha256")
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}
@@ -72,9 +68,9 @@ func createNixOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }

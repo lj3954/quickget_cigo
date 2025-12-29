@@ -22,17 +22,16 @@ var ArcoLinux = OS{
 }
 
 func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	editions, numEditions, err := getBasicReleases(arcoLinuxMirror, arcoLinuxEditionRe, -1)
+	editions, _, err := getBasicReleases(arcoLinuxMirror, arcoLinuxEditionRe, -1)
 	if err != nil {
 		return nil, err
 	}
 
 	isoRe := regexp.MustCompile(arcoLinuxIsoRe)
-	ch, wg := getChannelsWith(numEditions)
+	ch, wg := getChannels()
 
 	for edition := range editions {
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			mirror := arcoLinuxMirror + edition + "/"
 			page, err := web.CapturePage(mirror)
 			if err != nil {
@@ -41,12 +40,10 @@ func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			matches := isoRe.FindAllStringSubmatch(page, 3)
-			wg.Add(len(matches))
 			for _, match := range matches {
 				url := mirror + match[1]
 				release := match[2]
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksum, err := cs.SingleWhitespace(url + ".md5/download")
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -59,9 +56,9 @@ func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url+"/download", checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

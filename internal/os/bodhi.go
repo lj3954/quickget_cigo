@@ -22,24 +22,22 @@ var Bodhi = OS{
 }
 
 func createBodhiConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
+	releases, _, err := getBasicReleases(bodhiMirror, bodhiReleaseRe, 3)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(bodhiIsoRe)
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 
 	for release := range releases {
 		mirror := bodhiMirror + release + "/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			page, err := web.CapturePage(mirror)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			matches := isoRe.FindAllStringSubmatch(page, -1)
-			wg.Add(len(matches))
 			for _, match := range matches {
 				edition := "standard"
 				if match[2] != "" {
@@ -48,8 +46,7 @@ func createBodhiConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				url := mirror + match[1] + "/download"
 				checksumUrl := mirror + match[1] + ".sha256/download"
 
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					checksum, err := cs.SingleWhitespace(checksumUrl)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -61,9 +58,9 @@ func createBodhiConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

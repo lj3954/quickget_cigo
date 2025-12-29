@@ -24,29 +24,26 @@ var EndlessOS = OS{
 }
 
 func createEndlessOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
+	releases, _, err := getBasicReleases(endlessDataMirror, endlessReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 	editionRe := regexp.MustCompile(`href="([^./]+)`)
 	isoRe := regexp.MustCompile(`href="(eos-eos[\d.]+-amd64-amd64.[-\d]+.[^.]+.iso)"`)
 
 	for release := range releases {
 		mirror := endlessDataMirror + release + "/eos-amd64-amd64/"
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			editions, err := getEndlessEditions(mirror, editionRe)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 
-			wg.Add(len(editions))
 			for _, edition := range editions {
 				mirror := mirror + edition + "/"
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					page, err := web.CapturePage(mirror)
 					if err != nil {
 						errs <- Failure{Release: release, Edition: edition, Error: err}
@@ -72,9 +69,9 @@ func createEndlessOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

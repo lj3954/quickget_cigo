@@ -44,10 +44,8 @@ func createSparkyLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			stableMatches := stableIsoRe.FindAllStringSubmatch(page, 3)
-			wg.Add(len(stableMatches))
 			for _, match := range stableMatches {
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					release := match[2]
 					edition := match[3]
 					url := mirror + match[1]
@@ -63,13 +61,11 @@ func createSparkyLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
 
 			if match := rollingIsoRe.FindStringSubmatch(page); match != nil {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					release := match[1]
 					edition := match[2]
 					url := mirror + match[0]
@@ -85,7 +81,7 @@ func createSparkyLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
 		}()
 	}

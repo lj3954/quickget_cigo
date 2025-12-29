@@ -27,30 +27,27 @@ var PureOS = OS{
 }
 
 func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(pureOsMirror, pureOsReleaseRe, -1)
+	releases, _, err := getBasicReleases(pureOsMirror, pureOsReleaseRe, -1)
 	if err != nil {
 		return nil, err
 	}
 
-	ch, wg := getChannelsWith(numReleases)
+	ch, wg := getChannels()
 	editionRe := regexp.MustCompile(pureOsEditionRe)
 	dateRe := regexp.MustCompile(pureOsDateRe)
 	isoRe := regexp.MustCompile(pureOsIsoRe)
 
 	for release := range releases {
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			url := pureOsMirror + release
-			editions, numEditions, err := getBasicReleases(url, editionRe, -1)
+			editions, _, err := getBasicReleases(url, editionRe, -1)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 
-			wg.Add(numEditions)
 			for edition := range editions {
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					url := url + "/" + edition + "/"
 					dates, _, err := getBasicReleases(url, dateRe, -1)
 					if err != nil {
@@ -92,9 +89,9 @@ func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							urlChecksumSource(url, checksum),
 						},
 					}
-				}()
+				})
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil

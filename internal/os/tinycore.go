@@ -29,13 +29,12 @@ func createTinyCoreConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 
 	// We're going to have to search through both 32-bit and 64-bit x86
-	ch, wg := getChannelsWith(len(releases) * 2)
+	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(tinyCoreIsoRe)
 
 	for _, release := range releases {
 		for _, arch := range []string{"x86", "x86_64"} {
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				url := tinyCoreMirror + release + ".x/" + arch + "/release/"
 				page, err := web.CapturePage(url)
 				if err != nil {
@@ -44,10 +43,8 @@ func createTinyCoreConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 				matches := isoRe.FindAllStringSubmatch(page, -1)
 
-				wg.Add(len(matches))
 				for _, match := range matches {
-					go func() {
-						defer wg.Done()
+					wg.Go(func() {
 						url := url + match[1]
 						edition := match[2]
 						checksum, err := cs.SingleWhitespace(url + ".md5.txt")
@@ -61,9 +58,9 @@ func createTinyCoreConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 								urlChecksumSource(url, checksum),
 							},
 						}
-					}()
+					})
 				}
-			}()
+			})
 		}
 	}
 	return waitForConfigs(ch, wg), nil
