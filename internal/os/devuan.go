@@ -64,10 +64,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 			}
 
-			for k, f := range contents.Files {
-				if !isoRe.MatchString(k) {
-					continue
-				}
+			for f := range contents.MatchingFiles(isoRe) {
 				checksum := checksums[f.Name]
 				ch <- Config{
 					Release: release,
