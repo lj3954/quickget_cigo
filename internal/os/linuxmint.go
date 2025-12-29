@@ -21,7 +21,7 @@ var LinuxMint = OS{
 }
 
 func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpMirrorClient{}
+	c := mirror.HttpClient{}
 	head, err := c.ReadDir(linuxmintMirror)
 	if err != nil {
 		return nil, err

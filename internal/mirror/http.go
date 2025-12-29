@@ -75,9 +75,9 @@ func parseFileSize(value string) (int64, error) {
 	return int64(v * m), nil
 }
 
-type HttpMirrorClient struct{}
+type HttpClient struct{}
 
-func (HttpMirrorClient) ReadDir(rawURL string) (*Directory, error) {
+func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
