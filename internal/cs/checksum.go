@@ -29,10 +29,12 @@ type ChecksumSeparation interface {
 	BuildWithData(string) map[string]string
 }
 
+// Builds a checksum map from the contents of a URL and a pattern. Errors when the URL cannot be resolved.
+// Return map is guaranteed to always be valid, even in the case of an error
 func Build(cs ChecksumSeparation, url string) (map[string]string, error) {
 	data, err := web.CapturePage(url)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to build checksums: %w", err)
+		return make(map[string]string), fmt.Errorf("Failed to build checksums: %w", err)
 	}
 	return cs.BuildWithData(data), nil
 }
