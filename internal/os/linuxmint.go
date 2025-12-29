@@ -27,7 +27,7 @@ func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 
-	isoRe := regexp.MustCompile(`linuxmint-\d+(?:\.\d+)?-(\w+)-64bit.iso`)
+	isoRe := regexp.MustCompile(`^linuxmint-\d+(?:\.\d+)?-(\w+)-64bit.iso$`)
 
 	subdirs := head.NameSortedSubDirs(utils.SemverCompare)
 	fiveMostRecent := subdirs[max(len(subdirs)-5, 0):]
