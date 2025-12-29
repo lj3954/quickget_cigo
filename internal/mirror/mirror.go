@@ -1,7 +1,9 @@
 package mirror
 
 import (
+	"iter"
 	"maps"
+	"regexp"
 	"slices"
 	"time"
 )
@@ -13,6 +15,7 @@ type Directory struct {
 	SubDirs map[string]SubDirEntry
 }
 
+// Returns the subdirectories contained within the directory as a slice, sorted by time
 func (d *Directory) ModifiedTimeSortedSubdirs() []SubDirEntry {
 	subdirs := slices.Collect(maps.Values(d.SubDirs))
 	slices.SortFunc(subdirs, func(a, b SubDirEntry) int {
@@ -21,6 +24,7 @@ func (d *Directory) ModifiedTimeSortedSubdirs() []SubDirEntry {
 	return subdirs
 }
 
+// Returns the subdirectories contained within the directory as a slice, sorted by name with the provided comparator
 func (d *Directory) NameSortedSubDirs(comparator func(a, b string) int) []SubDirEntry {
 	subdirs := slices.Collect(maps.Values(d.SubDirs))
 	slices.SortFunc(subdirs, func(a, b SubDirEntry) int {
@@ -29,7 +33,34 @@ func (d *Directory) NameSortedSubDirs(comparator func(a, b string) int) []SubDir
 	return subdirs
 }
 
-// Returns the files contained within the directory as a slice, sorted
+// Returns the subdirectories contained within the directory that match the given pattern
+func (d *Directory) MatchingSubDirs(pattern *regexp.Regexp) iter.Seq[SubDirEntry] {
+	return func(yield func(SubDirEntry) bool) {
+		for k, d := range d.SubDirs {
+			if pattern.MatchString(k) {
+				if !yield(d) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// Returns the subdirectories contained within the directory that match the given pattern, and the produced match groups
+func (d *Directory) SubDirMatches(pattern *regexp.Regexp) iter.Seq2[SubDirEntry, []string] {
+	return func(yield func(SubDirEntry, []string) bool) {
+		for k, d := range d.SubDirs {
+			matches := pattern.FindStringSubmatch(k)
+			if matches != nil {
+				if !yield(d, matches) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// Returns the files contained within the directory as a slice, sorted by time
 func (d *Directory) ModifiedTimeSortedFiles() []File {
 	subdirs := slices.Collect(maps.Values(d.Files))
 	slices.SortFunc(subdirs, func(a, b File) int {
@@ -38,12 +69,40 @@ func (d *Directory) ModifiedTimeSortedFiles() []File {
 	return subdirs
 }
 
+// Returns the files contained within the directory as a slice, sorted by name with the provided comparator
 func (d *Directory) NameSortedFiles(comparator func(a, b string) int) []File {
 	subdirs := slices.Collect(maps.Values(d.Files))
 	slices.SortFunc(subdirs, func(a, b File) int {
 		return comparator(a.Name, b.Name)
 	})
 	return subdirs
+}
+
+// Returns the files contained within the directory that match the given pattern
+func (d *Directory) MatchingFiles(pattern *regexp.Regexp) iter.Seq[File] {
+	return func(yield func(File) bool) {
+		for k, f := range d.Files {
+			if pattern.MatchString(k) {
+				if !yield(f) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// Returns the files contained within the directory that match the given pattern, and the produced match groups
+func (d *Directory) FileMatches(pattern *regexp.Regexp) iter.Seq2[File, []string] {
+	return func(yield func(File, []string) bool) {
+		for k, f := range d.Files {
+			matches := pattern.FindStringSubmatch(k)
+			if matches != nil {
+				if !yield(f, matches) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // The metadata representing a subdirectory

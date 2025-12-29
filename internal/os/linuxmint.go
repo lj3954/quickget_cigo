@@ -70,21 +70,20 @@ func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *
 	}
 
 	return func(yield func(Config) bool) {
-		for k, f := range contents.Files {
-			match := isoRe.FindStringSubmatch(k)
-			if match == nil {
-				continue
-			}
+		for f, match := range contents.FileMatches(isoRe) {
 			edition := match[1]
 			checksum := checksums["*"+f.Name]
 
-			yield(Config{
+			c := Config{
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
 					webSource(f.URL, checksum, "", f.Name),
 				},
-			})
+			}
+			if !yield(c) {
+				return
+			}
 		}
 	}, nil
 }
