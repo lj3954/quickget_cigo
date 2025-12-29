@@ -22,7 +22,7 @@ var (
 	}
 )
 
-func getResponse(input string, headers http.Header) (*http.Response, error) {
+func GetResponse(input string, headers http.Header) (*http.Response, error) {
 	url, err := url.Parse(input)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func getResponse(input string, headers http.Header) (*http.Response, error) {
 }
 
 func FinalRedirectUrl(input string) (string, error) {
-	resp, err := getResponse(input, nil)
+	resp, err := GetResponse(input, nil)
 	if err != nil {
 		return "", err
 	}
@@ -66,7 +66,7 @@ func FinalRedirectUrl(input string) (string, error) {
 }
 
 func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
-	resp, err := getResponse(input, headers)
+	resp, err := GetResponse(input, headers)
 	if err != nil {
 		return nil, err
 	}
