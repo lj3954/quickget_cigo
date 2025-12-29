@@ -1,16 +1,16 @@
 package os
 
 import (
+	"iter"
 	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
+	"github.com/quickemu-project/quickget_configs/internal/utils"
 )
 
-const (
-	linuxmintMirror    = "https://mirrors.kernel.org/linuxmint/stable/"
-	linuxmintReleaseRe = `href="(\d+(?:\.\d+)?)\/"`
-)
+const linuxmintMirror = "https://mirrors.kernel.org/linuxmint/stable/"
 
 var LinuxMint = OS{
 	Name:           "linuxmint",
@@ -21,41 +21,69 @@ var LinuxMint = OS{
 }
 
 func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getReverseReleases(linuxmintMirror, linuxmintReleaseRe, 5)
+	c := mirror.HttpMirrorClient{}
+	head, err := c.ReadDir(linuxmintMirror)
 	if err != nil {
 		return nil, err
 	}
-	isoRe := regexp.MustCompile(`href="(linuxmint-\d+(?:\.\d+)?-(\w+)-64bit.iso)"`)
-	ch, wg := getChannelsWith(numReleases)
 
-	for release := range releases {
-		mirror := linuxmintMirror + release + "/"
-		checksumUrl := mirror + "sha256sum.txt"
-		go func() {
-			defer wg.Done()
-			page, err := web.CapturePage(mirror)
+	isoRe := regexp.MustCompile(`linuxmint-\d+(?:\.\d+)?-(\w+)-64bit.iso`)
+
+	subdirs := head.NameSortedSubDirs(utils.SemverCompare)
+	fiveMostRecent := subdirs[max(len(subdirs)-5, 0):]
+
+	ch, wg := getChannels()
+
+	for _, releaseDir := range fiveMostRecent {
+		wg.Go(func() {
+			configs, err := getLinuxMintReleaseConfigs(releaseDir, c, isoRe, csErrs)
 			if err != nil {
-				errs <- Failure{Release: release, Error: err}
+				errs <- Failure{Release: releaseDir.Name, Error: err}
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace, checksumUrl)
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
+			for c := range configs {
+				ch <- c
 			}
-			matches := isoRe.FindAllStringSubmatch(page, -1)
-			for _, match := range matches {
-				iso, edition := match[1], match[2]
-				url := mirror + iso
-				checksum := checksums["*"+iso]
-				ch <- Config{
-					Release: release,
-					Edition: edition,
-					ISO: []Source{
-						urlChecksumSource(url, checksum),
-					},
-				}
-			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
+}
+
+func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *regexp.Regexp, csErrs chan<- Failure) (iter.Seq[Config], error) {
+	release := dir.Name
+	contents, err := dir.Fetch(c)
+	if err != nil {
+		return nil, err
+	}
+
+	checksums := make(map[string]string)
+	for k, f := range contents.Files {
+		if strings.HasSuffix(k, ".txt") && strings.Contains(k, "sum") {
+			checksums, err = cs.Build(cs.Whitespace, f.URL)
+			if err != nil {
+				csErrs <- Failure{Release: release, Error: err}
+			} else {
+				break
+			}
+		}
+	}
+
+	return func(yield func(Config) bool) {
+		for k, f := range contents.Files {
+			match := isoRe.FindStringSubmatch(k)
+			if match == nil {
+				continue
+			}
+			edition := match[1]
+			checksum := checksums["*"+f.Name]
+
+			yield(Config{
+				Release: release,
+				Edition: edition,
+				ISO: []Source{
+					webSource(f.URL, checksum, "", f.Name),
+				},
+			})
+		}
+	}, nil
 }
