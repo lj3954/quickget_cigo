@@ -2,9 +2,10 @@ package os
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const lmdeMirror = "https://mirrors.edge.kernel.org/linuxmint/debian/"
@@ -18,30 +19,37 @@ var LMDE = OS{
 }
 
 func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(lmdeMirror)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(lmdeMirror)
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace, lmdeMirror+"sha256sum.txt")
-	if err != nil {
-		csErrs <- Failure{Error: err}
-	}
-	isoRe := regexp.MustCompile(`href="(lmde-(\d+(?:\.\d+)?)-(\w+)-64bit.iso)"`)
-
-	matches := isoRe.FindAllStringSubmatch(page, -1)
-	configs := make([]Config, len(matches))
-
-	for i, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		iso, release, edition := match[1], match[2], match[3]
-		checksum := checksums["*"+iso]
-		url := lmdeMirror + iso
-		configs[i] = Config{
-			Release: release,
-			Edition: edition,
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
+	checksums := make(map[string]string)
+	for k, f := range head.Files {
+		k = strings.ToLower(k)
+		if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
+			checksums, err = cs.Build(cs.Whitespace, f.URL)
+			if err != nil {
+				csErrs <- Failure{Error: err}
+			} else {
+				break
+			}
 		}
 	}
+
+	isoRe := regexp.MustCompile(`^lmde-(\d+(?:\.\d+)?)-(\w+)-64bit.iso$`)
+	var configs []Config
+
+	for f, match := range head.FileMatches(isoRe) {
+		checksum := checksums["*"+f.Name]
+		configs = append(configs, Config{
+			Release: match[1],
+			Edition: match[2],
+			ISO: []Source{
+				webSource(f.URL, checksum, "", f.Name),
+			},
+		})
+	}
+
 	return configs, nil
 }
