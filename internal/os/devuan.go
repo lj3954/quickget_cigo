@@ -2,14 +2,14 @@ package os
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	devuanMirror    = "https://files.devuan.org/"
-	devuanReleaseRe = `href="(devuan_[a-zA-Z]+/)"`
+	devuanMirror = "https://files.devuan.org/"
 )
 
 var Devuan = OS{
@@ -21,43 +21,58 @@ var Devuan = OS{
 }
 
 func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, _, err := getBasicReleases(devuanMirror, devuanReleaseRe, -1)
+	c := mirror.HttpMirrorClient{}
+	head, err := c.ReadDir(devuanMirror)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
-	isoRe := regexp.MustCompile(`href="(devuan_[a-zA-Z]+_([0-9.]+)_amd64_desktop-live.iso)"`)
-	csUrlRe := regexp.MustCompile(`href="(SHA[^.]+.txt)"`)
 
-	for urlSuffix := range releases {
-		mirror := devuanMirror + urlSuffix + "desktop-live/"
+	isoRe := regexp.MustCompile(`^devuan_[a-zA-Z]+_([0-9.]+)_amd64_desktop-live.iso$`)
+
+	for k, releaseDir := range head.SubDirs {
+		if !strings.HasPrefix(k, "devuan_") {
+			continue
+		}
+		release := strings.TrimPrefix(releaseDir.Name, "devuan_")
 		wg.Go(func() {
-			page, err := web.CapturePage(mirror)
+			contents, err := releaseDir.Fetch(c)
 			if err != nil {
-				errs <- Failure{Error: err}
+				errs <- Failure{Release: release, Error: err}
 				return
 			}
-
-			checksums := make(map[string]string)
-			csUrlMatch := csUrlRe.FindStringSubmatch(page)
-			if csUrlMatch != nil {
-				checksumUrl := mirror + csUrlMatch[1]
-				cs, err := cs.Build(cs.Whitespace, checksumUrl)
+			// If there's a desktop live subdirectory we'll use it, as that's the standard directory
+			// structure as of now. Otherwise, just try with the main directory
+			if d, e := contents.SubDirs["desktop-live"]; e {
+				contents, err = d.Fetch(c)
 				if err != nil {
-					csErrs <- Failure{Error: err}
-				} else {
-					checksums = cs
+					errs <- Failure{Release: release, Error: err}
+					return
 				}
 			}
 
-			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-				iso := match[1]
-				url := mirror + iso
-				checksum := checksums[iso]
+			checksums := make(map[string]string)
+			for k, f := range contents.Files {
+				k = strings.ToLower(k)
+				if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
+					checksums, err = cs.Build(cs.Whitespace, f.URL)
+					if err != nil {
+						csErrs <- Failure{Release: release, Error: err}
+					} else {
+						break
+					}
+				}
+			}
+
+			for k, f := range contents.Files {
+				if !isoRe.MatchString(k) {
+					continue
+				}
+				checksum := checksums[f.Name]
 				ch <- Config{
-					Release: match[2],
+					Release: release,
 					ISO: []Source{
-						urlChecksumSource(url, checksum),
+						webSource(f.URL, checksum, "", f.Name),
 					},
 				}
 			}
