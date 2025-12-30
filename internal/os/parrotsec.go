@@ -1,20 +1,20 @@
 package os
 
 import (
-	"errors"
 	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
+	"github.com/quickemu-project/quickget_configs/internal/utils"
 	"github.com/quickemu-project/quickget_configs/internal/web"
 	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
 const (
-	parrotSecMirror    = "https://download.parrot.sh/parrot/iso/"
-	parrotSecReleaseRe = `href="(\d+\.\d+(?:\.\d+)?)/"`
-	parrotSecIsoRe     = `href="(Parrot-([^-]+)-[\d\.]+_([^\.]+)\.(iso|qcow2.xz))"`
+	parrotSecMirror = "https://download.parrot.sh/parrot/iso/"
+	parrotSecIsoRe  = `^Parrot-([^-]+)-[\d\.]+_([^\.]+)\.(iso|qcow2.xz)$`
 )
 
 var ParrotSec = OS{
@@ -26,65 +26,81 @@ var ParrotSec = OS{
 }
 
 func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, err := getSortedReleasesFunc(parrotSecMirror, parrotSecReleaseRe, 3, semverCompare)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(parrotSecMirror)
 	if err != nil {
 		return nil, err
 	}
 
+	subdirs := head.NameSortedSubDirs(utils.SemverCompare)
+	threeMostRecent := subdirs[max(len(subdirs)-3, 0):]
+
 	ch, wg := getChannels()
 	isoRe := regexp.MustCompile(parrotSecIsoRe)
 
-	for _, release := range slices.Backward(releases) {
+	for _, releaseDir := range threeMostRecent {
 		wg.Go(func() {
-			url := parrotSecMirror + release + "/"
-			page, err := web.CapturePage(url)
+			release := releaseDir.Name
+			contents, err := releaseDir.Fetch(c)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 
-			matches := isoRe.FindAllStringSubmatch(page, -1)
-			for _, match := range matches {
-				wg.Go(func() {
-					url := url + match[1]
-					config := Config{
-						Release: release,
-						Edition: match[2],
-						Arch:    Arch(match[3]),
-					}
-
-					qcowXz := match[4] == "qcow2.xz"
-					if qcowXz {
-						config.Edition += "-preinstalled"
-					}
-
-					var checksum string
-					checksumPage, err := web.CapturePage(url + ".hashes")
+			checksums := make(map[string]string)
+			for k, f := range contents.Files {
+				k = strings.ToLower(k)
+				if strings.HasSuffix(k, "txt") && strings.Contains(k, "hash") {
+					page, err := web.CapturePage(f.URL)
 					if err != nil {
-						csErrs <- Failure{Release: release, Edition: config.Edition, Error: err}
-					} else if len(checksumPage) < 5 {
-						csErrs <- Failure{Release: release, Error: errors.New("Unexpected checksum page length")}
-					} else {
-						checksum, err = cs.BuildSingleWhitespace(strings.Split(checksumPage, "\n")[4])
-						if err != nil {
-							csErrs <- Failure{Release: release, Edition: config.Edition, Error: err}
-						}
+						csErrs <- Failure{Release: release, Error: err}
+						continue
 					}
+					lines := strings.Split(page, "\n")
 
-					if qcowXz {
-						config.DiskImages = []Disk{
-							{
-								Source: webSource(url, checksum, quickgetdata.Xz, ""),
-							},
-						}
-					} else {
-						config.ISO = []Source{
-							urlChecksumSource(url, checksum),
-						}
+					sha256Start := slices.Index(lines, "sha256")
+					lines = lines[sha256Start:]
+					sha256End := slices.IndexFunc(lines, func(s string) bool {
+						return len(strings.TrimSpace(s)) == 0
+					})
+
+					contents := strings.Join(lines[:sha256End], "\n")
+					checksums = cs.Whitespace.BuildWithData(contents)
+					break
+				}
+			}
+
+			for k, f := range contents.Files {
+				match := isoRe.FindStringSubmatch(k)
+				if match == nil {
+					continue
+				}
+				config := Config{
+					Release: release,
+					Edition: match[1],
+					Arch:    Arch(match[2]),
+				}
+
+				qcowXz := match[3] == "qcow2.xz"
+				if qcowXz {
+					config.Edition += "-preinstalled"
+				}
+
+				checksum := checksums[f.Name]
+
+				if qcowXz {
+					config.DiskImages = []Disk{
+						{
+							Source: webSource(f.URL, checksum, quickgetdata.Xz, f.Name),
+						},
 					}
+				} else {
+					config.ISO = []Source{
+						webSource(f.URL, checksum, "", f.Name),
+					}
+				}
 
-					ch <- config
-				})
+				ch <- config
 			}
 		})
 	}
