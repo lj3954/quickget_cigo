@@ -13,7 +13,6 @@ import (
 const (
 	zorinMirror        = "https://zrn.co/"
 	zorinReleaseMirror = "https://mirrors.edge.kernel.org/zorinos-isos/"
-	zorinReleaseRe     = `href="(\d+)\/"`
 )
 
 var Zorin = OS{
