@@ -16,17 +16,21 @@ import (
 // The date pattern should remain restrictive, since we will need to pass specific known layouts to time.Parse
 var (
 	preHttpMirrorReParts = []string{
-		`<a href="([^"]+)">`,              // href url (match[1])
-		`([^<]+)</a>`,                     // Name (match[2])
-		`\s+`,                             // Padding
-		`(\d{2}-\w{3}-\d{4} \d{2}:\d{2})`, // Date (match[3])
-		`\s+`,                             // Padding
-		`((?:[\d\.]+[BKMGT]?)|-)`,         // File size, or '-' for the absence of one (match[4])
+		`<a href="([^"]+)">`,                 // href url (match[1])
+		`([^<]+)</a>`,                        // Name (match[2])
+		`\s+`,                                // Padding
+		`(`,                                  // Date group (match[3]) opening
+		`(?:\d{2}-\w{3}-\d{4} \d{2}:\d{2})`,  // First date format
+		`|(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2})`, // Second date format
+		`)`,                                  // Closing date group
+		`\s+`,                                // Padding
+		`((?:[\d\.]+[BKMGT]?)|-)`,            // File size, or '-' for the absence of one (match[4])
 	}
 	preHttpMirrorRe = regexp.MustCompile(strings.Join(preHttpMirrorReParts, ""))
 
 	timeLayouts = []string{
 		"02-Jan-2006 15:04",
+		"2006-01-02 15:04",
 	}
 
 	units = map[string]float64{
