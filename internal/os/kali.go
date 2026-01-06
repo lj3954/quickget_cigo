@@ -2,10 +2,10 @@ package os
 
 import (
 	"regexp"
-	"slices"
+	"time"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const kaliMirror = "https://cdimage.kali.org/"
@@ -18,57 +18,67 @@ var Kali = OS{
 	ConfigFunction: createKaliConfigs,
 }
 
+type kaliMatch struct {
+	dateModified time.Time
+	file         mirror.File
+}
+
 func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(kaliMirror)
+	if err != nil {
+		return nil, err
+	}
+
+	isoRe := regexp.MustCompile(`kali-linux-\d{4}(?:-|\.)[^-]+-installer-(amd64|arm64).iso`)
+	ch, wg := getChannels()
 	releases := [...]string{"current", "kali-weekly"}
-	ch, wg := getChannelsWith(len(releases))
-	isoRe := regexp.MustCompile(`href="(kali-linux-\d{4}-[^-]+-(installer|live)-(amd64|arm64).iso)"`)
+
 	for _, release := range releases {
-		mirror := kaliMirror + release + "/"
-		go func() {
-			defer wg.Done()
-			matches, err := getKaliMatches(mirror, isoRe)
+		releaseDir, e := head.SubDirs[release]
+		if !e {
+			continue
+		}
+		wg.Go(func() {
+			contents, err := releaseDir.Fetch(c)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			checksums, err := cs.Build(cs.Whitespace, mirror+"SHA256SUMS")
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
+
+			checksums := make(map[string]string)
+			if f, e := contents.Files["SHA256SUMS"]; e {
+				checksums, err = cs.Build(cs.Whitespace, f.URL)
+				if err != nil {
+					csErrs <- Failure{Release: release, Error: err}
+				}
 			}
 
-			for _, match := range matches {
-				iso, edition, arch := match[1], match[2], Arch(match[3])
-				url := mirror + iso
-				checksum := checksums[iso]
+			// Filter to the latest ISO for kali weekly
+			files := make(map[Arch]kaliMatch)
+			for f, match := range contents.FileMatches(isoRe) {
+				a := Arch(match[1])
+				if v, e := files[a]; !e || f.LastModifiedDate.After(v.dateModified) {
+					files[a] = kaliMatch{
+						dateModified: f.LastModifiedDate,
+						file:         f,
+					}
+				}
+			}
+
+			for arch, m := range files {
+				f := m.file
+				checksum := checksums[f.Name]
 				ch <- Config{
 					Release: release,
-					Edition: edition,
 					Arch:    arch,
 					ISO: []Source{
-						urlChecksumSource(url, checksum),
+						webSource(f.URL, checksum, "", f.Name),
 					},
 				}
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
-}
-
-func getKaliMatches(url string, isoRe *regexp.Regexp) ([][]string, error) {
-	page, err := web.CapturePage(url)
-	if err != nil {
-		return nil, err
-	}
-	matches := isoRe.FindAllStringSubmatch(page, -1)
-
-	slices.Reverse(matches)
-	set := make(map[string]struct{})
-	return slices.DeleteFunc(matches, func(match []string) bool {
-		if _, ok := set[match[2]+match[3]]; ok {
-			return true
-		}
-		set[match[2]+match[3]] = struct{}{}
-		return false
-	}), nil
 }
