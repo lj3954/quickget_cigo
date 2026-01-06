@@ -12,9 +12,18 @@ import (
 	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
-// This regex should be changed to be more broad with dates when necessary.
-// The date pattern should remain restrictive, since we will need to pass specific known layouts to time.Parse
+type mirrorClass int
+
+const (
+	mirrorClassNone = mirrorClass(iota)
+	mirrorClassLink
+	mirrorClassFileSize
+	mirrorClassDateModified
+)
+
 var (
+	// This regex should be changed to be more broad with dates when necessary.
+	// The date pattern should remain restrictive, since we will need to pass specific known layouts to time.Parse
 	preHttpMirrorReParts = []string{
 		`<a href="([^"]+)">`,                 // href url (match[1])
 		`([^<]+)</a>`,                        // Name (match[2])
@@ -31,6 +40,8 @@ var (
 	timeLayouts = []string{
 		"02-Jan-2006 15:04",
 		"2006-01-02 15:04",
+		"2006-Jan-02 15:04",
+		"2006-01-02 15:04",
 	}
 
 	units = map[string]float64{
@@ -39,6 +50,17 @@ var (
 		"M": 1024 * 1024,
 		"G": 1024 * 1024 * 1024,
 		"T": 1024 * 1024 * 1024 * 1024,
+	}
+
+	mirrorClasses = map[string]mirrorClass{
+		"link": mirrorClassLink,
+		"n":    mirrorClassLink,
+
+		"size": mirrorClassFileSize,
+		"s":    mirrorClassFileSize,
+
+		"date": mirrorClassDateModified,
+		"m":    mirrorClassDateModified,
 	}
 )
 
@@ -79,9 +101,9 @@ func parseFileSize(value string) (int64, error) {
 	return int64(v * m), nil
 }
 
-type HttpClient struct{}
+type LegacyHttpClient struct{}
 
-func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
+func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -135,6 +157,120 @@ func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 			}
 		}
 	}
+
+	return &Directory{
+		Name:    name,
+		URL:     rawURL,
+		Files:   files,
+		SubDirs: subdirs,
+	}, nil
+}
+
+type HttpClient struct{}
+
+func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return nil, err
+	}
+	name := path.Base(u.Path)
+
+	res, err := web.GetResponse(rawURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	files := make(map[string]File)
+	subdirs := make(map[string]SubDirEntry)
+
+	doc.Find("table tr").Each(func(i int, row *goquery.Selection) {
+		cells := row.Find("td")
+
+		if cells.Length() < 1 {
+			return
+		}
+
+		var name, link string
+		fileSize := int64(-1)
+		var modifiedDate time.Time
+
+		cells.Each(func(i int, s *goquery.Selection) {
+			classAttr, _ := s.Attr("class")
+			classes := strings.Fields(classAttr)
+
+			var class mirrorClass
+			for _, c := range classes {
+				if v, e := mirrorClasses[c]; e {
+					class = v
+					break
+				}
+			}
+
+			if class == mirrorClassNone {
+				if a := s.Find("a"); a.Length() == 1 {
+					_, e := a.Attr("href")
+					if t := strings.TrimSpace(a.Text()); e && len(t) > 0 {
+						class = mirrorClassLink
+					}
+				} else if _, err := parseDate(s.Text()); err == nil {
+					class = mirrorClassDateModified
+				} else if _, err := parseFileSize(s.Text()); err == nil {
+					class = mirrorClassFileSize
+				}
+			}
+
+			switch class {
+			case mirrorClassNone:
+				return
+			case mirrorClassLink:
+				a := s.Find("a")
+				href, e := a.Attr("href")
+				if !e {
+					return
+				}
+				link = href
+				name = a.Text()
+			case mirrorClassFileSize:
+				if v, e := s.Attr("data-value"); e {
+					size, err := strconv.ParseInt(v, 10, 64)
+					if err == nil {
+						fileSize = size
+						return
+					}
+				}
+				fileSize, _ = parseFileSize(s.Text())
+			case mirrorClassDateModified:
+				modifiedDate, _ = parseDate(s.Text())
+			}
+		})
+
+		if len(name) == 0 || len(link) == 0 {
+			return
+		}
+
+		url := rawURL + link
+		if name[len(name)-1] == '/' {
+			name = name[:len(name)-1]
+			subdirs[name] = SubDirEntry{
+				Name:             name,
+				URL:              url,
+				LastModifiedDate: modifiedDate,
+			}
+		} else {
+			files[name] = File{
+				Name:             name,
+				URL:              url,
+				LastModifiedDate: modifiedDate,
+				FileSize:         fileSize,
+			}
+		}
+	})
 
 	return &Directory{
 		Name:    name,
