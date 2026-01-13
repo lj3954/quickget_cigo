@@ -21,7 +21,7 @@ var Devuan = OS{
 }
 
 func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(devuanMirror)
 	if err != nil {
 		return nil, err

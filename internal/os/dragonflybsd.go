@@ -27,7 +27,7 @@ type dragonflybsdRelease struct {
 }
 
 func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(dragonflybsdMirror)
 	if err != nil {
 		return nil, err

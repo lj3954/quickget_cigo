@@ -26,7 +26,7 @@ var ParrotSec = OS{
 }
 
 func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(parrotSecMirror)
 	if err != nil {
 		return nil, err
