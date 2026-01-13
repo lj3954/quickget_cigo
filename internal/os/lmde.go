@@ -19,7 +19,7 @@ var LMDE = OS{
 }
 
 func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(lmdeMirror)
 	if err != nil {
 		return nil, err
