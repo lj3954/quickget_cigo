@@ -137,8 +137,8 @@ func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
 		name := match[2]
 		url := rawURL + match[1]
 
-		if name[len(name)-1] == '/' {
-			name = name[:len(name)-1]
+		if strings.HasSuffix(match[1], "/") {
+			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
 				Name:             name,
 				URL:              url,
@@ -255,8 +255,8 @@ func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 		}
 
 		url := rawURL + link
-		if name[len(name)-1] == '/' {
-			name = name[:len(name)-1]
+		if strings.HasSuffix(link, "/") {
+			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
 				Name:             name,
 				URL:              url,
