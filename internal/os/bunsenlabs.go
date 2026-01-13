@@ -3,10 +3,11 @@ package os
 import (
 	"maps"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const bunsenLabsMirror = "https://ddl.bunsenlabs.org/ddl/"
@@ -20,24 +21,34 @@ var BunsenLabs = OS{
 }
 
 func createBunsenLabsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(bunsenLabsMirror)
+	c := mirror.LegacyHttpClient{}
+	head, err := c.ReadDir(bunsenLabsMirror)
 	if err != nil {
 		return nil, err
 	}
-	releaseRe := regexp.MustCompile(`href="(([^-]+)-1(:?-[0-9]+)?-amd64.hybrid.iso)"`)
-	checksums := getBunsenLabsChecksums(page, csErrs)
+	isoRe := regexp.MustCompile(`^([^-]+)-1(:?-[0-9]+)?-amd64.hybrid.iso$`)
 
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
-	configs := make([]Config, len(matches))
-	for i, match := range releaseRe.FindAllStringSubmatch(page, -1) {
-		checksum := checksums[match[1]]
-		url := bunsenLabsMirror + match[1]
-		configs[i] = Config{
-			Release: match[2],
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
+	checksums := make(map[string]string)
+	for k, f := range head.Files {
+		if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
+			partialChecksums, err := cs.Build(cs.Whitespace, f.URL)
+			if err != nil {
+				csErrs <- Failure{Error: err}
+			} else {
+				maps.Copy(checksums, partialChecksums)
+			}
 		}
+	}
+
+	var configs []Config
+	for f, match := range head.FileMatches(isoRe) {
+		checksum := checksums[f.Name]
+		configs = append(configs, Config{
+			Release: match[1],
+			ISO: []Source{
+				webSource(f.URL, checksum, "", f.Name),
+			},
+		})
 	}
 
 	return configs, nil
