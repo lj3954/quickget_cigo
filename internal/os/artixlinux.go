@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const artixMirror = "https://mirrors.ocf.berkeley.edu/artix-iso/"
@@ -18,30 +18,31 @@ var ArtixLinux = OS{
 }
 
 func createArtixLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(artixMirror)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(artixMirror)
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace, artixMirror+"sha256sums")
-	if err != nil {
-		csErrs <- Failure{Error: err}
-	}
-	isoRe := regexp.MustCompile(`href="(artix-(.*?)-([^-]+-[0-9]+)-x86_64.iso)"`)
 
-	matches := isoRe.FindAllStringSubmatch(page, -1)
-	configs := make([]Config, len(matches))
-
-	for i, match := range matches {
-		iso, edition, release := match[1], match[2], match[3]
-		url := artixMirror + iso
-		checksum := checksums[iso]
-		configs[i] = Config{
-			Release: release,
-			Edition: edition,
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
+	checksums := make(map[string]string)
+	if f, e := head.Files["sha256sums"]; e {
+		checksums, err = cs.Build(cs.Whitespace, f.URL)
+		if err != nil {
+			csErrs <- Failure{Error: err}
 		}
+	}
+	isoRe := regexp.MustCompile(`^artix-(.*?)-([^-]+-[0-9]+)-x86_64.iso$`)
+
+	var configs []Config
+	for f, match := range head.FileMatches(isoRe) {
+		checksum := checksums[f.Name]
+		configs = append(configs, Config{
+			Release: match[2],
+			Edition: match[1],
+			ISO: []Source{
+				webSource(f.URL, checksum, "", f.Name),
+			},
+		})
 	}
 	return configs, nil
 }
