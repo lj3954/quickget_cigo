@@ -3,8 +3,11 @@ package os
 import (
 	"errors"
 	"regexp"
+	"slices"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 	"github.com/quickemu-project/quickget_configs/internal/web"
 	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
@@ -23,48 +26,71 @@ var FreeDOS = OS{
 }
 
 func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(freedosMirror, freedosReleaseRe, -1)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(freedosMirror)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases)
-	isoRe := regexp.MustCompile(`href="(FD\d+-?(.*?CD)\.(iso|zip))"`)
-	checksumRe := regexp.MustCompile(`FD\d+.sha|verify.txt`)
+	ch, wg := getChannels()
+	isoRe := regexp.MustCompile(`^FD\d+-?(.*?CD)\.(iso|zip)$`)
 
-	for release := range releases {
-		mirror := freedosMirror + release + "/official/"
-		go func() {
-			defer wg.Done()
-			page, err := web.CapturePage(mirror)
+	for release, d := range head.SubDirs {
+		wg.Go(func() {
+			contents, err := d.Fetch(c)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-
-			checksums, err := getFreeDOSChecksums(mirror, page, checksumRe)
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
+			// FreeDOS releases prior to 1.4 have an "official" subdirectory which must be used.
+			// With 1.4, the main directory for the release is used. Handle both cases
+			if od, e := contents.SubDirs["official"]; e {
+				contents, err = od.Fetch(c)
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+					return
+				}
 			}
 
-			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-				iso, edition, filetype := match[1], match[2], match[3]
-				url := mirror + iso
-				checksum := checksums[iso]
+			checksums := make(map[string]string)
+			for k, f := range contents.Files {
+				if k == "verify.txt" {
+					contents, err := web.CapturePage(f.URL)
+					if err != nil {
+						csErrs <- Failure{Release: release, Error: err}
+					}
+					lines := strings.Split(contents, "\n")
+					start, end := slices.Index(lines, "sha256sum:"), slices.Index(lines, "sha512sum:")
+
+					checksums = cs.Whitespace.BuildWithData(strings.Join(lines[start:end], "\n"))
+				} else if strings.HasSuffix(k, ".sha") {
+					checksums, err = cs.Build(cs.Whitespace, f.URL)
+					if err != nil {
+						csErrs <- Failure{Release: release, Error: err}
+					}
+				} else {
+					continue
+				}
+				break
+			}
+
+			for f, match := range contents.FileMatches(isoRe) {
+				checksum := checksums[f.Name]
 
 				var archiveFormat ArchiveFormat
-				if filetype == "zip" {
+				if match[2] == "zip" {
 					archiveFormat = quickgetdata.Zip
 				}
+
 				ch <- Config{
 					GuestOS: quickgetdata.FreeDOS,
 					Release: release,
-					Edition: edition,
+					Edition: match[1],
 					ISO: []Source{
-						webSource(url, checksum, archiveFormat, ""),
+						webSource(f.URL, checksum, archiveFormat, f.Name),
 					},
 				}
 			}
-		}()
+		})
 	}
 	return waitForConfigs(ch, wg), nil
 }
