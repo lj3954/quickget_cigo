@@ -4,12 +4,12 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
 	slitazMirror = "https://mirror.slitaz.org/iso/rolling/"
-	slitazIsoRe  = `href='(slitaz-(rolling(?:-.*?)?)\.iso)'`
+	slitazIsoRe  = `^(slitaz-(rolling(?:-.*?)?))\.iso$`
 )
 
 var Slitaz = OS{
@@ -21,38 +21,35 @@ var Slitaz = OS{
 }
 
 func createSlitazConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(slitazMirror)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(slitazMirror)
 	if err != nil {
 		return nil, err
 	}
 	isoRe := regexp.MustCompile(slitazIsoRe)
-	matches := isoRe.FindAllStringSubmatch(page, -1)
 
-	ch, wg := getChannelsWith(len(matches))
+	ch, wg := getChannels()
 	release := "latest"
-	for _, match := range matches {
-		go func() {
-			defer wg.Done()
+	for f, match := range head.FileMatches(isoRe) {
+		wg.Go(func() {
 			edition := match[2]
-			url := slitazMirror + match[1]
 
-			// Ensure we don't panic on too short URLs
-			if len(url) < 4 {
-				return
-			}
-			checksum, err := cs.SingleWhitespace(url[:len(url)-4] + ".md5")
-			if err != nil {
-				csErrs <- Failure{Release: release, Edition: edition, Error: err}
+			var checksum string
+			if f, e := head.Files[match[1]+".md5"]; e {
+				checksum, err = cs.SingleWhitespace(f.URL)
+				if err != nil {
+					csErrs <- Failure{Release: release, Edition: edition, Error: err}
+				}
 			}
 
 			ch <- Config{
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
-					urlChecksumSource(url, checksum),
+					webSource(f.URL, checksum, "", f.Name),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
