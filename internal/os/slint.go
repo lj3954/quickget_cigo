@@ -1,17 +1,14 @@
 package os
 
 import (
-	"fmt"
-	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	slintMirror    = "https://slackware.uk/slint/x86_64/"
-	slintReleaseRe = `href="(slint-([\d\.]+)\/)"`
-	slintIsoRe     = `href="(slint64-.*?\.iso)"`
+	slintMirror = "https://slackware.uk/slint/x86_64/"
 )
 
 var Slint = OS{
@@ -23,44 +20,47 @@ var Slint = OS{
 }
 
 func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releaseRe := regexp.MustCompile(slintReleaseRe)
-	page, err := web.CapturePage(slintMirror)
+	c := mirror.LegacyHttpClient{}
+	head, err := c.ReadDir(slintMirror)
 	if err != nil {
 		return nil, err
 	}
-	matches := releaseRe.FindAllStringSubmatch(page, -1)
 
 	ch, wg := getChannels()
-	isoRe := regexp.MustCompile(slintIsoRe)
 
-	for _, match := range matches {
+	for release, d := range head.SubDirs {
 		wg.Go(func() {
-			defer wg.Done()
-			release := match[2]
-			url := slintMirror + match[1] + "iso/"
-			page, err := web.CapturePage(url)
+			contents, err := d.Fetch(c)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			isoMatch := isoRe.FindStringSubmatch(page)
-			if len(isoMatch) != 2 {
-				errs <- Failure{Release: release, Error: fmt.Errorf("No iso found for %s", release)}
-				return
-			}
-			iso := isoMatch[1]
-			url += iso
-
-			checksums, err := cs.Build(cs.Sha256Regex, url+".sha256")
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
+			if id, e := contents.SubDirs["iso"]; e {
+				contents, err = id.Fetch(c)
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+					return
+				}
 			}
 
-			ch <- Config{
-				Release: release,
-				ISO: []Source{
-					urlChecksumSource(url, checksums[iso]),
-				},
+			for k, f := range contents.Files {
+				if strings.HasSuffix(k, ".iso") {
+					var checksum string
+					if cf, e := contents.Files[f.Name+".sha256"]; e {
+						checksum, err = cs.SingleWhitespace(cf.URL)
+						if err != nil {
+							csErrs <- Failure{Release: release, Error: err}
+						}
+					}
+
+					ch <- Config{
+						Release: release,
+						ISO: []Source{
+							webSource(f.URL, checksum, "", f.Name),
+						},
+					}
+					break
+				}
 			}
 		})
 	}
