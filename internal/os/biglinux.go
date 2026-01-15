@@ -2,11 +2,9 @@ package os
 
 import (
 	"regexp"
-	"slices"
-	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const biglinuxMirror = "https://iso.biglinux.com.br/"
@@ -20,34 +18,32 @@ var BigLinux = OS{
 }
 
 func createBigLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(biglinuxMirror)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(biglinuxMirror)
 	if err != nil {
 		return nil, err
 	}
-	isoRe := regexp.MustCompile(`<a href="(biglinux_([0-9]{4}(?:-[0-9]{2}){2})_(.*?).iso)"`)
-	matches := isoRe.FindAllStringSubmatch(page, -1)
-	slices.SortFunc(matches, func(a, b []string) int {
-		return strings.Compare(b[2], a[2])
-	})
-	ch, wg := getChannelsWith(len(matches))
+	isoRe := regexp.MustCompile(`^biglinux_([0-9]{4}(?:-[0-9]{2}){2})_(.*?)\.iso$`)
+	ch, wg := getChannels()
 
-	for _, match := range matches {
-		url := biglinuxMirror + match[1]
-		go func() {
-			release, edition := match[2], match[3]
-			defer wg.Done()
-			checksum, err := cs.SingleWhitespace(url + ".md5")
-			if err != nil {
-				csErrs <- Failure{Release: release, Edition: edition, Error: err}
+	for f, match := range head.FileMatches(isoRe) {
+		wg.Go(func() {
+			release, edition := match[1], match[2]
+			var checksum string
+			if cf, e := head.Files[f.Name+".md5"]; e {
+				checksum, err = cs.SingleWhitespace(cf.URL)
+				if err != nil {
+					csErrs <- Failure{Release: release, Edition: edition, Error: err}
+				}
 			}
 			ch <- Config{
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
-					urlChecksumSource(url, checksum),
+					webSource(f.URL, checksum, "", f.Name),
 				},
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
