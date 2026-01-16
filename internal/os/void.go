@@ -2,15 +2,15 @@ package os
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	voidMirror    = "https://repo-default.voidlinux.org/live/"
-	voidReleaseRe = `href="(\d{8})\/"`
-	voidIsoRe     = `href="(void-live-(aarch64|x86_64)(-musl)?-\d{8}-(.*?)\.iso)"`
+	voidMirror = "https://repo-default.voidlinux.org/live/"
+	voidIsoRe  = `^void-live-(aarch64|x86_64)(-musl)?-\d{8}-(.*?)\.iso$`
 )
 
 var Void = OS{
@@ -22,44 +22,50 @@ var Void = OS{
 }
 
 func createVoidConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getBasicReleases(voidMirror, voidReleaseRe, -1)
+	c := mirror.LegacyHttpClient{}
+	head, err := c.ReadDir(voidMirror)
 	if err != nil {
 		return nil, err
 	}
 
 	isoRe := regexp.MustCompile(voidIsoRe)
-	ch, wg := getChannelsWith(numReleases)
-	for release := range releases {
-		go func() {
-			defer wg.Done()
-			url := voidMirror + release + "/"
-			checksums, err := cs.Build(cs.Sha256Regex, url+"sha256sum.txt")
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
-			}
+	ch, wg := getChannels()
 
-			page, err := web.CapturePage(url)
+	// Current overlaps with a named release. Remove it ahead of time
+	delete(head.SubDirs, "current")
+	releases := head.NameSortedSubDirs(strings.Compare)
+	releases = releases[max(len(releases)-3, 0):]
+
+	for _, d := range releases {
+		release := d.Name
+		wg.Go(func() {
+			contents, err := d.Fetch(c)
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-				iso := match[1]
-				url := url + iso
-				checksum := checksums[iso]
-				arch := Arch(match[2])
-				edition := match[4] + match[3]
 
+			checksums := make(map[string]string)
+			if f, e := contents.Files["sha256sum.txt"]; e {
+				checksums, err = cs.Build(cs.Sha256Regex, f.URL)
+				if err != nil {
+					csErrs <- Failure{Release: release, Error: err}
+				}
+			}
+
+			for f, match := range contents.FileMatches(isoRe) {
+				edition := match[3] + match[2]
+				checksum := checksums[f.Name]
 				ch <- Config{
 					Release: release,
 					Edition: edition,
-					Arch:    arch,
+					Arch:    Arch(match[1]),
 					ISO: []Source{
-						urlChecksumSource(url, checksum),
+						webSource(f.URL, checksum, "", f.Name),
 					},
 				}
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
