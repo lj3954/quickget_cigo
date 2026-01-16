@@ -235,7 +235,7 @@ func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 					return
 				}
 				link = href
-				name = a.Text()
+				name = strings.TrimSpace(a.Text())
 			case mirrorClassFileSize:
 				if v, e := s.Attr("data-value"); e {
 					size, err := strconv.ParseInt(v, 10, 64)
