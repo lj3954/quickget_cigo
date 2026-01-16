@@ -41,7 +41,7 @@ func createGarudaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if strings.HasSuffix(k, "iso") {
 					var checksum string
 					if cf, e := contents.Files[k+".sha256"]; e {
-						checksum, err = cs.SingleWhitespace(cf.URL)
+						checksum, err = cs.SingleWhitespace(cf)
 						if err != nil {
 							csErrs <- Failure{Release: release, Edition: edition, Error: err}
 						}
@@ -51,7 +51,7 @@ func createGarudaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 						Release: release,
 						Edition: edition,
 						ISO: []Source{
-							webSource(f.URL, checksum, "", f.Name),
+							webSource(f.URL.String(), checksum, "", f.Name),
 						},
 					}
 				}

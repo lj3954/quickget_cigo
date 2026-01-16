@@ -31,7 +31,7 @@ func createBunsenLabsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	checksums := make(map[string]string)
 	for k, f := range head.Files {
 		if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
-			partialChecksums, err := cs.Build(cs.Whitespace, f.URL)
+			partialChecksums, err := cs.Build(cs.Whitespace, f)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			} else {
@@ -46,7 +46,7 @@ func createBunsenLabsConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		configs = append(configs, Config{
 			Release: match[1],
 			ISO: []Source{
-				webSource(f.URL, checksum, "", f.Name),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
 		})
 	}

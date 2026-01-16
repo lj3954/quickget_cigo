@@ -60,7 +60,7 @@ func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *
 	for k, f := range contents.Files {
 		k = strings.ToLower(k)
 		if strings.HasSuffix(k, ".txt") && strings.Contains(k, "sum") {
-			checksums, err = cs.Build(cs.Whitespace, f.URL)
+			checksums, err = cs.Build(cs.Whitespace, f)
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
 			} else {
@@ -78,7 +78,7 @@ func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
-					webSource(f.URL, checksum, "", f.Name),
+					webSource(f.URL.String(), checksum, "", f.Name),
 				},
 			}
 			if !yield(c) {

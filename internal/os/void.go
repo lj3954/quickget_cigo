@@ -47,7 +47,7 @@ func createVoidConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 			checksums := make(map[string]string)
 			if f, e := contents.Files["sha256sum.txt"]; e {
-				checksums, err = cs.Build(cs.Sha256Regex, f.URL)
+				checksums, err = cs.Build(cs.Sha256Regex, f)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
 				}
@@ -61,7 +61,7 @@ func createVoidConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					Edition: edition,
 					Arch:    Arch(match[1]),
 					ISO: []Source{
-						webSource(f.URL, checksum, "", f.Name),
+						webSource(f.URL.String(), checksum, "", f.Name),
 					},
 				}
 			}

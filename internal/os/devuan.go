@@ -55,7 +55,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			for k, f := range contents.Files {
 				k = strings.ToLower(k)
 				if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
-					checksums, err = cs.Build(cs.Whitespace, f.URL)
+					checksums, err = cs.Build(cs.Whitespace, f)
 					if err != nil {
 						csErrs <- Failure{Release: release, Error: err}
 					} else {
@@ -69,7 +69,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				ch <- Config{
 					Release: release,
 					ISO: []Source{
-						webSource(f.URL, checksum, "", f.Name),
+						webSource(f.URL.String(), checksum, "", f.Name),
 					},
 				}
 			}

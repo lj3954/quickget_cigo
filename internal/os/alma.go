@@ -70,7 +70,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 							Edition: match[1],
 							Arch:    arch,
 							ISO: []Source{
-								webSource(f.URL, checksum, "", f.Name),
+								webSource(f.URL.String(), checksum, "", f.Name),
 							},
 						}
 					}

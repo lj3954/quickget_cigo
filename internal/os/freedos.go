@@ -63,7 +63,7 @@ func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 					checksums = cs.Whitespace.BuildWithData(strings.Join(lines[start:end], "\n"))
 				} else if strings.HasSuffix(k, ".sha") {
-					checksums, err = cs.Build(cs.Whitespace, f.URL)
+					checksums, err = cs.Build(cs.Whitespace, f)
 					if err != nil {
 						csErrs <- Failure{Release: release, Error: err}
 					}
@@ -86,7 +86,7 @@ func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					Release: release,
 					Edition: match[1],
 					ISO: []Source{
-						webSource(f.URL, checksum, archiveFormat, f.Name),
+						webSource(f.URL.String(), checksum, archiveFormat, f.Name),
 					},
 				}
 			}
