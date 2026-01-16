@@ -3,14 +3,26 @@ package cs
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
-func SingleWhitespace(url string) (string, error) {
-	data, err := web.CapturePage(url)
+func SingleWhitespace[T string | *url.URL | mirror.File](input T) (string, error) {
+	var data string
+	var err error
+
+	switch v := any(input).(type) {
+	case string:
+		data, err = web.CapturePage(v)
+	case *url.URL:
+		data, err = web.CapturePage(v)
+	case mirror.File:
+		data, err = web.CapturePage(v.URL)
+	}
 	if err != nil {
 		return "", fmt.Errorf("Failed to find single checksum: %w", err)
 	}
@@ -31,8 +43,18 @@ type ChecksumSeparation interface {
 
 // Builds a checksum map from the contents of a URL and a pattern. Errors when the URL cannot be resolved.
 // Return map is guaranteed to always be valid, even in the case of an error
-func Build(cs ChecksumSeparation, url string) (map[string]string, error) {
-	data, err := web.CapturePage(url)
+func Build[T string | *url.URL | mirror.File](cs ChecksumSeparation, input T) (map[string]string, error) {
+	var data string
+	var err error
+
+	switch v := any(input).(type) {
+	case string:
+		data, err = web.CapturePage(v)
+	case *url.URL:
+		data, err = web.CapturePage(v)
+	case mirror.File:
+		data, err = web.CapturePage(v.URL)
+	}
 	if err != nil {
 		return make(map[string]string), fmt.Errorf("Failed to build checksums: %w", err)
 	}

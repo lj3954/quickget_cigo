@@ -103,14 +103,18 @@ func parseFileSize(value string) (int64, error) {
 
 type LegacyHttpClient struct{}
 
-func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
-	u, err := url.Parse(rawURL)
+func (c LegacyHttpClient) ReadDir(urlStr string) (*Directory, error) {
+	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
+	return c.ReadDirFromUrl(u)
+}
+
+func (LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 	name := path.Base(u.Path)
 
-	res, err := web.GetResponse(rawURL, nil)
+	res, err := web.GetResponse(u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +139,7 @@ func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
 			return nil, err
 		}
 		name := match[2]
-		url := rawURL + match[1]
+		url := u.JoinPath(match[1])
 
 		if strings.HasSuffix(match[1], "/") {
 			name = strings.TrimSuffix(name, "/")
@@ -160,7 +164,7 @@ func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
 
 	return &Directory{
 		Name:    name,
-		URL:     rawURL,
+		URL:     u,
 		Files:   files,
 		SubDirs: subdirs,
 	}, nil
@@ -168,14 +172,18 @@ func (LegacyHttpClient) ReadDir(rawURL string) (*Directory, error) {
 
 type HttpClient struct{}
 
-func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
-	u, err := url.Parse(rawURL)
+func (c HttpClient) ReadDir(urlStr string) (*Directory, error) {
+	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
+	return c.ReadDirFromUrl(u)
+}
+
+func (HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 	name := path.Base(u.Path)
 
-	res, err := web.GetResponse(rawURL, nil)
+	res, err := web.GetResponse(u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +262,8 @@ func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 			return
 		}
 
-		url := rawURL + link
+		url := u.JoinPath(link)
+
 		if strings.HasSuffix(link, "/") {
 			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
@@ -274,7 +283,7 @@ func (HttpClient) ReadDir(rawURL string) (*Directory, error) {
 
 	return &Directory{
 		Name:    name,
-		URL:     rawURL,
+		URL:     u,
 		Files:   files,
 		SubDirs: subdirs,
 	}, nil

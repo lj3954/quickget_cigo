@@ -31,7 +31,7 @@ func createBigLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			release, edition := match[1], match[2]
 			var checksum string
 			if cf, e := head.Files[f.Name+".md5"]; e {
-				checksum, err = cs.SingleWhitespace(cf.URL)
+				checksum, err = cs.SingleWhitespace(cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Error: err}
 				}
@@ -40,7 +40,7 @@ func createBigLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
-					webSource(f.URL, checksum, "", f.Name),
+					webSource(f.URL.String(), checksum, "", f.Name),
 				},
 			}
 		})

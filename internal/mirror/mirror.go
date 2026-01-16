@@ -3,6 +3,7 @@ package mirror
 import (
 	"iter"
 	"maps"
+	"net/url"
 	"regexp"
 	"slices"
 	"time"
@@ -10,7 +11,7 @@ import (
 
 type Directory struct {
 	Name    string
-	URL     string
+	URL     *url.URL
 	Files   map[string]File
 	SubDirs map[string]SubDirEntry
 }
@@ -110,13 +111,13 @@ type SubDirEntry struct {
 	// The name of the subdirectory
 	Name string
 	// The URL that this mirror subdirectory is contained at. This should not be accessed directly in most cases, with the Fetch function being preferable
-	URL string
+	URL *url.URL
 	// The date the directory was last modified, as reported by the mirror
 	LastModifiedDate time.Time
 }
 
 func (s *SubDirEntry) Fetch(c Client) (*Directory, error) {
-	dir, err := c.ReadDir(s.URL)
+	dir, err := c.ReadDirFromUrl(s.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ type File struct {
 	// The name of the file
 	Name string
 	// The absolute URL of the file
-	URL string
+	URL *url.URL
 	// The time at which the file was last modified, as reported by the mirror
 	LastModifiedDate time.Time
 	// The size of the file, as reported by the mirror
@@ -138,5 +139,7 @@ type File struct {
 }
 
 type Client interface {
-	ReadDir(url string) (*Directory, error)
+	// This method should be implemented to parse the url string and then call the ReadDirFromUrl method on self
+	ReadDir(urlStr string) (*Directory, error)
+	ReadDirFromUrl(u *url.URL) (*Directory, error)
 }

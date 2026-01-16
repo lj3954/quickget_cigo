@@ -91,12 +91,12 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if qcowXz {
 					config.DiskImages = []Disk{
 						{
-							Source: webSource(f.URL, checksum, quickgetdata.Xz, f.Name),
+							Source: webSource(f.URL.String(), checksum, quickgetdata.Xz, f.Name),
 						},
 					}
 				} else {
 					config.ISO = []Source{
-						webSource(f.URL, checksum, "", f.Name),
+						webSource(f.URL.String(), checksum, "", f.Name),
 					}
 				}
 

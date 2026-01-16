@@ -28,7 +28,7 @@ func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for k, f := range head.Files {
 		k = strings.ToLower(k)
 		if strings.HasSuffix(k, "txt") && strings.Contains(k, "sum") {
-			checksums, err = cs.Build(cs.Whitespace, f.URL)
+			checksums, err = cs.Build(cs.Whitespace, f)
 			if err != nil {
 				csErrs <- Failure{Error: err}
 			} else {
@@ -46,7 +46,7 @@ func createLmdeConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			Release: match[1],
 			Edition: match[2],
 			ISO: []Source{
-				webSource(f.URL, checksum, "", f.Name),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
 		})
 	}

@@ -22,12 +22,20 @@ var (
 	}
 )
 
-func GetResponse(input string, headers http.Header) (*http.Response, error) {
-	url, err := url.Parse(input)
-	if err != nil {
-		return nil, err
+func GetResponse[T string | *url.URL](input T, headers http.Header) (*http.Response, error) {
+	var u *url.URL
+	switch v := any(input).(type) {
+	case string:
+		url, err := url.Parse(v)
+		if err != nil {
+			return nil, err
+		}
+		u = url
+	case *url.URL:
+		u = v
 	}
-	if sem, exists := urlPermits[url.Hostname()]; exists {
+
+	if sem, exists := urlPermits[u.Hostname()]; exists {
 		if err := sem.Acquire(context.Background(), 1); err != nil {
 			return nil, err
 		}
@@ -38,7 +46,7 @@ func GetResponse(input string, headers http.Header) (*http.Response, error) {
 	}
 	defer permits.Release(1)
 
-	req, err := retryablehttp.NewRequest("GET", input, nil)
+	req, err := retryablehttp.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +63,7 @@ func GetResponse(input string, headers http.Header) (*http.Response, error) {
 	return resp, nil
 }
 
-func FinalRedirectUrl(input string) (string, error) {
+func FinalRedirectUrl[T string | *url.URL](input T) (string, error) {
 	resp, err := GetResponse(input, nil)
 	if err != nil {
 		return "", err
@@ -65,7 +73,7 @@ func FinalRedirectUrl(input string) (string, error) {
 	return resp.Request.URL.String(), nil
 }
 
-func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
+func capturePageToBytes[T string | *url.URL](input T, headers http.Header) ([]byte, error) {
 	resp, err := GetResponse(input, headers)
 	if err != nil {
 		return nil, err
@@ -79,14 +87,14 @@ func capturePageToBytes(input string, headers http.Header) ([]byte, error) {
 	return body, nil
 }
 
-func CapturePage(input string) (string, error) {
+func CapturePage[T string | *url.URL](input T) (string, error) {
 	body, err := capturePageToBytes(input, nil)
 	if err != nil {
 		return "", err
 	}
 	return string(body), nil
 }
-func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) error, headers http.Header) error {
+func capturePageToUnmarshal[T string | *url.URL](url T, data any, unmarshal func([]byte, any) error, headers http.Header) error {
 	page, err := capturePageToBytes(url, headers)
 	if err != nil {
 		return err
@@ -94,14 +102,14 @@ func capturePageToUnmarshal(url string, data any, unmarshal func([]byte, any) er
 	return unmarshal(page, data)
 }
 
-func CapturePageToJson(url string, data any) error {
+func CapturePageToJson[T string | *url.URL](url T, data any) error {
 	return capturePageToUnmarshal(url, data, json.Unmarshal, nil)
 }
 
-func CapturePageAcceptingJson(url string, data any) error {
+func CapturePageAcceptingJson[T string | *url.URL](url T, data any) error {
 	return capturePageToUnmarshal(url, data, json.Unmarshal, http.Header{"Accept": []string{"application/json"}})
 }
 
-func CapturePageToXml(url string, data any) error {
+func CapturePageToXml[T string | *url.URL](url T, data any) error {
 	return capturePageToUnmarshal(url, data, xml.Unmarshal, nil)
 }

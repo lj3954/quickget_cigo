@@ -27,7 +27,7 @@ func createChimeraLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	checksums := make(map[string]string)
 	if f, e := head.Files["sha256sums.txt"]; e {
-		checksums, err = cs.Build(cs.Whitespace, f.URL)
+		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Release: "latest", Error: err}
 		}
@@ -41,7 +41,7 @@ func createChimeraLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			Edition: match[2],
 			Arch:    Arch(match[1]),
 			ISO: []Source{
-				webSource(f.URL, checksum, "", f.Name),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
 		})
 

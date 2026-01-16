@@ -36,7 +36,7 @@ func createSlitazConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 			var checksum string
 			if f, e := head.Files[match[1]+".md5"]; e {
-				checksum, err = cs.SingleWhitespace(f.URL)
+				checksum, err = cs.SingleWhitespace(f)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Error: err}
 				}
@@ -46,7 +46,7 @@ func createSlitazConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				Release: release,
 				Edition: edition,
 				ISO: []Source{
-					webSource(f.URL, checksum, "", f.Name),
+					webSource(f.URL.String(), checksum, "", f.Name),
 				},
 			}
 		})

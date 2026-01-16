@@ -47,7 +47,7 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if strings.HasSuffix(k, ".iso") {
 					var checksum string
 					if cf, e := contents.Files[f.Name+".sha256"]; e {
-						checksum, err = cs.SingleWhitespace(cf.URL)
+						checksum, err = cs.SingleWhitespace(cf)
 						if err != nil {
 							csErrs <- Failure{Release: release, Error: err}
 						}
@@ -56,7 +56,7 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					ch <- Config{
 						Release: release,
 						ISO: []Source{
-							webSource(f.URL, checksum, "", f.Name),
+							webSource(f.URL.String(), checksum, "", f.Name),
 						},
 					}
 					break

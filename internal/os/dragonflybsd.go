@@ -36,7 +36,7 @@ func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	checksums := make(map[string]string)
 	if f, e := head.Files["md5.txt"]; e {
-		checksums, err = cs.Build(cs.Md5Regex, f.URL)
+		checksums, err = cs.Build(cs.Md5Regex, f)
 		if err != nil {
 			csErrs <- Failure{Error: err}
 		}
@@ -68,7 +68,7 @@ func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			GuestOS: quickgetdata.GenericBSD,
 			Release: r.release,
 			ISO: []Source{
-				webSource(f.URL, checksum, "", f.Name),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
 		}
 	}
