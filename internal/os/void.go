@@ -39,7 +39,7 @@ func createVoidConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for _, d := range releases {
 		release := d.Name
 		wg.Go(func() {
-			contents, err := d.Fetch(c)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return

@@ -36,7 +36,7 @@ func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for _, releaseDir := range fiveMostRecent {
 		wg.Go(func() {
-			configs, err := getLinuxMintReleaseConfigs(releaseDir, c, isoRe, csErrs)
+			configs, err := getLinuxMintReleaseConfigs(releaseDir, isoRe, csErrs)
 			if err != nil {
 				errs <- Failure{Release: releaseDir.Name, Error: err}
 				return
@@ -49,9 +49,9 @@ func createLinuxMintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	return waitForConfigs(ch, wg), nil
 }
 
-func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, c mirror.Client, isoRe *regexp.Regexp, csErrs chan<- Failure) (iter.Seq[Config], error) {
+func getLinuxMintReleaseConfigs(dir mirror.SubDirEntry, isoRe *regexp.Regexp, csErrs chan<- Failure) (iter.Seq[Config], error) {
 	release := dir.Name
-	contents, err := dir.Fetch(c)
+	contents, err := dir.Fetch()
 	if err != nil {
 		return nil, err
 	}

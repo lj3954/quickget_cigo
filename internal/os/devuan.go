@@ -36,7 +36,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 		release := strings.TrimPrefix(releaseDir.Name, "devuan_")
 		wg.Go(func() {
-			contents, err := releaseDir.Fetch(c)
+			contents, err := releaseDir.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
@@ -44,7 +44,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			// If there's a desktop live subdirectory we'll use it, as that's the standard directory
 			// structure as of now. Otherwise, just try with the main directory
 			if d, e := contents.SubDirs["desktop-live"]; e {
-				contents, err = d.Fetch(c)
+				contents, err = d.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 					return

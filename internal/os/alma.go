@@ -35,13 +35,13 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for _, d := range releases {
 		release := d.Name
 		wg.Go(func() {
-			architectures, err := d.Fetch(c)
+			architectures, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			if id, e := architectures.SubDirs["isos"]; e {
-				architectures, err = id.Fetch(c)
+				architectures, err = id.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 					return
@@ -49,7 +49,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 			for _, arch := range three_architectures {
 				if d, e := architectures.SubDirs[string(arch)]; e {
-					contents, err := d.Fetch(c)
+					contents, err := d.Fetch()
 					if err != nil {
 						errs <- Failure{Release: release, Arch: arch, Error: err}
 					}

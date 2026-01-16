@@ -111,7 +111,7 @@ func (c LegacyHttpClient) ReadDir(urlStr string) (*Directory, error) {
 	return c.ReadDirFromUrl(u)
 }
 
-func (LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
+func (c LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 	name := path.Base(u.Path)
 
 	res, err := web.GetResponse(u, nil)
@@ -144,6 +144,7 @@ func (LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 		if strings.HasSuffix(match[1], "/") {
 			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
+				client:           c,
 				Name:             name,
 				URL:              url,
 				LastModifiedDate: date,
@@ -180,7 +181,7 @@ func (c HttpClient) ReadDir(urlStr string) (*Directory, error) {
 	return c.ReadDirFromUrl(u)
 }
 
-func (HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
+func (c HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 	name := path.Base(u.Path)
 
 	res, err := web.GetResponse(u, nil)
@@ -267,6 +268,7 @@ func (HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 		if strings.HasSuffix(link, "/") {
 			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
+				client:           c,
 				Name:             name,
 				URL:              url,
 				LastModifiedDate: modifiedDate,
