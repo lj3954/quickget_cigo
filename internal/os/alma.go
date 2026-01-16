@@ -1,17 +1,15 @@
 package os
 
 import (
-	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
+	"github.com/quickemu-project/quickget_configs/internal/utils"
 )
 
 const (
-	almaMirror    = "https://repo.almalinux.org/almalinux/"
-	almaReleaseRe = `<a href="([0-9]+)/"`
+	almaMirror = "https://repo.almalinux.org/almalinux/"
 )
 
 var Alma = OS{
@@ -23,53 +21,63 @@ var Alma = OS{
 }
 
 func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, _, err := getBasicReleases(almaMirror, almaReleaseRe, -1)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(almaMirror)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
-	isoRe := regexp.MustCompile(`<a href="(AlmaLinux-[0-9]+-latest-(?:x86_64|aarch64)-([^-]+).iso)">`)
+	isoRe := regexp.MustCompile(`^AlmaLinux-[\d\.]+-latest-[^-]+-([^-]+)\.iso$`)
 
-	for release := range releases {
-		for _, arch := range x86_64_aarch64 {
-			wg.Go(func() {
-				addAlmaConfigs(release, arch, isoRe, ch, errs, csErrs)
-			})
-		}
+	releases := head.NameSortedSubDirs(utils.SemverCompare)
+	releases = releases[max(len(releases)-4, 0):]
+
+	for _, d := range releases {
+		release := d.Name
+		wg.Go(func() {
+			architectures, err := d.Fetch(c)
+			if err != nil {
+				errs <- Failure{Release: release, Error: err}
+				return
+			}
+			if id, e := architectures.SubDirs["isos"]; e {
+				architectures, err = id.Fetch(c)
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+					return
+				}
+			}
+			for _, arch := range three_architectures {
+				if d, e := architectures.SubDirs[string(arch)]; e {
+					contents, err := d.Fetch(c)
+					if err != nil {
+						errs <- Failure{Release: release, Arch: arch, Error: err}
+					}
+
+					checksums := make(map[string]string)
+					if f, e := contents.Files["CHECKSUM"]; e {
+						checksums, err = cs.Build(cs.Sha256Regex, f.URL)
+						if err != nil {
+							csErrs <- Failure{Release: release, Arch: arch, Error: err}
+							return
+						}
+					}
+
+					for f, match := range contents.FileMatches(isoRe) {
+						checksum := checksums[f.Name]
+						ch <- Config{
+							Release: release,
+							Edition: match[1],
+							Arch:    arch,
+							ISO: []Source{
+								webSource(f.URL, checksum, "", f.Name),
+							},
+						}
+					}
+				}
+			}
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
-}
-
-func addAlmaConfigs(release string, arch Arch, isoRe *regexp.Regexp, ch chan<- Config, errs, csErrs chan<- Failure) {
-	mirror := fmt.Sprintf("%s%s/isos/%s/", almaMirror, release, arch)
-	page, err := web.CapturePage(mirror)
-	if err != nil {
-		errs <- Failure{Release: release, Arch: arch, Error: err}
-		return
-	}
-
-	checksums, err := cs.Build(cs.Sha256Regex, mirror+"CHECKSUM")
-	if err != nil {
-		csErrs <- Failure{Release: release, Arch: arch, Error: err}
-		return
-	}
-
-	for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		if strings.HasSuffix(match[0], ".manifest") {
-			continue
-		}
-
-		iso, edition := match[1], match[2]
-		url := mirror + iso
-		checksum := checksums[iso]
-		ch <- Config{
-			Release: release,
-			Edition: edition,
-			Arch:    arch,
-			ISO: []Source{
-				urlChecksumSource(url, checksum),
-			},
-		}
-	}
 }
