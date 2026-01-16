@@ -30,13 +30,13 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for release, d := range head.SubDirs {
 		wg.Go(func() {
-			contents, err := d.Fetch(c)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 			if id, e := contents.SubDirs["iso"]; e {
-				contents, err = id.Fetch(c)
+				contents, err = id.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 					return

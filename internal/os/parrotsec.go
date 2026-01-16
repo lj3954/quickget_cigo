@@ -41,7 +41,7 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for _, releaseDir := range threeMostRecent {
 		wg.Go(func() {
 			release := releaseDir.Name
-			contents, err := releaseDir.Fetch(c)
+			contents, err := releaseDir.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return

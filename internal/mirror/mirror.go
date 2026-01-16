@@ -108,6 +108,8 @@ func (d *Directory) FileMatches(pattern *regexp.Regexp) iter.Seq2[File, []string
 
 // The metadata representing a subdirectory
 type SubDirEntry struct {
+	// The internal client used to fetch this subdirectory (the client type from the initial directory read)
+	client Client
 	// The name of the subdirectory
 	Name string
 	// The URL that this mirror subdirectory is contained at. This should not be accessed directly in most cases, with the Fetch function being preferable
@@ -116,8 +118,8 @@ type SubDirEntry struct {
 	LastModifiedDate time.Time
 }
 
-func (s *SubDirEntry) Fetch(c Client) (*Directory, error) {
-	dir, err := c.ReadDirFromUrl(s.URL)
+func (s *SubDirEntry) Fetch() (*Directory, error) {
+	dir, err := s.client.ReadDirFromUrl(s.URL)
 	if err != nil {
 		return nil, err
 	}

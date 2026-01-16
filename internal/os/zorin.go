@@ -42,7 +42,7 @@ func createZorinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			release := releaseDir.Name
 
 			checksums := make(map[string]string)
-			contents, err := releaseDir.Fetch(c)
+			contents, err := releaseDir.Fetch()
 			// Directory contents are only used for checksums in this case
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}

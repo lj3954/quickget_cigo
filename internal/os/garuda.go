@@ -31,7 +31,7 @@ func createGarudaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	release := "latest"
 	for edition, d := range head.SubDirs {
 		wg.Go(func() {
-			contents, err := d.Fetch(c)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Edition: edition, Error: err}
 				return

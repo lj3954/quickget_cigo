@@ -40,7 +40,7 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			continue
 		}
 		wg.Go(func() {
-			contents, err := releaseDir.Fetch(c)
+			contents, err := releaseDir.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return

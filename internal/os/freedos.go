@@ -36,7 +36,7 @@ func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	for release, d := range head.SubDirs {
 		wg.Go(func() {
-			contents, err := d.Fetch(c)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
@@ -44,7 +44,7 @@ func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			// FreeDOS releases prior to 1.4 have an "official" subdirectory which must be used.
 			// With 1.4, the main directory for the release is used. Handle both cases
 			if od, e := contents.SubDirs["official"]; e {
-				contents, err = od.Fetch(c)
+				contents, err = od.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 					return
