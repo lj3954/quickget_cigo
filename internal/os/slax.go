@@ -1,16 +1,15 @@
 package os
 
 import (
-	"fmt"
-	"regexp"
+	"errors"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
 	slaxMirror = "https://ftp.fi.muni.cz/pub/linux/slax/"
-	slaxIsoRe  = `href="(slax-64bit-(?:debian|slackware)-[\d\.]+\.iso)"`
 )
 
 var Slax = OS{
@@ -22,74 +21,73 @@ var Slax = OS{
 }
 
 func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	ch, wg := getChannelsWith(2)
-	isoRe := regexp.MustCompile(slaxIsoRe)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(slaxMirror)
+	if err != nil {
+		return nil, err
+	}
+
+	var debianRelease, slackwareRelease *mirror.SubDirEntry
+	for k, d := range head.SubDirs {
+		k = strings.ToLower(k)
+		if debianRelease == nil && strings.Contains(k, "debian") {
+			debianRelease = &d
+		} else if slackwareRelease == nil && strings.Contains(k, "slackware") {
+			slackwareRelease = &d
+		}
+		if debianRelease != nil && slackwareRelease != nil {
+			break
+		}
+	}
+
+	var configs []Config
 	release := "latest"
 
-	go func() {
-		defer wg.Done()
-		edition := "slackware"
-		url := slaxMirror + "Slax-Slackware-15.x/"
+	edition := "debian"
+	debianConfig, err := getSlaxConfig(release, edition, *debianRelease, csErrs)
+	if err != nil {
+		errs <- Failure{Release: release, Edition: edition, Error: err}
+	} else {
+		configs = append(configs, *debianConfig)
+	}
 
-		page, err := web.CapturePage(url)
-		if err != nil {
-			errs <- Failure{Release: release, Edition: edition, Error: err}
-			return
-		}
+	edition = "slackware"
+	slackwareConfig, err := getSlaxConfig(release, edition, *slackwareRelease, csErrs)
+	if err != nil {
+		errs <- Failure{Release: release, Edition: edition, Error: err}
+	} else {
+		configs = append(configs, *slackwareConfig)
+	}
 
-		isoMatch := isoRe.FindStringSubmatch(page)
-		if len(isoMatch) != 2 {
-			errs <- Failure{Release: release, Edition: edition, Error: fmt.Errorf("No iso found for %s", edition)}
-			return
-		}
-		iso := isoMatch[1]
+	return configs, nil
+}
 
-		checksums, err := cs.Build(cs.Whitespace, url+"md5.txt")
-		if err != nil {
-			csErrs <- Failure{Release: release, Edition: edition, Error: err}
-		}
-		checksum := checksums[iso]
+func getSlaxConfig(release, edition string, dir mirror.SubDirEntry, csErrs chan<- Failure) (*Config, error) {
+	contents, err := dir.Fetch()
+	if err != nil {
+		return nil, err
+	}
 
-		ch <- Config{
-			Release: release,
-			Edition: edition,
-			ISO: []Source{
-				urlChecksumSource(url+iso, checksum),
-			},
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		edition := "debian"
-		url := slaxMirror + "Slax-Debian-12.x/"
-
-		page, err := web.CapturePage(url)
-		if err != nil {
-			errs <- Failure{Release: release, Edition: edition, Error: err}
-			return
-		}
-
-		isoMatch := isoRe.FindStringSubmatch(page)
-		if len(isoMatch) != 2 {
-			errs <- Failure{Release: release, Edition: edition, Error: fmt.Errorf("No iso found for %s", edition)}
-			return
-		}
-		iso := isoMatch[1]
-
-		checksums, err := cs.Build(cs.Whitespace, url+"md5.txt")
+	checksums := make(map[string]string)
+	if f, e := contents.Files["md5.txt"]; e {
+		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Release: release, Edition: edition, Error: err}
 		}
-		checksum := checksums[iso]
+	}
 
-		ch <- Config{
-			Release: release,
-			Edition: edition,
-			ISO: []Source{
-				urlChecksumSource(url+iso, checksum),
-			},
+	for k, f := range contents.Files {
+		k = strings.ToLower(k)
+		if strings.HasSuffix(k, ".iso") && !strings.Contains(k, "32bit") {
+			checksum := checksums[f.Name]
+			return &Config{
+				Release: release,
+				Edition: edition,
+				ISO: []Source{
+					webSource(f.URL.String(), checksum, "", f.Name),
+				},
+			}, nil
 		}
-	}()
-	return waitForConfigs(ch, wg), nil
+	}
+	return nil, errors.New("could not find a matching ISO")
 }
