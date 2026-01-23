@@ -1,16 +1,16 @@
 package os
 
 import (
-	"fmt"
-	"regexp"
-	"sync"
+	"errors"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
+	"github.com/quickemu-project/quickget_configs/internal/utils"
 )
 
 const (
-	deepinMirror    = "https://cdimage.deepin.com/releases/"
-	deepinReleaseRe = `class="name">([\d.]+)\/`
+	deepinMirror = "https://cdimage.deepin.com/releases/"
 )
 
 var Deepin = OS{
@@ -22,49 +22,71 @@ var Deepin = OS{
 }
 
 func createDeepinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, _, err := getBasicReleases(deepinMirror, deepinReleaseRe, -1)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(deepinMirror)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
-	archRe := regexp.MustCompile(`class="name">(amd64|arm64)\/`)
-	for release := range releases {
-		mirror := deepinMirror + release + "/"
+
+	releases := head.NameSortedSubDirs(utils.SemverCompare)
+	releases = releases[max(len(releases)-3, 0):]
+
+	for _, d := range releases {
+		release := d.Name
 		wg.Go(func() {
-			architectures, numArchitectures, err := getBasicReleases(mirror, archRe, -1)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			if numArchitectures > 0 {
-				for arch := range architectures {
-					mirror := mirror + arch + "/"
-					wg.Go(func() {
-						addDeepinConfigs(mirror, release, Arch(arch), ch, wg, csErrs)
-					})
+			if len(contents.Files) > 0 {
+				config, csErr, err := createDeepinConfig(contents, release, x86_64)
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+				} else {
+					if csErr != nil {
+						csErrs <- Failure{Release: release, Error: err}
+					}
+					ch <- *config
 				}
-			} else {
-				wg.Go(func() {
-					addDeepinConfigs(mirror, release, x86_64, ch, wg, csErrs)
-				})
+			}
+			for a, d := range contents.SubDirs {
+				contents, err := d.Fetch()
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+				}
+				config, csErr, err := createDeepinConfig(contents, release, Arch(a))
+				if err != nil {
+					errs <- Failure{Release: release, Error: err}
+				} else {
+					if csErr != nil {
+						csErrs <- Failure{Release: release, Error: err}
+					}
+					ch <- *config
+				}
 			}
 		})
 	}
 	return waitForConfigs(ch, wg), nil
 }
 
-func addDeepinConfigs(url, release string, arch Arch, ch chan Config, wg *sync.WaitGroup, csErrs chan<- Failure) {
-	isoUrl := fmt.Sprintf("%sdeepin-desktop-community-%s-%s.iso", url, release, arch)
-	checksum, err := cs.SingleWhitespace(url + "SHA256SUMS")
-	if err != nil {
-		csErrs <- Failure{Release: release, Error: err}
-		return
+func createDeepinConfig(dir *mirror.Directory, release string, arch Arch) (config *Config, csErr error, err error) {
+	for k, f := range dir.Files {
+		if strings.HasSuffix(k, ".iso") {
+			var checksum string
+			if f, e := dir.Files["SHA256SUMS"]; e {
+				checksum, csErr = cs.SingleWhitespace(f)
+			}
+			config = &Config{
+				Release: release,
+				Arch:    arch,
+				ISO: []Source{
+					webSource(f.URL.String(), checksum, "", f.Name),
+				},
+			}
+			return
+		}
 	}
-	ch <- Config{
-		Release: release,
-		Arch:    arch,
-		ISO: []Source{
-			urlChecksumSource(isoUrl, checksum),
-		},
-	}
+	return nil, nil, errors.New("could not find ISO file in mirror")
 }
