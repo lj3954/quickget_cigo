@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
-	"sync"
 	"time"
 )
 
@@ -109,8 +108,6 @@ func (d *Directory) FileMatches(pattern *regexp.Regexp) iter.Seq2[File, []string
 
 // The metadata representing a subdirectory
 type SubDirEntry struct {
-	// Avoid making duplicate web requests for the same subdirectory
-	once sync.Once
 	// The internal client used to fetch this subdirectory (the client type from the initial directory read)
 	client Client
 	// The name of the subdirectory
@@ -122,11 +119,7 @@ type SubDirEntry struct {
 }
 
 func (s *SubDirEntry) Fetch() (*Directory, error) {
-	var dir *Directory
-	var err error
-	s.once.Do(func() {
-		dir, err = s.client.ReadDirFromUrl(s.URL)
-	})
+	dir, err := s.client.ReadDirFromUrl(s.URL)
 	if err != nil {
 		return nil, err
 	}
