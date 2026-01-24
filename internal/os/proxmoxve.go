@@ -2,14 +2,15 @@ package os
 
 import (
 	"regexp"
+	"slices"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
 	proxmoxVeMirror = "https://enterprise.proxmox.com/iso/"
-	proxmoxIsoRe    = `href="(proxmox-ve_(\d+\.\d+)-\d+\.iso)"`
+	proxmoxIsoRe    = `^proxmox-ve_(\d+\.\d+)-\d+\.iso$`
 )
 
 var ProxmoxVE = OS{
@@ -21,29 +22,35 @@ var ProxmoxVE = OS{
 }
 
 func createProxmoxVEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(proxmoxVeMirror)
+	c := mirror.LegacyHttpClient{}
+	head, err := c.ReadDir(proxmoxVeMirror)
 	if err != nil {
 		return nil, err
 	}
 
-	isoRe := regexp.MustCompile(proxmoxIsoRe)
-	matches := isoRe.FindAllStringSubmatch(page, -1)
-
-	checksums, err := cs.Build(cs.Whitespace, proxmoxVeMirror+"SHA256SUMS")
-	if err != nil {
-		csErrs <- Failure{Error: err}
+	checksums := make(map[string]string)
+	if f, e := head.Files["SHA256SUMS"]; e {
+		checksums, err = cs.Build(cs.Whitespace, f)
+		if err != nil {
+			csErrs <- Failure{Error: err}
+		}
 	}
 
-	configs := make([]Config, len(matches))
-	for i, match := range matches {
-		iso := match[1]
-		release := match[2]
-		checksum := checksums[iso]
-		url := proxmoxVeMirror + iso
+	isoRe := regexp.MustCompile(proxmoxIsoRe)
+
+	files := slices.Collect(head.MatchingFiles(isoRe))
+	files = files[max(len(files)-2, 0):]
+
+	configs := make([]Config, len(files))
+	for i, f := range files {
+		// MatchingFiles already validated that the file name here matches the pattern.
+		match := isoRe.FindStringSubmatch(f.Name)
+		release := match[1]
+		checksum := checksums[f.Name]
 		configs[i] = Config{
 			Release: release,
 			ISO: []Source{
-				urlChecksumSource(url, checksum),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
 		}
 	}
