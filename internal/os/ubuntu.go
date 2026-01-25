@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 	"github.com/quickemu-project/quickget_configs/internal/web"
 	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
@@ -162,11 +163,11 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan<- 
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(len(releases) * len(architectures))
+	ch, wg := getChannels()
+
 	for _, release := range releases {
 		for _, arch := range architectures {
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				config, err, csErr := getUbuntuConfig(release, variant, arch)
 				if err != nil {
 					errs <- Failure{Release: release, Arch: arch, Error: err}
@@ -177,60 +178,61 @@ func getUbuntuConfigs(variant string, architectures []Arch, errs, csErrs chan<- 
 				if config != nil {
 					ch <- *config
 				}
-			}()
+			})
 		}
 	}
 
 	return waitForConfigs(ch, wg), nil
 }
 
-func getUbuntuConfig(release string, variant string, arch Arch) (c *Config, e error, csErr error) {
+func getUbuntuConfig(release string, variant string, arch Arch) (config *Config, err error, csErr error) {
+	c := mirror.HttpClient{}
 	url := getUbuntuUrl(release, variant, arch)
 
-	page, err := web.CapturePage(url + "SHA256SUMS")
+	head, err := c.ReadDir(url)
 	if err != nil {
 		return nil, err, nil
 	}
-	line := getUbuntuLine(page, variant, arch)
-	if line == "" {
+
+	checksums := make(map[string]string)
+	if f, e := head.Files["SHA256SUMS"]; e {
+		checksums, csErr = cs.Build(cs.Whitespace, f)
+	}
+
+	archText := getUbuntuArchText(arch)
+	sku := getUbuntuSku(variant)
+	var f *mirror.File
+	for k, file := range head.Files {
+		if strings.Contains(k, archText) && strings.Contains(k, sku) {
+			f = &file
+			break
+		}
+	}
+
+	if f == nil {
 		return
 	}
 
-	checksum, err := cs.BuildSingleWhitespace(line)
-	if err != nil {
-		csErr = err
-	}
-	iso := url + line[strings.Index(line, "*")+1:]
+	checksum := checksums["*"+f.Name]
 
-	c = &Config{
+	config = &Config{
 		Release: release,
 		Arch:    arch,
 	}
 	if !strings.Contains(release, "daily") && semverCompare(release, "16.04") < 0 {
-		c.GuestOS = quickgetdata.LinuxOld
+		config.GuestOS = quickgetdata.LinuxOld
 	}
 	if arch == riscv64 {
-		c.IMG = []Source{
-			webSource(iso, checksum, quickgetdata.Gz, ""),
+		config.IMG = []Source{
+			webSource(f.URL.String(), checksum, quickgetdata.Gz, f.Name),
 		}
 	} else {
-		c.ISO = []Source{
-			urlChecksumSource(iso, checksum),
+		config.ISO = []Source{
+			webSource(f.URL.String(), checksum, "", f.Name),
 		}
 	}
 
 	return
-}
-
-func getUbuntuLine(page, variant string, arch Arch) string {
-	archText := getUbuntuArchText(arch)
-	sku := getUbuntuSku(variant)
-	for _, l := range strings.Split(page, "\n") {
-		if strings.Contains(l, archText) && strings.Contains(l, sku) {
-			return l
-		}
-	}
-	return ""
 }
 
 func getUbuntuSku(variant string) string {
