@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const nwgshellMirror = "https://sourceforge.net/projects/nwg-iso/files/"
@@ -18,30 +18,32 @@ var NWGShell = OS{
 }
 
 func createNwgShellConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(nwgshellMirror)
+	c := mirror.SourceForgeClient{}
+	head, err := c.ReadDir(nwgshellMirror)
 	if err != nil {
 		return nil, err
 	}
-	checksums, err := cs.Build(cs.Whitespace, nwgshellMirror+"sha256sums.txt/download")
-	if err != nil {
-		csErrs <- Failure{Error: err}
+
+	checksums := make(map[string]string)
+	if f, e := head.Files["sha256sums.txt"]; e {
+		checksums, err = cs.Build(cs.Whitespace, f)
+		if err != nil {
+			csErrs <- Failure{Error: err}
+		}
 	}
 
-	isoRe := regexp.MustCompile(`"name":"(nwg-live-(\d{4}.\d{2}.\d{2})-[^\.]+\.iso)"`)
-	matches := isoRe.FindAllStringSubmatch(page, -1)
+	isoRe := regexp.MustCompile(`^nwg-live-(\d{4}.\d{2}.\d{2})-[^\.]+\.iso$`)
 
-	configs := make([]Config, len(matches))
-	for i, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		iso, release := match[1], match[2]
-		checksum := checksums[iso]
-		url := nwgshellMirror + iso + "/download"
+	var configs []Config
+	for f, match := range head.FileMatches(isoRe) {
+		checksum := checksums[f.Name]
 
-		configs[i] = Config{
-			Release: release,
+		configs = append(configs, Config{
+			Release: match[1],
 			ISO: []Source{
-				urlChecksumSource(url, checksum),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
-		}
+		})
 	}
 
 	return configs, nil
