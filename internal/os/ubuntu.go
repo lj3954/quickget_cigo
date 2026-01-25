@@ -195,8 +195,11 @@ func getUbuntuConfig(release string, variant string, arch Arch) (config *Config,
 	}
 
 	checksums := make(map[string]string)
-	if f, e := head.Files["SHA256SUMS"]; e {
-		checksums, csErr = cs.Build(cs.Whitespace, f)
+	// Exclude checksums for daily live releases, which refresh too fast for checksums to be reliably reported
+	if release != "daily-live" {
+		if f, e := head.Files["SHA256SUMS"]; e {
+			checksums, csErr = cs.Build(cs.Whitespace, f)
+		}
 	}
 
 	archText := getUbuntuArchText(arch)
