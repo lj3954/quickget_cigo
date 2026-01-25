@@ -3,9 +3,10 @@ package os
 import (
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const nitruxMirror = "https://sourceforge.net/projects/nitruxos/files/Release/"
@@ -19,31 +20,55 @@ var Nitrux = OS{
 }
 
 func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(nitruxMirror + "ISO/")
+	c := mirror.SourceForgeClient{}
+	head, err := c.ReadDir(nitruxMirror)
 	if err != nil {
 		return nil, err
 	}
+
 	release := "latest"
-	isoRe := regexp.MustCompile(`(nitrux-nx-desktop-plasma-[^-]+-amd64).iso`)
-	match := isoRe.FindStringSubmatch(page)
-	if len(match) != 2 {
-		return nil, errors.New("could not find release in page")
-	}
-	url := nitruxMirror + "ISO/" + match[0] + "/download"
 
-	isoBase := match[1]
-	checksumUrl := nitruxMirror + "SHA512/" + isoBase + ".sha512/download"
-	checksum, err := cs.SingleWhitespace(checksumUrl)
+	isoSubDir, e := head.SubDirs["ISO"]
+	if !e {
+		return nil, errors.New("iso directory doesn't exist")
+	}
+	isoDir, err := isoSubDir.Fetch()
 	if err != nil {
-		csErrs <- Failure{Release: release, Error: err}
+		return nil, err
+	}
+	isoRe := regexp.MustCompile(`^nitrux-contemporary-(.*?)-[0-9a-f]{8}-([^\.]+)\.iso$`)
+
+	var checksumDir *mirror.Directory
+	if d, e := head.SubDirs["SHA512"]; e {
+		checksumDir, err = d.Fetch()
+		if err != nil {
+			csErrs <- Failure{Release: release, Error: err}
+		}
 	}
 
-	return []Config{
-		{
+	var configs []Config
+	for f, match := range isoDir.FileMatches(isoRe) {
+		edition := match[1]
+		arch := Arch(match[2])
+
+		var checksum string
+		checksumName := strings.TrimSuffix(f.Name, ".iso") + ".sha512"
+		if cf, e := checksumDir.Files[checksumName]; e {
+			checksum, err = cs.SingleWhitespace(cf)
+			if err != nil {
+				csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}
+			}
+		}
+
+		configs = append(configs, Config{
 			Release: release,
+			Edition: edition,
+			Arch:    arch,
 			ISO: []Source{
-				urlChecksumSource(url, checksum),
+				webSource(f.URL.String(), checksum, "", f.Name),
 			},
-		},
-	}, nil
+		})
+	}
+
+	return configs, nil
 }
