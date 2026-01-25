@@ -1,10 +1,13 @@
 package os
 
 import (
-	"regexp"
+	"errors"
+	"slices"
+	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
+	"github.com/quickemu-project/quickget_configs/internal/utils"
 )
 
 const cachyOSMirror = "https://mirror.cachyos.org/ISO/"
@@ -18,64 +21,52 @@ var CachyOS = OS{
 }
 
 func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	mirrors, err := getCachyOSEditionMirrors()
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(cachyOSMirror)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
-	releaseRe := regexp.MustCompile(`href="([0-9]+)/"`)
-	isoRe := regexp.MustCompile(`href="(cachyos-([^-]+)-linux-[0-9]+.iso)"`)
 
-	for _, mirror := range mirrors {
+	for edition, d := range head.SubDirs {
 		wg.Go(func() {
-			releases, _, err := getBasicReleases(mirror, releaseRe, -1)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Error: err}
 			}
-			for release := range releases {
-				mirror := mirror + release + "/"
-				wg.Go(func() {
-					page, err := web.CapturePage(mirror)
-					if err != nil {
-						errs <- Failure{Release: release, Error: err}
-						return
-					}
-					matches := isoRe.FindAllStringSubmatch(page, -1)
-					for _, match := range matches {
-						url := mirror + match[1]
-						edition := match[2]
-						wg.Go(func() {
-							checksum, err := cs.SingleWhitespace(url + ".sha256")
+			releases := contents.NameSortedSubDirs(utils.IntegerCompare)
+			for _, d := range slices.Backward(releases) {
+				release := "latest"
+				contents, err := d.Fetch()
+				if err != nil {
+					errs <- Failure{Release: d.Name, Edition: edition, Error: err}
+					continue
+				}
+
+				for k, f := range contents.Files {
+					if strings.HasSuffix(k, ".iso") {
+						var checksum string
+						if cf, e := contents.Files[f.Name+".sha256"]; e {
+							checksum, err = cs.SingleWhitespace(cf)
 							if err != nil {
 								csErrs <- Failure{Release: release, Edition: edition, Error: err}
 							}
-							ch <- Config{
-								Release: release,
-								Edition: edition,
-								ISO: []Source{
-									urlChecksumSource(url, checksum),
-								},
-							}
-						})
+						}
+
+						ch <- Config{
+							Release: release,
+							Edition: edition,
+							ISO: []Source{
+								webSource(f.URL.String(), checksum, "", f.Name),
+							},
+						}
+						// Return as soon as we have a valid config, we only want to keep the latest release for each edition
+						return
 					}
-				})
+				}
+				errs <- Failure{Release: d.Name, Edition: edition, Error: errors.New("could not find ISO in directory")}
 			}
 		})
 	}
 	return waitForConfigs(ch, wg), nil
-}
-
-func getCachyOSEditionMirrors() ([]string, error) {
-	editionData, err := web.CapturePage(cachyOSMirror)
-	if err != nil {
-		return nil, err
-	}
-	editionRe := regexp.MustCompile(`href="(\w+)\/`)
-	matches := editionRe.FindAllStringSubmatch(editionData, -1)
-
-	mirrors := make([]string, len(matches))
-	for i, match := range matches {
-		mirrors[i] = cachyOSMirror + match[1] + "/"
-	}
-	return mirrors, nil
 }
