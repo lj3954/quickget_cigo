@@ -4,12 +4,11 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	mxlinuxMirror    = "https://sourceforge.net/projects/mx-linux/files/Final/"
-	mxlinuxReleaseRe = `title="(\w+)" class="folder`
+	mxlinuxMirror = "https://sourceforge.net/projects/mx-linux/files/Final/"
 )
 
 var MXLinux = OS{
@@ -21,47 +20,43 @@ var MXLinux = OS{
 }
 
 func createMXLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	editions, _, err := getBasicReleases(mxlinuxMirror, mxlinuxReleaseRe, -1)
+	c := mirror.SourceForgeClient{}
+	head, err := c.ReadDir(mxlinuxMirror)
 	if err != nil {
 		return nil, err
 	}
 	ch, wg := getChannels()
-	isoRe := regexp.MustCompile(`"name":"(MX-([\d\.]+)(_\w+)?_x64.iso)"`)
+	isoRe := regexp.MustCompile(`^MX-([\d\.]+)(_\w+)?_x64.iso$`)
 
-	for edition := range editions {
-		mirror := mxlinuxMirror + edition + "/"
+	for edition, d := range head.SubDirs {
 		wg.Go(func() {
-			page, err := web.CapturePage(mirror)
+			contents, err := d.Fetch()
 			if err != nil {
-				errs <- Failure{Release: edition, Error: err}
+				errs <- Failure{Edition: edition, Error: err}
 				return
 			}
-			matches := isoRe.FindAllStringSubmatch(page, -1)
-			for _, match := range matches {
-				iso, release, edition := match[1], match[2], match[3]
-				if edition == "" {
-					edition = "XFCE"
-				} else {
-					edition = edition[1:]
-				}
+			for f, match := range contents.FileMatches(isoRe) {
+				release := match[1]
 
-				mirror := mirror + iso
-				url := mirror + "/download"
-				checksumUrl := mirror + ".sha256/download"
-
-				wg.Go(func() {
-					checksum, err := cs.SingleWhitespace(checksumUrl)
+				var checksum string
+				if cf, e := contents.Files[f.Name+".sha256"]; e {
+					checksum, err = cs.SingleWhitespace(cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
-					ch <- Config{
-						Release: release,
-						Edition: edition,
-						ISO: []Source{
-							urlChecksumSource(url, checksum),
-						},
-					}
-				})
+				}
+
+				if len(match[2]) > 1 {
+					edition = match[2][1:]
+				}
+
+				ch <- Config{
+					Release: release,
+					Edition: edition,
+					ISO: []Source{
+						webSource(f.URL.String(), checksum, "", f.Name),
+					},
+				}
 			}
 		})
 	}
