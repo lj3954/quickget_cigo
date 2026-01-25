@@ -1,8 +1,6 @@
 package os
 
 import (
-	"sync"
-
 	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
@@ -22,34 +20,36 @@ func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(2 * len(ubuntuReleases))
+
+	ch, wg := getChannels()
+
+	addConfig := func(release, edition string, popEdition string) {
+		wg.Go(func() {
+			url := popApiUrl + release + "/" + popEdition
+			var data popApi
+			if err := web.CapturePageToJson(url, &data); err != nil {
+				errs <- Failure{Release: release, Edition: edition, Error: err}
+				return
+			}
+			// We'll ignore empty entries without logging an error; most of Ubuntu's releases won't be available
+			// The error above is logged since it will only occur if the API is down or if the JSON is malformed
+			if data.URL == "" {
+				return
+			}
+			ch <- Config{
+				Release: release,
+				Edition: edition,
+				ISO: []Source{
+					urlChecksumSource(data.URL, data.Checksum),
+				},
+			}
+		})
+	}
 	for _, release := range ubuntuReleases {
-		go addPopOSConfig(release, "standard", "intel", ch, wg, errs)
-		go addPopOSConfig(release, "nvidia", "nvidia", ch, wg, errs)
+		addConfig(release, "standard", "intel")
+		addConfig(release, "nvidia", "nvidia")
 	}
 	return waitForConfigs(ch, wg), nil
-}
-
-func addPopOSConfig(release, edition, popEdition string, ch chan Config, wg *sync.WaitGroup, errs chan<- Failure) {
-	defer wg.Done()
-	url := popApiUrl + release + "/" + popEdition
-	var data popApi
-	if err := web.CapturePageToJson(url, &data); err != nil {
-		errs <- Failure{Release: release, Edition: edition, Error: err}
-		return
-	}
-	// We'll ignore empty entries without logging an error; most of Ubuntu's releases won't be available
-	// The error above is logged since it will only occur if the API is down or if the JSON is malformed
-	if data.URL == "" {
-		return
-	}
-	ch <- Config{
-		Release: release,
-		Edition: edition,
-		ISO: []Source{
-			urlChecksumSource(data.URL, data.Checksum),
-		},
-	}
 }
 
 type popApi struct {
