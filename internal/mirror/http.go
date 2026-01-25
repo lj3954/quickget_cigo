@@ -264,7 +264,7 @@ func (c HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 			}
 		})
 
-		if len(name) == 0 || len(link) == 0 {
+		if len(name) == 0 || len(link) == 0 || link == "../" {
 			return
 		}
 
