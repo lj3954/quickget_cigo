@@ -1,10 +1,12 @@
 package os
 
 import (
+	"net/url"
+
 	"github.com/quickemu-project/quickget_configs/internal/web"
 )
 
-const popApiUrl = "https://api.pop-os.org/builds/"
+var popApiUrl, _ = url.Parse("https://api.pop-os.org/builds")
 
 var PopOS = OS{
 	Name:           "popos",
@@ -23,31 +25,42 @@ func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	ch, wg := getChannels()
 
-	addConfig := func(release, edition string, popEdition string) {
+	addConfig := func(release, arch string) {
 		wg.Go(func() {
-			url := popApiUrl + release + "/" + popEdition
-			var data popApi
-			if err := web.CapturePageToJson(url, &data); err != nil {
-				errs <- Failure{Release: release, Edition: edition, Error: err}
+			baseUrl := popApiUrl.JoinPath(release)
+			q := url.Values{"arch": []string{arch}}
+			rawQuery := q.Encode()
+
+			// Pop OS has switched to "Generic" over "Intel" in their API for the latest releases
+			// Prefer generic if available, fallback to intel
+			for _, e := range []string{"generic", "intel"} {
+				url := baseUrl.JoinPath(e)
+				url.RawQuery = rawQuery
+				var data popApi
+				// We'll ignore all errors
+				if err := web.CapturePageToJson(url, &data); err != nil {
+					errs <- Failure{Release: release, Arch: Arch(arch), Error: err}
+					continue
+				}
+				if data.URL == "" {
+					return
+				}
+				ch <- Config{
+					Release: release,
+					Arch:    Arch(arch),
+					ISO: []Source{
+						urlChecksumSource(data.URL, data.Checksum),
+					},
+				}
 				return
-			}
-			// We'll ignore empty entries without logging an error; most of Ubuntu's releases won't be available
-			// The error above is logged since it will only occur if the API is down or if the JSON is malformed
-			if data.URL == "" {
-				return
-			}
-			ch <- Config{
-				Release: release,
-				Edition: edition,
-				ISO: []Source{
-					urlChecksumSource(data.URL, data.Checksum),
-				},
 			}
 		})
 	}
 	for _, release := range ubuntuReleases {
-		addConfig(release, "standard", "intel")
-		addConfig(release, "nvidia", "nvidia")
+		for _, arch := range []string{"amd64", "arm64"} {
+			addConfig(release, "amd64")
+			addConfig(release, "arm64")
+		}
 	}
 	return waitForConfigs(ch, wg), nil
 }
