@@ -2,14 +2,13 @@ package os
 
 import (
 	"errors"
-	"regexp"
+	"strings"
 
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	gnomeosMirror    = "https://download.gnome.org/gnomeos/"
-	gnomeosReleaseRe = `href="(\d[^/]+)\/"`
+	gnomeosMirror = "https://download.gnome.org/gnomeos/"
 )
 
 var GnomeOS = OS{
@@ -21,35 +20,38 @@ var GnomeOS = OS{
 }
 
 func createGnomeOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getReverseReleases(gnomeosMirror, gnomeosReleaseRe, 6)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(gnomeosMirror)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numReleases)
-	isoRe := regexp.MustCompile(`href="(gnome_os.*?.iso)"`)
+	ch, wg := getChannels()
 
-	for release := range releases {
-		mirror := gnomeosMirror + release + "/"
-		go func() {
-			defer wg.Done()
-			page, err := web.CapturePage(mirror)
+	releases := head.NameSortedSubDirs(strings.Compare)
+	releases = releases[max(len(releases)-6, 0):]
+
+	for _, d := range releases {
+		release := d.Name
+		wg.Go(func() {
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			isoMatch := isoRe.FindStringSubmatch(page)
-			if isoMatch == nil {
-				errs <- Failure{Release: release, Error: errors.New("No ISO found")}
+			f, e := contents.FindFile(func(f mirror.File) bool {
+				return strings.HasSuffix(f.Name, ".iso")
+			})
+			if !e {
+				errs <- Failure{Release: release, Error: errors.New("no ISO found")}
 				return
 			}
-			url := mirror + isoMatch[1]
 			ch <- Config{
 				Release: release,
 				ISO: []Source{
-					urlSource(url),
+					webSource(f.URL.String(), "", "", f.Name),
 				},
 			}
-		}()
+		})
 	}
 
 	configs := waitForConfigs(ch, wg)
