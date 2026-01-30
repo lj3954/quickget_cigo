@@ -61,6 +61,16 @@ func (d *Directory) SubDirMatches(pattern *regexp.Regexp) iter.Seq2[SubDirEntry,
 	}
 }
 
+// Returns the first subdirectory that a function returns true given, as well as whether the subdirectory exists.
+func (d *Directory) FindSubDir(f func(f SubDirEntry) bool) (subdir SubDirEntry, ok bool) {
+	for _, subdir := range d.SubDirs {
+		if f(subdir) {
+			return subdir, true
+		}
+	}
+	return
+}
+
 // Returns the files contained within the directory as a slice, sorted by time
 func (d *Directory) ModifiedTimeSortedFiles() []File {
 	subdirs := slices.Collect(maps.Values(d.Files))
@@ -104,6 +114,16 @@ func (d *Directory) FileMatches(pattern *regexp.Regexp) iter.Seq2[File, []string
 			}
 		}
 	}
+}
+
+// Returns the first file that a function returns true given, as well as whether the file exists.
+func (d *Directory) FindFile(f func(f File) bool) (file File, ok bool) {
+	for _, file := range d.Files {
+		if f(file) {
+			return file, true
+		}
+	}
+	return
 }
 
 // The metadata representing a subdirectory
