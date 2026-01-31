@@ -4,13 +4,12 @@ import (
 	"regexp"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	arcoLinuxMirror    = "https://sourceforge.net/projects/arconetpro/files/"
-	arcoLinuxEditionRe = `title="(arco[^-]+)" class="folder ">`
-	arcoLinuxIsoRe     = `title="((?:arco|arch)[^-]+-(?:20|v)(\d{2}\.\d{2}\.\d{2})-x86_64\.iso)" class="file ">`
+	arcoLinuxMirror = "https://sourceforge.net/projects/arconetpro/files/"
+	arcoLinuxIsoRe  = `^(?:arco|arch)[^-]+-(?:20|v)(\d{2}\.\d{2}\.\d{2})-x86_64\.iso$`
 )
 
 var ArcoLinux = OS{
@@ -22,7 +21,8 @@ var ArcoLinux = OS{
 }
 
 func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	editions, _, err := getBasicReleases(arcoLinuxMirror, arcoLinuxEditionRe, -1)
+	c := mirror.SourceForgeClient{}
+	head, err := c.ReadDir(arcoLinuxMirror)
 	if err != nil {
 		return nil, err
 	}
@@ -30,33 +30,32 @@ func createArcoLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(arcoLinuxIsoRe)
 	ch, wg := getChannels()
 
-	for edition := range editions {
+	for edition, d := range head.SubDirs {
 		wg.Go(func() {
-			mirror := arcoLinuxMirror + edition + "/"
-			page, err := web.CapturePage(mirror)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Edition: edition, Error: err}
 				return
 			}
 
-			matches := isoRe.FindAllStringSubmatch(page, 3)
-			for _, match := range matches {
-				url := mirror + match[1]
-				release := match[2]
-				wg.Go(func() {
-					checksum, err := cs.SingleWhitespace(url + ".md5/download")
+			for f, match := range contents.FileMatches(isoRe) {
+				release := match[1]
+
+				var checksum string
+				if cf, e := contents.Files[f.Name+".md5"]; e {
+					checksum, err = cs.SingleWhitespace(cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
+				}
 
-					ch <- Config{
-						Release: release,
-						Edition: edition,
-						ISO: []Source{
-							urlChecksumSource(url+"/download", checksum),
-						},
-					}
-				})
+				ch <- Config{
+					Release: release,
+					Edition: edition,
+					ISO: []Source{
+						webSource(f.URL.String(), checksum, "", f.Name),
+					},
+				}
 			}
 		})
 	}
