@@ -25,7 +25,7 @@ func createElementaryConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	downloadRe := regexp.MustCompile(`download-link http" href="(.*?)">Download`)
+	downloadRe := regexp.MustCompile(`download-link http" href="(.*?amd64.*?)">Download`)
 
 	downloadMatch := downloadRe.FindStringSubmatch(page)
 	if downloadMatch == nil {
