@@ -58,8 +58,7 @@ func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 	for _, release := range ubuntuReleases {
 		for _, arch := range []string{"amd64", "arm64"} {
-			addConfig(release, "amd64")
-			addConfig(release, "arm64")
+			addConfig(release, arch)
 		}
 	}
 	return waitForConfigs(ch, wg), nil
