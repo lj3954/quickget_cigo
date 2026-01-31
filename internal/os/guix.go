@@ -3,14 +3,14 @@ package os
 import (
 	"regexp"
 
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	guixDlMirror   = "https://ftpmirror.gnu.org/gnu/guix/"
+	guixDlHost     = "ftpmirror.gnu.org"
 	guixDataMirror = "https://mirrors.ibiblio.org/gnu/guix/"
-	guixVmImageRe  = `href="(guix-system-vm-image-([\d\.]+).x86_64-linux.qcow2)"`
-	guixIsoRe      = `href="(guix-system-install-([\d\.]+).x86_64-linux.iso)"`
+	guixVmImageRe  = `^guix-system-vm-image-([\d\.]+).x86_64-linux.qcow2$`
+	guixIsoRe      = `^guix-system-install-([\d\.]+).x86_64-linux.iso$`
 )
 
 var Guix = OS{
@@ -22,34 +22,37 @@ var Guix = OS{
 }
 
 func createGuixConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	page, err := web.CapturePage(guixDataMirror)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(guixDataMirror)
 	if err != nil {
 		return nil, err
 	}
 	vmImageRe := regexp.MustCompile(guixVmImageRe)
 	isoRe := regexp.MustCompile(guixIsoRe)
 
+	for k := range head.Files {
+		head.Files[k].URL.Host = guixDlHost
+	}
+
 	configs := make([]Config, 0)
-	for _, match := range vmImageRe.FindAllStringSubmatch(page, -1) {
-		url := guixDlMirror + match[1]
+	for f, match := range head.FileMatches(vmImageRe) {
 		configs = append(configs, Config{
-			Release: match[2],
+			Release: match[1],
 			Edition: "vm-image",
 			DiskImages: []Disk{
 				{
-					Source: urlSource(url),
+					Source: webSource(f.URL.String(), "", "", f.Name),
 				},
 			},
 		})
 	}
 
-	for _, match := range isoRe.FindAllStringSubmatch(page, -1) {
-		url := guixDlMirror + match[1]
+	for f, match := range head.FileMatches(isoRe) {
 		configs = append(configs, Config{
-			Release: match[2],
+			Release: match[1],
 			Edition: "install-iso",
 			ISO: []Source{
-				urlSource(url),
+				webSource(f.URL.String(), "", "", f.Name),
 			},
 		})
 	}
