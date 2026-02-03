@@ -2,10 +2,10 @@ package os
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/cs"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 	"github.com/quickemu-project/quickget_configs/pkg/quickgetdata"
 )
 
@@ -23,52 +23,56 @@ var KolibriOS = OS{
 }
 
 func createKolibriOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	editions, numEditions, err := getBasicReleases(kolibriMirror, kolibriEditionRe, -1)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(kolibriMirror)
 	if err != nil {
 		return nil, err
 	}
-	ch, wg := getChannelsWith(numEditions)
+	ch, wg := getChannels()
 
 	release := "latest"
-	for edition := range editions {
-		mirror := fmt.Sprintf("%s/%s/", kolibriMirror, edition)
-		config := Config{
-			Release: release,
-			Edition: edition,
-			GuestOS: quickgetdata.KolibriOS,
-		}
-		go func() {
-			defer wg.Done()
-			checksum, iso, err := getKolibriIsoData(mirror + "sha256sums.txt")
+	for edition, d := range head.SubDirs {
+		wg.Go(func() {
+			contents, err := d.Fetch()
 			if err != nil {
-				csErrs <- Failure{Release: release, Edition: edition, Error: err}
-				config.ISO = []Source{
-					webSource(mirror+"latest-iso.7z", "", quickgetdata.SevenZip, ""),
-				}
-			} else {
-				config.ISO = []Source{
-					webSource(mirror+iso, checksum, quickgetdata.SevenZip, ""),
+				errs <- Failure{Release: release, Edition: edition, Error: err}
+				return
+			}
+
+			checksums := make(map[string]string)
+			if cf, e := contents.Files["sha256sums.txt"]; e {
+				checksums, err = cs.Build(cs.Whitespace, cf)
+				if err != nil {
+					csErrs <- Failure{Release: release, Edition: edition, Error: err}
 				}
 			}
-			ch <- config
-		}()
+
+			filename := "latest-iso.7z"
+			var checksum string
+			for k, v := range checksums {
+				if strings.HasSuffix(k, "iso.7z") {
+					filename = k
+					checksum = v
+					break
+				}
+			}
+
+			f, e := contents.Files[filename]
+			if !e {
+				errs <- Failure{Release: release, Edition: edition, Error: errors.New("named iso could not be found in mirror")}
+				return
+			}
+
+			ch <- Config{
+				Release: release,
+				Edition: edition,
+				GuestOS: quickgetdata.KolibriOS,
+				ISO: []Source{
+					webSource(f.URL.String(), checksum, quickgetdata.SevenZip, f.Name),
+				},
+			}
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
-}
-
-func getKolibriIsoData(url string) (string, string, error) {
-	page, err := web.CapturePage(url)
-	if err != nil {
-		return "", "", err
-	}
-	for _, line := range strings.Split(page, "\n") {
-		line := strings.TrimSpace(line)
-		if strings.HasSuffix(line, "iso.7z") {
-			if data := strings.Fields(line); len(data) == 2 {
-				return data[0], data[1], nil
-			}
-		}
-	}
-	return "", "", errors.New("No ISO found in checksums")
 }
