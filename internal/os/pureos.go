@@ -1,13 +1,12 @@
 package os
 
 import (
-	"fmt"
-	"regexp"
-	"slices"
+	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
@@ -27,69 +26,73 @@ var PureOS = OS{
 }
 
 func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, _, err := getBasicReleases(pureOsMirror, pureOsReleaseRe, -1)
+	c := mirror.LegacyHttpClient{}
+	head, err := c.ReadDir(pureOsMirror)
 	if err != nil {
 		return nil, err
 	}
 
-	ch, wg := getChannels()
-	editionRe := regexp.MustCompile(pureOsEditionRe)
-	dateRe := regexp.MustCompile(pureOsDateRe)
-	isoRe := regexp.MustCompile(pureOsIsoRe)
+	// Remove non-integer releases. They may cause duplicates and are unnecessary
+	for release := range head.SubDirs {
+		if _, err := strconv.Atoi(release); err != nil {
+			delete(head.SubDirs, release)
+		}
+	}
 
-	for release := range releases {
+	ch, wg := getChannels()
+
+	for release, d := range head.SubDirs {
 		wg.Go(func() {
-			url := pureOsMirror + release
-			editions, _, err := getBasicReleases(url, editionRe, -1)
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
-				return
 			}
 
-			for edition := range editions {
-				wg.Go(func() {
-					url := url + "/" + edition + "/"
-					dates, _, err := getBasicReleases(url, dateRe, -1)
+			for edition, d := range contents.SubDirs {
+				contents, err := d.Fetch()
+				if err != nil {
+					errs <- Failure{Release: release, Edition: edition, Error: err}
+					return
+				}
+
+				dates := contents.ModifiedTimeSortedSubdirs()
+				if len(dates) > 0 {
+					contents, err = dates[len(dates)-1].Fetch()
 					if err != nil {
-						errs <- Failure{Release: release, Error: err}
+						errs <- Failure{Release: release, Edition: edition, Error: err}
 						return
 					}
-					dateSlice := slices.Collect(dates)
-					if len(dateSlice) > 0 {
-						date := slices.Max(slices.Collect(dates))
-						url += date + "/"
-					}
+				}
 
-					page, err := web.CapturePage(url)
-					if err != nil {
-						errs <- Failure{Release: release, Error: err}
-						return
-					}
-
-					isoMatch := isoRe.FindStringSubmatch(page)
-					if len(isoMatch) == 0 {
-						errs <- Failure{Release: release, Error: fmt.Errorf("No ISO found for %s", release)}
-						return
-					}
-					iso := isoMatch[1]
-					release := isoMatch[2]
-					url += iso
-
-					checksumUrl := strings.Replace(url, "iso", "checksums_sha256.txt", 1)
-					checksums, err := cs.Build(cs.Whitespace, checksumUrl)
-					if err != nil {
-						csErrs <- Failure{Release: release, Error: err}
-					}
-					checksum := checksums["./"+iso]
-
-					ch <- Config{
-						Release: release,
-						Edition: edition,
-						ISO: []Source{
-							urlChecksumSource(url, checksum),
-						},
-					}
+				f, e := contents.FindFile(func(f mirror.File) bool {
+					return strings.HasSuffix(f.Name, ".iso")
 				})
+				if !e {
+					errs <- Failure{Release: release, Edition: edition, Error: errors.New("could not find ISO in mirror")}
+					return
+				}
+
+				checksums := make(map[string]string)
+				cf, e := contents.FindFile(func(f2 mirror.File) bool {
+					isoName := strings.TrimSuffix(f.Name, ".iso")
+					return strings.Contains(f2.Name, isoName) && strings.Contains(f2.Name, "sha256")
+				})
+				if e {
+					checksums, err = cs.Build(cs.Whitespace, cf)
+					if err != nil {
+						csErrs <- Failure{Release: release, Edition: edition, Error: err}
+					}
+				}
+
+				checksum := checksums[f.Name]
+
+				ch <- Config{
+					Release: release,
+					Edition: edition,
+					ISO: []Source{
+						webSource(f.URL.String(), checksum, "", f.Name),
+					},
+				}
 			}
 		})
 	}
