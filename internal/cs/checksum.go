@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"path"
 	"regexp"
 	"strings"
 
@@ -93,7 +94,7 @@ func (innerWhitespace) BuildWithData(data string) map[string]string {
 		slice := strings.SplitN(line, " ", 2)
 		if len(slice) == 2 {
 			hash := strings.TrimSpace(slice[0])
-			file := strings.TrimSpace(slice[1])
+			file := path.Clean(strings.TrimSpace(slice[1]))
 			m[file] = hash
 		}
 	}

@@ -146,6 +146,10 @@ func (c LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 		name := match[2]
 		url := u.JoinPath(match[1])
 
+		if strings.HasSuffix(name, "..&gt;") {
+			name = path.Base(url.Path)
+		}
+
 		if strings.HasSuffix(match[1], "/") {
 			name = strings.TrimSuffix(name, "/")
 			subdirs[name] = SubDirEntry{
