@@ -62,7 +62,7 @@ func (d *Directory) SubDirMatches(pattern *regexp.Regexp) iter.Seq2[SubDirEntry,
 }
 
 // Returns the first subdirectory that a function returns true given, as well as whether the subdirectory exists.
-func (d *Directory) FindSubDir(f func(f SubDirEntry) bool) (subdir SubDirEntry, ok bool) {
+func (d *Directory) FindSubDir(f func(s SubDirEntry) bool) (subdir SubDirEntry, ok bool) {
 	for _, subdir := range d.SubDirs {
 		if f(subdir) {
 			return subdir, true
@@ -73,20 +73,20 @@ func (d *Directory) FindSubDir(f func(f SubDirEntry) bool) (subdir SubDirEntry, 
 
 // Returns the files contained within the directory as a slice, sorted by time
 func (d *Directory) ModifiedTimeSortedFiles() []File {
-	subdirs := slices.Collect(maps.Values(d.Files))
-	slices.SortFunc(subdirs, func(a, b File) int {
+	files := slices.Collect(maps.Values(d.Files))
+	slices.SortFunc(files, func(a, b File) int {
 		return a.LastModifiedDate.Compare(b.LastModifiedDate)
 	})
-	return subdirs
+	return files
 }
 
 // Returns the files contained within the directory as a slice, sorted by name with the provided comparator
 func (d *Directory) NameSortedFiles(comparator func(a, b string) int) []File {
-	subdirs := slices.Collect(maps.Values(d.Files))
-	slices.SortFunc(subdirs, func(a, b File) int {
+	files := slices.Collect(maps.Values(d.Files))
+	slices.SortFunc(files, func(a, b File) int {
 		return comparator(a.Name, b.Name)
 	})
-	return subdirs
+	return files
 }
 
 // Returns the files contained within the directory that match the given pattern
@@ -163,5 +163,6 @@ type File struct {
 type Client interface {
 	// This method should be implemented to parse the url string and then call the ReadDirFromUrl method on self
 	ReadDir(urlStr string) (*Directory, error)
+	// Read a directory given a URL. Returns an error if the client fails to make an HTTP request or parse the resulting data
 	ReadDirFromUrl(u *url.URL) (*Directory, error)
 }

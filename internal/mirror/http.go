@@ -146,6 +146,8 @@ func (c LegacyHttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 		name := match[2]
 		url := u.JoinPath(match[1])
 
+		// Files ending with this pattern have a name cut off for length (...)
+		// Use the final path segment as the name if we spot this pattern
 		if strings.HasSuffix(name, "..&gt;") {
 			name = path.Base(url.Path)
 		}
