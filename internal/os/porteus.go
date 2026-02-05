@@ -5,13 +5,12 @@ import (
 	"strings"
 
 	"github.com/quickemu-project/quickget_configs/internal/cs"
-	"github.com/quickemu-project/quickget_configs/internal/web"
+	"github.com/quickemu-project/quickget_configs/internal/mirror"
 )
 
 const (
-	porteusMirror    = "https://mirrors.dotsrc.org/porteus/x86_64/"
-	porteusReleaseRe = `href="(Porteus-v[\d\.]+/)"`
-	porteusIsoRe     = `href="(Porteus-([^-]+)-(.*?)-x86_64.iso)"`
+	porteusMirror = "https://mirrors.dotsrc.org/porteus/x86_64/"
+	porteusIsoRe  = `^Porteus-([^-]+)-(.*?)-x86_64.iso$`
 )
 
 var Porteus = OS{
@@ -23,44 +22,50 @@ var Porteus = OS{
 }
 
 func createPorteusConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	releases, numReleases, err := getReverseReleases(porteusMirror, porteusReleaseRe, 3)
+	c := mirror.HttpClient{}
+	head, err := c.ReadDir(porteusMirror)
 	if err != nil {
 		return nil, err
 	}
 
+	releases := make(map[string]mirror.SubDirEntry)
+	for k, d := range head.SubDirs {
+		if strings.HasPrefix(k, "Porteus-") {
+			n := strings.TrimPrefix(k, "Porteus-")
+			d.Name = n
+			releases[n] = d
+		}
+	}
+
 	isoRe := regexp.MustCompile(porteusIsoRe)
-	ch, wg := getChannelsWith(numReleases)
-	for release := range releases {
-		go func() {
-			defer wg.Done()
-			url := porteusMirror + release
-			page, err := web.CapturePage(url)
+	ch, wg := getChannels()
+	for release, d := range releases {
+		wg.Go(func() {
+			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
 
-			matches := isoRe.FindAllStringSubmatch(page, -1)
-			if len(matches) == 0 {
-				return
-			}
-			checksums, err := cs.Build(cs.Whitespace, url+"sha256sums.txt")
-			if err != nil {
-				csErrs <- Failure{Release: release, Error: err}
+			checksums := make(map[string]string)
+			if cf, e := contents.Files["sha256sums.txt"]; e {
+				checksums, err = cs.Build(cs.Whitespace, cf)
+				if err != nil {
+					csErrs <- Failure{Release: release, Error: err}
+				}
 			}
 
-			for _, match := range matches {
-				iso := match[1]
-				checksum := checksums[iso]
+			for f, match := range contents.FileMatches(isoRe) {
+				checksum := checksums[f.Name]
 				ch <- Config{
-					Release: match[3],
-					Edition: strings.ToLower(match[2]),
+					Release: match[2],
+					Edition: strings.ToLower(match[1]),
 					ISO: []Source{
-						urlChecksumSource(url+iso, checksum),
+						webSource(f.URL.String(), checksum, "", f.Name),
 					},
 				}
 			}
-		}()
+		})
 	}
 
 	return waitForConfigs(ch, wg), nil
