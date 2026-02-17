@@ -70,15 +70,15 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 			}
 
-			for k, f := range contents.Files {
-				match := isoRe.FindStringSubmatch(k)
-				if match == nil {
+			for f, match := range contents.FileMatches(isoRe) {
+				arch, v := NewArch(match[2])
+				if !v {
 					continue
 				}
 				config := Config{
 					Release: release,
 					Edition: match[1],
-					Arch:    Arch(match[2]),
+					Arch:    arch,
 				}
 
 				qcowXz := match[3] == "qcow2.xz"

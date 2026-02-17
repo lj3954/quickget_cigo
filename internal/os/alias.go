@@ -27,6 +27,7 @@ const (
 )
 
 var (
+	NewArch           = qgdata.NewArch
 	webSource         = qgdata.NewWebSource
 	urlChecksumSource = qgdata.URLChecksumSource
 	urlSource         = qgdata.URLSource
@@ -45,9 +46,9 @@ var (
 )
 
 var (
-	x86_64_only         = [...]Arch{x86_64}
-	x86_64_aarch64      = [...]Arch{x86_64, aarch64}
-	three_architectures = [...]Arch{x86_64, aarch64, riscv64}
+	x86_64_only         = [...]qgdata.Arch{x86_64}
+	x86_64_aarch64      = [...]qgdata.Arch{x86_64, aarch64}
+	three_architectures = [...]qgdata.Arch{x86_64, aarch64, riscv64}
 )
 
 var List = []OS{

@@ -49,7 +49,10 @@ func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var configs []Config
 	for f, match := range isoDir.FileMatches(isoRe) {
 		edition := match[1]
-		arch := Arch(match[2])
+		arch, v := NewArch(match[2])
+		if !v {
+			continue
+		}
 
 		var checksum string
 		checksumName := strings.TrimSuffix(f.Name, ".iso") + ".sha512"

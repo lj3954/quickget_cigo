@@ -36,10 +36,14 @@ func createChimeraLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	configs := make([]Config, 0)
 	for f, match := range head.FileMatches(isoRe) {
 		checksum := checksums[f.Name]
+		arch, v := NewArch(match[1])
+		if !v {
+			continue
+		}
 		configs = append(configs, Config{
 			Release: "latest",
 			Edition: match[2],
-			Arch:    Arch(match[1]),
+			Arch:    arch,
 			ISO: []Source{
 				webSource(f.URL.String(), checksum, "", f.Name),
 			},

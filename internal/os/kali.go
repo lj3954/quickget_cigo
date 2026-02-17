@@ -57,7 +57,10 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			// Filter to the latest ISO for kali weekly
 			files := make(map[Arch]kaliMatch)
 			for f, match := range contents.FileMatches(isoRe) {
-				a := Arch(match[1])
+				a, v := NewArch(match[1])
+				if !v {
+					continue
+				}
 				if v, e := files[a]; !e || f.LastModifiedDate.After(v.dateModified) {
 					files[a] = kaliMatch{
 						dateModified: f.LastModifiedDate,

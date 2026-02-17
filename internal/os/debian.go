@@ -57,7 +57,7 @@ func getLatestDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs cha
 		errs <- Failure{Error: err}
 	}
 
-	addConfigs(latestDebianMirror, release, fullRelease, ch, wg, errs, csErrs)
+	addDebianConfigs(latestDebianMirror, release, fullRelease, ch, wg, errs, csErrs)
 	return latestRelease
 }
 
@@ -73,7 +73,7 @@ func getOldDebianConfigs(ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<-
 	}
 
 	for release := latestRelease - 2; release < latestRelease; release++ {
-		addConfigs(prevDebianMirror, strconv.Itoa(release), releaseMap[release], ch, wg, errs, csErrs)
+		addDebianConfigs(prevDebianMirror, strconv.Itoa(release), releaseMap[release], ch, wg, errs, csErrs)
 	}
 }
 
@@ -98,7 +98,7 @@ func createReleaseMap(html string, errs chan<- Failure) map[int]string {
 	return m
 }
 
-func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
+func addDebianConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.WaitGroup, errs, csErrs chan<- Failure) {
 	liveMirror := mirror + fullRelease + "-live/amd64/iso-hybrid/"
 
 	wg.Go(func() {
@@ -126,8 +126,9 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 	})
 
 	architectures := [2]string{"amd64", "arm64"}
-	for _, arch := range architectures {
-		netInstMirror := fmt.Sprintf("%s%s/%s/iso-cd/", mirror, fullRelease, arch)
+	for _, a := range architectures {
+		arch, _ := NewArch(a)
+		netInstMirror := fmt.Sprintf("%s%s/%s/iso-cd/", mirror, fullRelease, a)
 		wg.Go(func() {
 			page, err := web.CapturePage(netInstMirror)
 			if err != nil {
@@ -146,7 +147,7 @@ func addConfigs(mirror, release, fullRelease string, ch chan Config, wg *sync.Wa
 				ch <- Config{
 					Release: release,
 					Edition: match[2],
-					Arch:    Arch(arch),
+					Arch:    arch,
 					ISO: []Source{
 						urlChecksumSource(url, checksum),
 					},
