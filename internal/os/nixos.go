@@ -47,7 +47,13 @@ func createNixOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if match == nil {
 					continue
 				}
-				name, edition, arch := match[0], match[1], Arch(match[2])
+
+				name, edition := match[0], match[1]
+				arch, v := NewArch(match[2])
+				if !v {
+					continue
+				}
+
 				url := fmt.Sprintf("%s/nixos-%s/%s", nixDownloadUrl, release, name)
 				url, err = web.FinalRedirectUrl(url)
 				if err != nil {

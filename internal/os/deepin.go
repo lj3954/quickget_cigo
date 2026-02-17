@@ -56,7 +56,11 @@ func createDeepinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 				}
-				config, csErr, err := createDeepinConfig(contents, release, Arch(a))
+				arch, v := NewArch(a)
+				if !v {
+					continue
+				}
+				config, csErr, err := createDeepinConfig(contents, release, arch)
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
 				} else {

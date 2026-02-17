@@ -1,5 +1,7 @@
 package quickgetdata
 
+import "strings"
+
 func NewWebSource(url, checksum string, archiveFormat ArchiveFormat, filename string) Source {
 	return Source{
 		Web: &WebSource{
@@ -28,4 +30,22 @@ func NewDockerSource(url string, privileged bool, sharedDirs []string, filename 
 			OutputFilename: filename,
 		},
 	}
+}
+
+func NewArch(input string) (arch Arch, valid bool) {
+	switch strings.ToLower(input) {
+	case "x86_64":
+	case "amd64":
+		arch = X86_64
+		valid = true
+	case "aarch64":
+	case "arm64":
+		arch = Aarch64
+		valid = true
+	case "riscv64":
+		arch = Riscv64
+		valid = true
+	}
+
+	return
 }

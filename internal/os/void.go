@@ -54,12 +54,16 @@ func createVoidConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			for f, match := range contents.FileMatches(isoRe) {
+				arch, v := NewArch(match[1])
+				if !v {
+					continue
+				}
 				edition := match[3] + match[2]
 				checksum := checksums[f.Name]
 				ch <- Config{
 					Release: release,
 					Edition: edition,
-					Arch:    Arch(match[1]),
+					Arch:    arch,
 					ISO: []Source{
 						webSource(f.URL.String(), checksum, "", f.Name),
 					},

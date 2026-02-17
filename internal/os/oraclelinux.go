@@ -50,7 +50,12 @@ func createOracleLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			break
 		}
 		wg.Go(func() {
-			major, minor, arch := match[2], match[3], match[4]
+			major, minor := match[2], match[3]
+			arch, v := NewArch(match[4])
+			if !v {
+				return
+			}
+
 			release := major + "." + minor
 			checksumData, err := web.CapturePage(oracleLinuxChecksumMirror + match[1])
 			if err != nil {
@@ -75,7 +80,7 @@ func createOracleLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				url := fmt.Sprintf("https://yum.oracle.com/ISOS/OracleLinux/OL%s/u%s/%s/%s", major, minor, arch, iso)
 				ch <- Config{
 					Release: release,
-					Arch:    Arch(arch),
+					Arch:    arch,
 					ISO: []Source{
 						urlChecksumSource(url, checksum),
 					},
