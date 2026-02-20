@@ -34,12 +34,10 @@ func NewDockerSource(url string, privileged bool, sharedDirs []string, filename 
 
 func NewArch(input string) (arch Arch, valid bool) {
 	switch strings.ToLower(input) {
-	case "x86_64":
-	case "amd64":
+	case "x86_64", "amd64":
 		arch = X86_64
 		valid = true
-	case "aarch64":
-	case "arm64":
+	case "aarch64", "arm64":
 		arch = Aarch64
 		valid = true
 	case "riscv64":
