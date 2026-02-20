@@ -104,6 +104,7 @@ func getEasyOSReleases(errs chan<- Failure, c mirror.Client) ([]mirror.SubDirEnt
 			years := slices.Collect(maps.Values(yearsDir.SubDirs))
 			if len(years) == 0 {
 				errs <- Failure{Release: d.Name, Error: errors.New("no years found in directory")}
+				return
 			}
 			latestYear := slices.MaxFunc(years, func(a, b mirror.SubDirEntry) int {
 				return strings.Compare(a.Name, b.Name)

@@ -54,6 +54,7 @@ func createLinuxLiteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
+				return
 			}
 
 			for k, f := range contents.Files {
@@ -75,6 +76,7 @@ func createLinuxLiteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			contents, err = rc.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
+				return
 			}
 
 			for k, f := range contents.Files {
