@@ -52,6 +52,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					contents, err := d.Fetch()
 					if err != nil {
 						errs <- Failure{Release: release, Arch: arch, Error: err}
+						return
 					}
 
 					checksums := make(map[string]string)
