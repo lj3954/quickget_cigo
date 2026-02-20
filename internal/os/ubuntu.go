@@ -202,17 +202,13 @@ func getUbuntuConfig(release string, variant string, arch Arch) (config *Config,
 		}
 	}
 
-	archText := getUbuntuArchText(arch)
+	archSuffix := getUbuntuArchSuffix(arch)
 	sku := getUbuntuSku(variant)
-	var f *mirror.File
-	for k, file := range head.Files {
-		if strings.Contains(k, archText) && strings.Contains(k, sku) {
-			f = &file
-			break
-		}
-	}
 
-	if f == nil {
+	f, e := head.FindFile(func(f mirror.File) bool {
+		return strings.HasSuffix(f.Name, archSuffix) && strings.Contains(f.Name, sku)
+	})
+	if !e {
 		return
 	}
 
@@ -248,7 +244,7 @@ func getUbuntuSku(variant string) string {
 	return "desktop"
 }
 
-func getUbuntuArchText(arch Arch) string {
+func getUbuntuArchSuffix(arch Arch) string {
 	switch arch {
 	case x86_64:
 		return "amd64.iso"
