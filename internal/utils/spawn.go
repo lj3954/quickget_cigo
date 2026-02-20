@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"slices"
 	"strings"
@@ -45,6 +46,12 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 		}()
 
 		wg.Go(func() {
+			defer func() {
+				if r := recover(); r != nil {
+					status.FailedOS(os, fmt.Errorf("panic: %s", r))
+				}
+			}()
+
 			configs, err := distro.ConfigFunction(failures, csErrs)
 
 			if err != nil {
