@@ -27,36 +27,33 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		return nil, err
 	}
 
-	var debianRelease, slackwareRelease *mirror.SubDirEntry
-	for k, d := range head.SubDirs {
-		k = strings.ToLower(k)
-		if debianRelease == nil && strings.Contains(k, "debian") {
-			debianRelease = &d
-		} else if slackwareRelease == nil && strings.Contains(k, "slackware") {
-			slackwareRelease = &d
-		}
-		if debianRelease != nil && slackwareRelease != nil {
-			break
-		}
-	}
-
 	var configs []Config
 	release := "latest"
 
-	edition := "debian"
-	debianConfig, err := getSlaxConfig(release, edition, *debianRelease, csErrs)
-	if err != nil {
-		errs <- Failure{Release: release, Edition: edition, Error: err}
-	} else {
-		configs = append(configs, *debianConfig)
+	debianRelease, e := head.FindSubDir(func(d mirror.SubDirEntry) bool {
+		return strings.Contains(d.Name, "debian")
+	})
+	if e {
+		edition := "debian"
+		debianConfig, err := getSlaxConfig(release, edition, debianRelease, csErrs)
+		if err != nil {
+			errs <- Failure{Release: release, Edition: edition, Error: err}
+		} else {
+			configs = append(configs, *debianConfig)
+		}
 	}
 
-	edition = "slackware"
-	slackwareConfig, err := getSlaxConfig(release, edition, *slackwareRelease, csErrs)
-	if err != nil {
-		errs <- Failure{Release: release, Edition: edition, Error: err}
-	} else {
-		configs = append(configs, *slackwareConfig)
+	slackwareRelease, e := head.FindSubDir(func(d mirror.SubDirEntry) bool {
+		return strings.Contains(d.Name, "slackware")
+	})
+	if e {
+		edition := "slackware"
+		slackwareConfig, err := getSlaxConfig(release, edition, slackwareRelease, csErrs)
+		if err != nil {
+			errs <- Failure{Release: release, Edition: edition, Error: err}
+		} else {
+			configs = append(configs, *slackwareConfig)
+		}
 	}
 
 	return configs, nil
