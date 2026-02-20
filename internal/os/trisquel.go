@@ -1,7 +1,6 @@
 package os
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -30,8 +29,6 @@ func createTrisquelConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	isoRe := regexp.MustCompile(trisquelIsoRe)
 	matches := isoRe.FindAllStringSubmatch(page, -1)
-
-	fmt.Println(matches)
 
 	ch, wg := getChannelsWith(len(matches))
 	for _, match := range matches {
