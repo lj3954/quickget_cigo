@@ -119,6 +119,7 @@ func getEasyOSReleases(errs chan<- Failure, c mirror.Client) ([]mirror.SubDirEnt
 			releases := slices.Collect(maps.Values(releasesDir.SubDirs))
 			if len(releases) == 0 {
 				errs <- Failure{Release: d.Name, Error: errors.New("no releases found in year directory")}
+				return
 			}
 			latestRelease := slices.MaxFunc(releases, func(a, b mirror.SubDirEntry) int {
 				return utils.SemverCompare(a.Name, b.Name)
