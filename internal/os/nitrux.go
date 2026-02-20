@@ -56,10 +56,12 @@ func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 		var checksum string
 		checksumName := strings.TrimSuffix(f.Name, ".iso") + ".sha512"
-		if cf, e := checksumDir.Files[checksumName]; e {
-			checksum, err = cs.SingleWhitespace(cf)
-			if err != nil {
-				csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}
+		if checksumDir != nil {
+			if cf, e := checksumDir.Files[checksumName]; e {
+				checksum, err = cs.SingleWhitespace(cf)
+				if err != nil {
+					csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}
+				}
 			}
 		}
 
