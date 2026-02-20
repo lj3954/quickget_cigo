@@ -46,6 +46,7 @@ func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Release: release, Error: err}
+				return
 			}
 
 			for edition, d := range contents.SubDirs {
