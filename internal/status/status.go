@@ -61,6 +61,7 @@ func makeOsStatus(data qgdata.OSData) osStatus {
 }
 
 func (s *Status) FailedOS(data qgdata.OSData, err error) {
+	log.Println(data.PrettyName, "failed:", err)
 	s.Lock()
 	defer s.Unlock()
 	status := makeOsStatus(data)
