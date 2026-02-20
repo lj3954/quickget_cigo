@@ -39,6 +39,9 @@ func createProxmoxVEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(proxmoxIsoRe)
 
 	files := slices.Collect(head.MatchingFiles(isoRe))
+	slices.SortFunc(files, func(a, b mirror.File) int {
+		return a.LastModifiedDate.Compare(b.LastModifiedDate)
+	})
 	files = files[max(len(files)-2, 0):]
 
 	configs := make([]Config, len(files))
