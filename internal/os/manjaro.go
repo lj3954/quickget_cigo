@@ -28,6 +28,7 @@ func createManjaroConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		var data manjaroData
 		if err := web.CapturePageToJson(manjaroJsonUrl, &data); err != nil {
 			errs <- Failure{Error: err}
+			return
 		}
 		addManjaroConfigs(data.Official, x86_64, ch, wg, csErrs)
 		addManjaroConfigs(data.Community, x86_64, ch, wg, csErrs)
@@ -50,6 +51,7 @@ func addManjaroSwayConfig(ch chan Config, errs, csErrs chan<- Failure) {
 	var data []manjaroSwayData
 	if err := web.CapturePageToJson(manjaroSwayJsonUrl, &data); err != nil {
 		errs <- Failure{Release: release, Edition: edition, Error: err}
+		return
 	}
 	var url string
 	for _, e := range data {
