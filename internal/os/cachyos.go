@@ -33,6 +33,7 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			contents, err := d.Fetch()
 			if err != nil {
 				errs <- Failure{Error: err}
+				return
 			}
 			releases := contents.NameSortedSubDirs(utils.IntegerCompare)
 			for _, d := range slices.Backward(releases) {
