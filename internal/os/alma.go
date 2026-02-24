@@ -21,7 +21,7 @@ var Alma = OS{
 }
 
 func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(almaMirror)
 	if err != nil {
 		return nil, err
