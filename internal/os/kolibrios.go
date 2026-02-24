@@ -40,7 +40,7 @@ func createKolibriOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			checksums := make(map[string]string)
-			if cf, e := contents.Files["sha256sums.txt"]; e {
+			if cf, ok := contents.Files["sha256sums.txt"]; ok {
 				checksums, err = cs.Build(cs.Whitespace, cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Error: err}
@@ -57,8 +57,8 @@ func createKolibriOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 			}
 
-			f, e := contents.Files[filename]
-			if !e {
+			f, ok := contents.Files[filename]
+			if !ok {
 				errs <- Failure{Release: release, Edition: edition, Error: errors.New("named iso could not be found in mirror")}
 				return
 			}

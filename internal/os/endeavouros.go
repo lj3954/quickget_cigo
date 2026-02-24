@@ -30,11 +30,11 @@ func createEndeavourOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	for f, match := range head.FileMatches(isoRe) {
 		release := match[1]
 		wg.Go(func() {
-			cf, e := head.FindFile(func(f2 mirror.File) bool {
+			cf, ok := head.FindFile(func(f2 mirror.File) bool {
 				return strings.HasPrefix(f2.Name, f.Name) && strings.HasSuffix(f2.Name, "sum")
 			})
 			var checksum string
-			if e {
+			if ok {
 				checksum, err = cs.SingleWhitespace(cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}

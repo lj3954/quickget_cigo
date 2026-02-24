@@ -35,7 +35,7 @@ func createSlitazConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			edition := match[2]
 
 			var checksum string
-			if f, e := head.Files[match[1]+".md5"]; e {
+			if f, ok := head.Files[match[1]+".md5"]; ok {
 				checksum, err = cs.SingleWhitespace(f)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Error: err}

@@ -40,7 +40,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			if id, e := architectures.SubDirs["isos"]; e {
+			if id, ok := architectures.SubDirs["isos"]; ok {
 				architectures, err = id.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
@@ -48,7 +48,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 			}
 			for _, arch := range three_architectures {
-				if d, e := architectures.SubDirs[string(arch)]; e {
+				if d, ok := architectures.SubDirs[string(arch)]; ok {
 					contents, err := d.Fetch()
 					if err != nil {
 						errs <- Failure{Release: release, Arch: arch, Error: err}
@@ -56,7 +56,7 @@ func createAlmaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					}
 
 					checksums := make(map[string]string)
-					if f, e := contents.Files["CHECKSUM"]; e {
+					if f, ok := contents.Files["CHECKSUM"]; ok {
 						checksums, err = cs.Build(cs.Sha256Regex, f.URL)
 						if err != nil {
 							csErrs <- Failure{Release: release, Arch: arch, Error: err}

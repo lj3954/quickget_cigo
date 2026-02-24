@@ -35,8 +35,8 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	releases := [...]string{"current", "kali-weekly"}
 
 	for _, release := range releases {
-		releaseDir, e := head.SubDirs[release]
-		if !e {
+		releaseDir, ok := head.SubDirs[release]
+		if !ok {
 			continue
 		}
 		wg.Go(func() {
@@ -47,7 +47,7 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			checksums := make(map[string]string)
-			if f, e := contents.Files["SHA256SUMS"]; e {
+			if f, ok := contents.Files["SHA256SUMS"]; ok {
 				checksums, err = cs.Build(cs.Whitespace, f)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
@@ -61,7 +61,7 @@ func createKaliConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				if !v {
 					continue
 				}
-				if v, e := files[a]; !e || f.LastModifiedDate.After(v.dateModified) {
+				if v, ok := files[a]; !ok || f.LastModifiedDate.After(v.dateModified) {
 					files[a] = kaliMatch{
 						dateModified: f.LastModifiedDate,
 						file:         f,

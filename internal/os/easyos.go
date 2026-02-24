@@ -47,18 +47,18 @@ func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				return
 			}
 			var checksum string
-			if f, e := contents.Files["md5sum.txt"]; e {
+			if f, ok := contents.Files["md5sum.txt"]; ok {
 				checksum, err = cs.SingleWhitespace(f)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}
 				}
 			}
 
-			f, e := contents.FindFile(func(f mirror.File) bool {
+			f, ok := contents.FindFile(func(f mirror.File) bool {
 				return strings.HasSuffix(f.Name, ".img") || strings.HasSuffix(f.Name, ".img.gz")
 			})
 
-			if !e {
+			if !ok {
 				errs <- Failure{Release: release, Error: errors.New("could not find img file in mirror")}
 				return
 			}

@@ -44,17 +44,17 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					continue
 				}
 
-				f, e := contents.FindFile(func(f mirror.File) bool {
+				f, ok := contents.FindFile(func(f mirror.File) bool {
 					return strings.HasSuffix(f.Name, ".iso")
 				})
 
-				if !e {
+				if !ok {
 					errs <- Failure{Release: d.Name, Edition: edition, Error: errors.New("could not find ISO in directory")}
 					return
 				}
 
 				var checksum string
-				if cf, e := contents.Files[f.Name+".sha256"]; e {
+				if cf, ok := contents.Files[f.Name+".sha256"]; ok {
 					checksum, err = cs.SingleWhitespace(cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}

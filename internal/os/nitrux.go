@@ -28,8 +28,8 @@ func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	release := "latest"
 
-	isoSubDir, e := head.SubDirs["ISO"]
-	if !e {
+	isoSubDir, ok := head.SubDirs["ISO"]
+	if !ok {
 		return nil, errors.New("iso directory doesn't exist")
 	}
 	isoDir, err := isoSubDir.Fetch()
@@ -39,7 +39,7 @@ func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`^nitrux-contemporary-(.*?)-[0-9a-f]{8}-([^\.]+)\.iso$`)
 
 	var checksumDir *mirror.Directory
-	if d, e := head.SubDirs["SHA512"]; e {
+	if d, ok := head.SubDirs["SHA512"]; ok {
 		checksumDir, err = d.Fetch()
 		if err != nil {
 			csErrs <- Failure{Release: release, Error: err}
@@ -57,7 +57,7 @@ func createNitruxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		var checksum string
 		checksumName := strings.TrimSuffix(f.Name, ".iso") + ".sha512"
 		if checksumDir != nil {
-			if cf, e := checksumDir.Files[checksumName]; e {
+			if cf, ok := checksumDir.Files[checksumName]; ok {
 				checksum, err = cs.SingleWhitespace(cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Arch: arch, Error: err}

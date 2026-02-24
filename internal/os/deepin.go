@@ -80,7 +80,7 @@ func createDeepinConfig(dir *mirror.Directory, release string, arch Arch) (confi
 	for k, f := range dir.Files {
 		if strings.HasSuffix(k, ".iso") {
 			var checksum string
-			if f, e := dir.Files["SHA256SUMS"]; e {
+			if f, ok := dir.Files["SHA256SUMS"]; ok {
 				checksum, csErr = cs.SingleWhitespace(f)
 			}
 			config = &Config{

@@ -40,19 +40,19 @@ func createArchcraftConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			f, e := contents.FindFile(func(f mirror.File) bool {
+			f, ok := contents.FindFile(func(f mirror.File) bool {
 				return strings.HasSuffix(f.Name, ".iso")
 			})
-			if !e {
+			if !ok {
 				errs <- Failure{Release: release, Error: errors.New("could not find ISO in directory")}
 				return
 			}
 
 			var checksum string
-			cf, e := contents.FindFile(func(f2 mirror.File) bool {
+			cf, ok := contents.FindFile(func(f2 mirror.File) bool {
 				return strings.HasPrefix(f2.Name, f.Name) && strings.HasSuffix(f2.Name, "sum")
 			})
-			if e {
+			if ok {
 				checksum, err = cs.SingleWhitespace(cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}

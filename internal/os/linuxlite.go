@@ -34,7 +34,7 @@ func createLinuxLiteConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 	addConfig := func(release string, d *mirror.Directory, f mirror.File) {
 		var checksum string
-		if cf, e := d.Files[f.Name+".sha256"]; e {
+		if cf, ok := d.Files[f.Name+".sha256"]; ok {
 			checksum, err = cs.SingleWhitespace(cf)
 			if err != nil {
 				csErrs <- Failure{Release: release, Error: err}
