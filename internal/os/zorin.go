@@ -24,7 +24,7 @@ var Zorin = OS{
 }
 
 func createZorinConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
-	c := mirror.HttpClient{}
+	c := mirror.LegacyHttpClient{}
 	head, err := c.ReadDir(zorinReleaseMirror)
 	if err != nil {
 		return nil, err
