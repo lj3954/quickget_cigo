@@ -31,7 +31,7 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	release := "latest"
 
 	debianRelease, ok := head.FindSubDir(func(d mirror.SubDirEntry) bool {
-		return strings.Contains(d.Name, "debian")
+		return strings.Contains(strings.ToLower(d.Name), "debian")
 	})
 	if ok {
 		edition := "debian"
@@ -44,7 +44,7 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 
 	slackwareRelease, ok := head.FindSubDir(func(d mirror.SubDirEntry) bool {
-		return strings.Contains(d.Name, "slackware")
+		return strings.Contains(strings.ToLower(d.Name), "slackware")
 	})
 	if ok {
 		edition := "slackware"
