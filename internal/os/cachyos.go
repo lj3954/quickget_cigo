@@ -50,7 +50,7 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 				if !ok {
 					errs <- Failure{Release: d.Name, Edition: edition, Error: errors.New("could not find ISO in directory")}
-					return
+					continue
 				}
 
 				var checksum string
