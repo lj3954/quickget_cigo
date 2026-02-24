@@ -54,25 +54,27 @@ func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				}
 			}
 
-			for k, f := range contents.Files {
-				if strings.HasSuffix(k, ".img") || strings.HasSuffix(k, ".img.gz") {
-					var archiveFormat quickgetdata.ArchiveFormat
-					if strings.HasSuffix(f.Name, ".img.gz") {
-						archiveFormat = quickgetdata.Gz
-					}
-					ch <- Config{
-						Release: release,
-						DiskImages: []Disk{
-							{
-								Source: webSource(f.URL.String(), checksum, archiveFormat, f.Name),
-								Format: quickgetdata.Raw,
-							},
-						},
-					}
-					return
-				}
+			f, e := contents.FindFile(func(f mirror.File) bool {
+				return strings.HasSuffix(f.Name, ".img") || strings.HasSuffix(f.Name, ".img.gz")
+			})
+
+			if !e {
+				errs <- Failure{Release: release, Error: errors.New("could not find img file in mirror")}
 			}
 
+			var archiveFormat quickgetdata.ArchiveFormat
+			if strings.HasSuffix(f.Name, ".img.gz") {
+				archiveFormat = quickgetdata.Gz
+			}
+			ch <- Config{
+				Release: release,
+				DiskImages: []Disk{
+					{
+						Source: webSource(f.URL.String(), checksum, archiveFormat, f.Name),
+						Format: quickgetdata.Raw,
+					},
+				},
+			}
 		})
 	}
 
