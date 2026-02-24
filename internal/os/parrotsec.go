@@ -48,25 +48,30 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			checksums := make(map[string]string)
-			for k, f := range contents.Files {
-				k = strings.ToLower(k)
-				if strings.HasSuffix(k, "txt") && strings.Contains(k, "hash") {
-					page, err := web.CapturePage(f.URL)
-					if err != nil {
-						csErrs <- Failure{Release: release, Error: err}
-						continue
-					}
+			cf, e := contents.FindFile(func(f mirror.File) bool {
+				k := strings.ToLower(f.Name)
+				return strings.HasSuffix(k, ".txt") && strings.Contains(k, "hash")
+			})
+			if e {
+				page, err := web.CapturePage(cf.URL)
+				if err != nil {
+					csErrs <- Failure{Release: release, Error: err}
+				} else {
 					lines := strings.Split(page, "\n")
 
 					sha256Start := slices.Index(lines, "sha256")
-					lines = lines[sha256Start:]
+					if sha256Start >= 0 {
+						lines = lines[sha256Start:]
+					}
 					sha256End := slices.IndexFunc(lines, func(s string) bool {
 						return len(strings.TrimSpace(s)) == 0
 					})
+					if sha256End > 0 {
+						lines = lines[:sha256End]
+					}
 
-					contents := strings.Join(lines[:sha256End], "\n")
+					contents := strings.Join(lines, "\n")
 					checksums = cs.Whitespace.BuildWithData(contents)
-					break
 				}
 			}
 
