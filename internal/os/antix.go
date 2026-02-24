@@ -45,14 +45,14 @@ func createAntiXConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 			for k, dr := range contents.SubDirs {
 				suffix := "-" + d.Name
-				if prefix, e := strings.CutSuffix(k, suffix); e {
+				if prefix, ok := strings.CutSuffix(k, suffix); ok {
 					addConfigs(release, dr, prefix)
 				}
 			}
 
 			for f, match := range contents.FileMatches(isoRe) {
 				var checksum string
-				if cf, e := contents.Files[f.Name+".sha256"]; e {
+				if cf, ok := contents.Files[f.Name+".sha256"]; ok {
 					checksum, err = cs.SingleWhitespace(cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}

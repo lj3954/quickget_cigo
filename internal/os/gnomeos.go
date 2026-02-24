@@ -38,10 +38,10 @@ func createGnomeOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			f, e := contents.FindFile(func(f mirror.File) bool {
+			f, ok := contents.FindFile(func(f mirror.File) bool {
 				return strings.HasSuffix(f.Name, ".iso")
 			})
-			if !e {
+			if !ok {
 				errs <- Failure{Release: release, Error: errors.New("no ISO found")}
 				return
 			}

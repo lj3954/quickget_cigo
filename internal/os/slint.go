@@ -35,7 +35,7 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				errs <- Failure{Release: release, Error: err}
 				return
 			}
-			if id, e := contents.SubDirs["iso"]; e {
+			if id, ok := contents.SubDirs["iso"]; ok {
 				contents, err = id.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}
@@ -46,7 +46,7 @@ func createSlintConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			for k, f := range contents.Files {
 				if strings.HasSuffix(k, ".iso") {
 					var checksum string
-					if cf, e := contents.Files[f.Name+".sha256"]; e {
+					if cf, ok := contents.Files[f.Name+".sha256"]; ok {
 						checksum, err = cs.SingleWhitespace(cf)
 						if err != nil {
 							csErrs <- Failure{Release: release, Error: err}

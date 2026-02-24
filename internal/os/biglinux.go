@@ -30,7 +30,7 @@ func createBigLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		wg.Go(func() {
 			release, edition := match[1], match[2]
 			var checksum string
-			if cf, e := head.Files[f.Name+".md5"]; e {
+			if cf, ok := head.Files[f.Name+".md5"]; ok {
 				checksum, err = cs.SingleWhitespace(cf)
 				if err != nil {
 					csErrs <- Failure{Release: release, Edition: edition, Error: err}

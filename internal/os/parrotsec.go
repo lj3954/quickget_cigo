@@ -48,11 +48,11 @@ func createParrotSecConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 
 			checksums := make(map[string]string)
-			cf, e := contents.FindFile(func(f mirror.File) bool {
+			cf, ok := contents.FindFile(func(f mirror.File) bool {
 				k := strings.ToLower(f.Name)
 				return strings.HasSuffix(k, ".txt") && strings.Contains(k, "hash")
 			})
-			if e {
+			if ok {
 				page, err := web.CapturePage(cf.URL)
 				if err != nil {
 					csErrs <- Failure{Release: release, Error: err}

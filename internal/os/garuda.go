@@ -40,7 +40,7 @@ func createGarudaConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			for k, f := range contents.Files {
 				if strings.HasSuffix(k, "iso") {
 					var checksum string
-					if cf, e := contents.Files[k+".sha256"]; e {
+					if cf, ok := contents.Files[k+".sha256"]; ok {
 						checksum, err = cs.SingleWhitespace(cf)
 						if err != nil {
 							csErrs <- Failure{Release: release, Edition: edition, Error: err}

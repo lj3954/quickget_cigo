@@ -197,7 +197,7 @@ func getUbuntuConfig(release string, variant string, arch Arch) (config *Config,
 	checksums := make(map[string]string)
 	// Exclude checksums for daily live releases, which refresh too fast for checksums to be reliably reported
 	if release != "daily-live" {
-		if f, e := head.Files["SHA256SUMS"]; e {
+		if f, ok := head.Files["SHA256SUMS"]; ok {
 			checksums, csErr = cs.Build(cs.Whitespace, f)
 		}
 	}
@@ -205,10 +205,10 @@ func getUbuntuConfig(release string, variant string, arch Arch) (config *Config,
 	archSuffix := getUbuntuArchSuffix(arch)
 	sku := getUbuntuSku(variant)
 
-	f, e := head.FindFile(func(f mirror.File) bool {
+	f, ok := head.FindFile(func(f mirror.File) bool {
 		return strings.HasSuffix(f.Name, archSuffix) && strings.Contains(f.Name, sku)
 	})
-	if !e {
+	if !ok {
 		return
 	}
 

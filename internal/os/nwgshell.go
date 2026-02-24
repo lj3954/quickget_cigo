@@ -25,7 +25,7 @@ func createNwgShellConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 
 	checksums := make(map[string]string)
-	if f, e := head.Files["sha256sums.txt"]; e {
+	if f, ok := head.Files["sha256sums.txt"]; ok {
 		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Error: err}

@@ -97,8 +97,8 @@ func parseFileSize(value string) (int64, error) {
 		return 0, err
 	}
 
-	m, e := units[value[nonDigitIndex:]]
-	if !e {
+	m, ok := units[value[nonDigitIndex:]]
+	if !ok {
 		m = 1
 	}
 
@@ -225,7 +225,7 @@ func (c HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 
 			var class mirrorClass
 			for _, c := range classes {
-				if v, e := mirrorClasses[c]; e {
+				if v, ok := mirrorClasses[c]; ok {
 					class = v
 					break
 				}
@@ -233,8 +233,9 @@ func (c HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 
 			if class == mirrorClassNone {
 				if a := s.Find("a"); a.Length() == 1 {
-					_, e := a.Attr("href")
-					if t := strings.TrimSpace(a.Text()); e && len(t) > 0 {
+					_, ok := a.Attr("href")
+					t := strings.TrimSpace(a.Text())
+					if ok && len(t) > 0 {
 						class = mirrorClassLink
 					}
 				} else if _, err := parseDate(s.Text()); err == nil {
@@ -249,14 +250,14 @@ func (c HttpClient) ReadDirFromUrl(u *url.URL) (*Directory, error) {
 				return
 			case mirrorClassLink:
 				a := s.Find("a")
-				href, e := a.Attr("href")
-				if !e {
+				href, ok := a.Attr("href")
+				if !ok {
 					return
 				}
 				link = href
 				name = strings.TrimSpace(a.Text())
 			case mirrorClassFileSize:
-				if v, e := s.Attr("data-value"); e {
+				if v, ok := s.Attr("data-value"); ok {
 					size, err := strconv.ParseInt(v, 10, 64)
 					if err == nil {
 						fileSize = size

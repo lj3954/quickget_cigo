@@ -43,7 +43,7 @@ func createDevuanConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 			// If there's a desktop live subdirectory we'll use it, as that's the standard directory
 			// structure as of now. Otherwise, just try with the main directory
-			if d, e := contents.SubDirs["desktop-live"]; e {
+			if d, ok := contents.SubDirs["desktop-live"]; ok {
 				contents, err = d.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}

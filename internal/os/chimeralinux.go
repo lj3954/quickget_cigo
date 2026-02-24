@@ -26,7 +26,7 @@ func createChimeraLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`^chimera-linux-(x86_64|aarch64|riscv64)-LIVE-[0-9]{8}-([^-]+).iso$`)
 
 	checksums := make(map[string]string)
-	if f, e := head.Files["sha256sums.txt"]; e {
+	if f, ok := head.Files["sha256sums.txt"]; ok {
 		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Release: "latest", Error: err}

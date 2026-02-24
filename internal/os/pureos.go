@@ -65,20 +65,20 @@ func createPureOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					}
 				}
 
-				f, e := contents.FindFile(func(f mirror.File) bool {
+				f, ok := contents.FindFile(func(f mirror.File) bool {
 					return strings.HasSuffix(f.Name, ".iso")
 				})
-				if !e {
+				if !ok {
 					errs <- Failure{Release: release, Edition: edition, Error: errors.New("could not find ISO in mirror")}
 					return
 				}
 
 				checksums := make(map[string]string)
-				cf, e := contents.FindFile(func(f2 mirror.File) bool {
+				cf, ok := contents.FindFile(func(f2 mirror.File) bool {
 					isoName := strings.TrimSuffix(f.Name, ".iso")
 					return strings.Contains(f2.Name, isoName) && strings.Contains(f2.Name, "sha256")
 				})
-				if e {
+				if ok {
 					checksums, err = cs.Build(cs.Whitespace, cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}

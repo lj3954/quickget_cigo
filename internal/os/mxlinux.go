@@ -39,7 +39,7 @@ func createMXLinuxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				release := match[1]
 
 				var checksum string
-				if cf, e := contents.Files[f.Name+".sha256"]; e {
+				if cf, ok := contents.Files[f.Name+".sha256"]; ok {
 					checksum, err = cs.SingleWhitespace(cf)
 					if err != nil {
 						csErrs <- Failure{Release: release, Edition: edition, Error: err}

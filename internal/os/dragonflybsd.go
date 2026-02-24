@@ -35,7 +35,7 @@ func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	isoRe := regexp.MustCompile(`^dfly-x86_64-((\d+\.\d+)\.(\d+))_REL.iso.bz2$`)
 
 	checksums := make(map[string]string)
-	if f, e := head.Files["md5.txt"]; e {
+	if f, ok := head.Files["md5.txt"]; ok {
 		checksums, err = cs.Build(cs.Md5Regex, f)
 		if err != nil {
 			csErrs <- Failure{Error: err}
@@ -49,7 +49,7 @@ func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			continue
 		}
 		full, main, patch := match[1], match[2], match[3]
-		if r, e := releases[main]; !e || integerCompare(patch, r.patch) > 0 {
+		if r, ok := releases[main]; !ok || integerCompare(patch, r.patch) > 0 {
 			releases[main] = dragonflybsdRelease{file: f, patch: patch, release: full}
 		}
 	}

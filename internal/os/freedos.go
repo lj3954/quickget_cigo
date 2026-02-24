@@ -43,7 +43,7 @@ func createFreeDOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			}
 			// FreeDOS releases prior to 1.4 have an "official" subdirectory which must be used.
 			// With 1.4, the main directory for the release is used. Handle both cases
-			if od, e := contents.SubDirs["official"]; e {
+			if od, ok := contents.SubDirs["official"]; ok {
 				contents, err = od.Fetch()
 				if err != nil {
 					errs <- Failure{Release: release, Error: err}

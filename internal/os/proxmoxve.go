@@ -29,7 +29,7 @@ func createProxmoxVEConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	}
 
 	checksums := make(map[string]string)
-	if f, e := head.Files["SHA256SUMS"]; e {
+	if f, ok := head.Files["SHA256SUMS"]; ok {
 		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Error: err}

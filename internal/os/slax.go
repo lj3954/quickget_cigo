@@ -30,10 +30,10 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 	var configs []Config
 	release := "latest"
 
-	debianRelease, e := head.FindSubDir(func(d mirror.SubDirEntry) bool {
+	debianRelease, ok := head.FindSubDir(func(d mirror.SubDirEntry) bool {
 		return strings.Contains(d.Name, "debian")
 	})
-	if e {
+	if ok {
 		edition := "debian"
 		debianConfig, err := getSlaxConfig(release, edition, debianRelease, csErrs)
 		if err != nil {
@@ -43,10 +43,10 @@ func createSlaxConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 		}
 	}
 
-	slackwareRelease, e := head.FindSubDir(func(d mirror.SubDirEntry) bool {
+	slackwareRelease, ok := head.FindSubDir(func(d mirror.SubDirEntry) bool {
 		return strings.Contains(d.Name, "slackware")
 	})
-	if e {
+	if ok {
 		edition := "slackware"
 		slackwareConfig, err := getSlaxConfig(release, edition, slackwareRelease, csErrs)
 		if err != nil {
@@ -66,7 +66,7 @@ func getSlaxConfig(release, edition string, dir mirror.SubDirEntry, csErrs chan<
 	}
 
 	checksums := make(map[string]string)
-	if f, e := contents.Files["md5.txt"]; e {
+	if f, ok := contents.Files["md5.txt"]; ok {
 		checksums, err = cs.Build(cs.Whitespace, f)
 		if err != nil {
 			csErrs <- Failure{Release: release, Edition: edition, Error: err}
