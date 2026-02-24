@@ -48,10 +48,10 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 		wg.Go(func() {
 			defer func() {
 				if r := recover(); r != nil {
+					close(failures)
+					close(csErrs)
 					status.FailedOS(os, fmt.Errorf("panic: %s", r))
 				}
-				close(failures)
-				close(csErrs)
 			}()
 
 			configs, err := distro.ConfigFunction(failures, csErrs)
@@ -61,6 +61,9 @@ func SpawnDistros(distros ...OS) ([]OSData, *status.Status) {
 				return
 			}
 			configs = web.RemoveInvalidConfigs(configs, failures, csErrs)
+
+			close(failures)
+			close(csErrs)
 
 			if len(configs) == 0 {
 				for _, failure := range failureSlice {
