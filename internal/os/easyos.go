@@ -60,6 +60,7 @@ func createEasyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 
 			if !e {
 				errs <- Failure{Release: release, Error: errors.New("could not find img file in mirror")}
+				return
 			}
 
 			var archiveFormat quickgetdata.ArchiveFormat
