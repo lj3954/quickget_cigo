@@ -43,7 +43,7 @@ func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					continue
 				}
 				if data.URL == "" {
-					return
+					continue
 				}
 				ch <- Config{
 					Release: release,
