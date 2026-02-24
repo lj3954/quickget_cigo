@@ -44,28 +44,30 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 					continue
 				}
 
-				for k, f := range contents.Files {
-					if strings.HasSuffix(k, ".iso") {
-						var checksum string
-						if cf, e := contents.Files[f.Name+".sha256"]; e {
-							checksum, err = cs.SingleWhitespace(cf)
-							if err != nil {
-								csErrs <- Failure{Release: release, Edition: edition, Error: err}
-							}
-						}
+				f, e := contents.FindFile(func(f mirror.File) bool {
+					return strings.HasSuffix(f.Name, ".iso")
+				})
 
-						ch <- Config{
-							Release: release,
-							Edition: edition,
-							ISO: []Source{
-								webSource(f.URL.String(), checksum, "", f.Name),
-							},
-						}
-						// Return as soon as we have a valid config, we only want to keep the latest release for each edition
-						return
+				if !e {
+					errs <- Failure{Release: d.Name, Edition: edition, Error: errors.New("could not find ISO in directory")}
+					return
+				}
+
+				var checksum string
+				if cf, e := contents.Files[f.Name+".sha256"]; e {
+					checksum, err = cs.SingleWhitespace(cf)
+					if err != nil {
+						csErrs <- Failure{Release: release, Edition: edition, Error: err}
 					}
 				}
-				errs <- Failure{Release: d.Name, Edition: edition, Error: errors.New("could not find ISO in directory")}
+
+				ch <- Config{
+					Release: release,
+					Edition: edition,
+					ISO: []Source{
+						webSource(f.URL.String(), checksum, "", f.Name),
+					},
+				}
 			}
 		})
 	}
