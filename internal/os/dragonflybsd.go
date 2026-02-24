@@ -49,7 +49,7 @@ func createDragonFlyBSDConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 			continue
 		}
 		full, main, patch := match[1], match[2], match[3]
-		if r, e := releases[main]; !e || patch > r.patch {
+		if r, e := releases[main]; !e || integerCompare(patch, r.patch) > 0 {
 			releases[main] = dragonflybsdRelease{file: f, patch: patch, release: full}
 		}
 	}
