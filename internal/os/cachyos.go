@@ -68,6 +68,8 @@ func createCachyOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 						webSource(f.URL.String(), checksum, "", f.Name),
 					},
 				}
+
+				return
 			}
 		})
 	}
