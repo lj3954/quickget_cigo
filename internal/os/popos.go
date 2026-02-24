@@ -39,7 +39,6 @@ func createPopOSConfigs(errs, csErrs chan<- Failure) ([]Config, error) {
 				var data popApi
 				// We'll ignore all errors
 				if err := web.CapturePageToJson(url, &data); err != nil {
-					errs <- Failure{Release: release, Arch: Arch(arch), Error: err}
 					continue
 				}
 				if data.URL == "" {
